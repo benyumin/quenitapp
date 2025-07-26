@@ -226,6 +226,12 @@ const AdminPanel = ({ onLogout, onBack }) => {
         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
         fontFamily: 'Inter, system-ui, sans-serif'
       }}>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
         <div style={{
           width: '40px',
           height: '40px',
@@ -246,15 +252,32 @@ const AdminPanel = ({ onLogout, onBack }) => {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      fontFamily: 'Inter, system-ui, sans-serif'
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
+      {/* MENSAJE DE PRUEBA VISIBLE */}
+      <div style={{
+        background: 'linear-gradient(90deg, #ff6b6b, #4ecdc4)',
+        color: 'white',
+        padding: '10px',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: '18px',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999
+      }}>
+        🚀 ADMIN PANEL ACTUALIZADO - VERSIÓN MODERNA 2024 🚀
+      </div>
+
       {/* Header */}
       <header style={{
         background: 'white',
         borderBottom: '1px solid #e2e8f0',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         position: 'sticky',
-        top: 0,
+        top: '40px',
         zIndex: 100
       }}>
         <div style={{
@@ -263,7 +286,9 @@ const AdminPanel = ({ onLogout, onBack }) => {
           padding: '1rem 2rem',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <FiUser style={{ fontSize: '1.8rem', color: '#3b82f6' }} />
@@ -304,13 +329,13 @@ const AdminPanel = ({ onLogout, onBack }) => {
                 color: '#475569',
                 transition: 'all 0.2s ease'
               }}
-              onMouseOver={(e) => {
-                e.target.style.background = '#e2e8f0';
-                e.target.style.color = '#334155';
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#e2e8f0';
+                e.currentTarget.style.color = '#334155';
               }}
-              onMouseOut={(e) => {
-                e.target.style.background = '#f1f5f9';
-                e.target.style.color = '#475569';
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f1f5f9';
+                e.currentTarget.style.color = '#475569';
               }}
             >
               <FiChevronLeft />
@@ -332,13 +357,13 @@ const AdminPanel = ({ onLogout, onBack }) => {
                 color: '#dc2626',
                 transition: 'all 0.2s ease'
               }}
-              onMouseOver={(e) => {
-                e.target.style.background = '#fee2e2';
-                e.target.style.color = '#b91c1c';
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#fee2e2';
+                e.currentTarget.style.color = '#b91c1c';
               }}
-              onMouseOut={(e) => {
-                e.target.style.background = '#fef2f2';
-                e.target.style.color = '#dc2626';
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#fef2f2';
+                e.currentTarget.style.color = '#dc2626';
               }}
             >
               <FiX />
@@ -350,6 +375,15 @@ const AdminPanel = ({ onLogout, onBack }) => {
 
       {/* Stats Summary */}
       <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: '700',
+          color: '#1e293b',
+          marginBottom: '1.5rem',
+          textAlign: 'center'
+        }}>
+          Resumen de Pedidos
+        </h2>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -370,13 +404,14 @@ const AdminPanel = ({ onLogout, onBack }) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '1rem',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
                 }}
-                onMouseOver={(e) => {
+                onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                 }}
-                onMouseOut={(e) => {
+                onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
                 }}
@@ -492,15 +527,18 @@ const AdminPanel = ({ onLogout, onBack }) => {
                           border: '1px solid #e2e8f0',
                           borderRadius: '10px',
                           padding: '1rem',
-                          transition: 'all 0.2s ease'
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer'
                         }}
-                        onMouseOver={(e) => {
+                        onMouseEnter={(e) => {
                           e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
                           e.currentTarget.style.borderColor = '#cbd5e1';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
                         }}
-                        onMouseOut={(e) => {
+                        onMouseLeave={(e) => {
                           e.currentTarget.style.boxShadow = 'none';
                           e.currentTarget.style.borderColor = '#e2e8f0';
+                          e.currentTarget.style.transform = 'translateY(0)';
                         }}
                       >
                         <div style={{
@@ -578,9 +616,10 @@ const AdminPanel = ({ onLogout, onBack }) => {
                             marginBottom: '0.75rem',
                             textAlign: 'right',
                             fontSize: '1rem',
-                            color: '#059669'
+                            color: '#059669',
+                            fontWeight: 'bold'
                           }}>
-                            <strong>${pedido.precio_total.toLocaleString('es-CL')} CLP</strong>
+                            ${pedido.precio_total.toLocaleString('es-CL')} CLP
                           </div>
                         )}
 
@@ -607,8 +646,14 @@ const AdminPanel = ({ onLogout, onBack }) => {
                               background: '#3b82f6',
                               color: 'white'
                             }}
-                            onMouseOver={(e) => e.target.style.background = '#2563eb'}
-                            onMouseOut={(e) => e.target.style.background = '#3b82f6'}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#2563eb';
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#3b82f6';
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
                             title="Descargar boleta"
                           >
                             <FiDownload />
@@ -634,13 +679,15 @@ const AdminPanel = ({ onLogout, onBack }) => {
                                 background: '#f1f5f9',
                                 color: '#475569'
                               }}
-                              onMouseOver={(e) => {
-                                e.target.style.background = '#e2e8f0';
-                                e.target.style.color = '#334155';
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#e2e8f0';
+                                e.currentTarget.style.color = '#334155';
+                                e.currentTarget.style.transform = 'scale(1.05)';
                               }}
-                              onMouseOut={(e) => {
-                                e.target.style.background = '#f1f5f9';
-                                e.target.style.color = '#475569';
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#f1f5f9';
+                                e.currentTarget.style.color = '#475569';
+                                e.currentTarget.style.transform = 'scale(1)';
                               }}
                             >
                               {isExpanded ? <FiEyeOff /> : <FiEye />}
@@ -731,13 +778,13 @@ const AdminPanel = ({ onLogout, onBack }) => {
                                     backgroundColor: nuevoInfo.border,
                                     color: '#fff'
                                   }}
-                                  onMouseOver={(e) => {
-                                    e.target.style.transform = 'translateY(-1px)';
-                                    e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-1px) scale(1.05)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
                                   }}
-                                  onMouseOut={(e) => {
-                                    e.target.style.transform = 'translateY(0)';
-                                    e.target.style.boxShadow = 'none';
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                    e.currentTarget.style.boxShadow = 'none';
                                   }}
                                 >
                                   {nuevoInfo.icon}
