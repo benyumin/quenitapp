@@ -157,7 +157,34 @@ function Notification({ message, type, isVisible, onClose }) {
   );
 }
 
-function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, clearCart, updateQuantity }) {
+function OrderConfirmation({ onConfirm, onCancel, total }) {
+  return (
+    <div className="order-confirmation-overlay">
+      <div className="order-confirmation-modal">
+        <div className="confirmation-icon">
+          <span role="img" aria-label="Éxito">✅</span>
+        </div>
+        <h2>¡Pedido Realizado!</h2>
+        <p>Su pedido ha sido enviado correctamente.</p>
+        <p><strong>Prontamente su pedido estará LISTO</strong></p>
+        <div className="confirmation-total">
+          <strong>Total: ${total} CLP</strong>
+        </div>
+        <div className="confirmation-actions">
+          <button 
+            onClick={onConfirm} 
+            className="confirm-btn"
+            aria-label="Confirmar pedido"
+          >
+            ¡Perfecto!
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, clearCart, updateQuantity, showOrderConfirmation, setShowOrderConfirmation }) {
   const envio = cart.length > 0 ? 1500 : 0;
   const subtotal = cart.reduce((acc, item) => acc + item.price, 0);
   const total = subtotal + envio;
@@ -180,21 +207,43 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
     updateQuantity(idx, delta);
   };
 
+  const handleOrderSubmit = () => {
+    setShowOrderConfirmation(true);
+    // Abrir WhatsApp después de mostrar la confirmación
+    setTimeout(() => {
+      window.open(waLink, '_blank');
+    }, 500);
+  };
+
+  const handleConfirmationClose = () => {
+    setShowOrderConfirmation(false);
+    // Limpiar el carrito después de confirmar
+    setCart([]);
+    onBack();
+  };
+
   return (
-    <div className="cart-outer-card">
-      <div className="cart-card">
-        <div className="cart-header-row">
-          <h1>Mi pedido</h1>
-          {cart.length > 0 && (
-            <button 
-              className="cart-clear-btn" 
-              onClick={handleClear}
-              aria-label="Vaciar carrito completo"
-            >
-              <span role="img" aria-label="Limpiar">🧹</span> Limpiar
-            </button>
-          )}
-        </div>
+    <>
+      {showOrderConfirmation && (
+        <OrderConfirmation 
+          onConfirm={handleConfirmationClose}
+          total={total}
+        />
+      )}
+      <div className="cart-outer-card">
+        <div className="cart-card">
+          <div className="cart-header-row">
+            <h1>Mi pedido</h1>
+            {cart.length > 0 && (
+              <button 
+                className="cart-clear-btn" 
+                onClick={handleClear}
+                aria-label="Vaciar carrito completo"
+              >
+                <span role="img" aria-label="Limpiar">🧹</span> Limpiar
+              </button>
+            )}
+          </div>
         <div className="cart-products-list">
           <h2 className="cart-products-title">Productos</h2>
         {cart.length === 0 ? (
@@ -300,16 +349,14 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
         </div>
         {cart.length > 0 && (
           <div className="cart-actions">
-            <a 
-              href={waLink} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <button 
+              onClick={handleOrderSubmit}
               className="cart-wa-btn"
-              aria-label="Enviar pedido por WhatsApp"
+              aria-label="Realizar pedido"
             >
               <span className="wa-icon" role="img" aria-label="WhatsApp">🟢</span> 
               Enviar pedido por WhatsApp
-            </a>
+            </button>
             <button 
               onClick={onBack} 
               className="cart-back-btn"
@@ -319,8 +366,9 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
             </button>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -335,6 +383,7 @@ function App() {
   const [adminUser, setAdminUser] = useState(null);
   const [adminError, setAdminError] = useState('');
   const [route, setRoute] = useState(window.location.pathname);
+  const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
 
   const ADMIN_EMAIL = 'benjaminalvarao12@gmail.com';
 
@@ -480,6 +529,8 @@ function App() {
             removeFromCart={removeFromCart}
             clearCart={clearCart}
             updateQuantity={updateQuantity}
+            showOrderConfirmation={showOrderConfirmation}
+            setShowOrderConfirmation={setShowOrderConfirmation}
           />
         ) : (
           <>
