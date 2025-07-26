@@ -1776,7 +1776,7 @@ footer {
 
 /* ========== MODERN ADMIN PANEL STYLES ========== */
 
-.admin-panel {
+.modern-admin-panel {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -2326,7 +2326,7 @@ footer {
 }
 
 /* Dark Mode Support for Admin Panel */
-.dark-mode .admin-panel {
+.dark-mode .modern-admin-panel {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 

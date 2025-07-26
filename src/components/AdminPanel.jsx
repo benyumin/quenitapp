@@ -156,8 +156,8 @@ const AdminPanel = ({ onLogout, onBack }) => {
   const renderIngredientes = (personalizacion) => {
     if (!personalizacion) {
       return (
-        <div className="no-ingredients">
-          <span>Sin personalización</span>
+        <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.9rem' }}>
+          Sin personalización
         </div>
       );
     }
@@ -168,16 +168,27 @@ const AdminPanel = ({ onLogout, onBack }) => {
       
       if (selected.length === 0) {
         return (
-          <div className="no-ingredients">
-            <span>Sin personalización</span>
+          <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.9rem' }}>
+            Sin personalización
           </div>
         );
       }
       
       return (
-        <div className="ingredients-list">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {selected.map(ing => (
-            <span key={ing} className="ingredient-tag">
+            <span 
+              key={ing} 
+              style={{
+                background: '#dbeafe',
+                color: '#1e40af',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '6px',
+                border: '1px solid #bfdbfe'
+              }}
+            >
               {ing}
             </span>
           ))}
@@ -185,8 +196,18 @@ const AdminPanel = ({ onLogout, onBack }) => {
       );
     } catch {
       return (
-        <div className="ingredients-list">
-          <span className="ingredient-tag raw">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <span 
+            style={{
+              background: '#f1f5f9',
+              color: '#475569',
+              fontSize: '0.8rem',
+              fontWeight: '600',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '6px',
+              border: '1px solid #e2e8f0'
+            }}
+          >
             {personalizacion}
           </span>
         </div>
@@ -196,29 +217,130 @@ const AdminPanel = ({ onLogout, onBack }) => {
 
   if (loading) {
     return (
-      <div className="admin-loading">
-        <div className="loading-spinner"></div>
-        <p>Cargando pedidos...</p>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #e2e8f0',
+          borderTop: '4px solid #3b82f6',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '1rem'
+        }}></div>
+        <p style={{ color: '#64748b', fontSize: '1.1rem', fontWeight: '500' }}>
+          Cargando pedidos...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="admin-panel">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      fontFamily: 'Inter, system-ui, sans-serif'
+    }}>
       {/* Header */}
-      <header className="admin-header">
-        <div className="admin-header-content">
-          <div className="admin-logo">
-            <FiUser className="logo-icon" />
-            <span className="logo-text">quenita's</span>
-            <span className="admin-badge">ADMIN</span>
+      <header style={{
+        background: 'white',
+        borderBottom: '1px solid #e2e8f0',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '1rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <FiUser style={{ fontSize: '1.8rem', color: '#3b82f6' }} />
+            <span style={{
+              fontSize: '1.8rem',
+              fontWeight: '900',
+              color: '#1e293b',
+              letterSpacing: '-0.5px'
+            }}>
+              quenita's
+            </span>
+            <span style={{
+              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+              color: 'white',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '6px',
+              letterSpacing: '0.5px'
+            }}>
+              ADMIN
+            </span>
           </div>
-          <div className="admin-actions">
-            <button onClick={onBack} className="admin-btn-header secondary">
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button 
+              onClick={onBack}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                background: '#f1f5f9',
+                color: '#475569',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#e2e8f0';
+                e.target.style.color = '#334155';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = '#f1f5f9';
+                e.target.style.color = '#475569';
+              }}
+            >
               <FiChevronLeft />
               Volver
             </button>
-            <button onClick={onLogout} className="admin-btn-header danger">
+            <button 
+              onClick={onLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                background: '#fef2f2',
+                color: '#dc2626',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#fee2e2';
+                e.target.style.color = '#b91c1c';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = '#fef2f2';
+                e.target.style.color = '#dc2626';
+              }}
+            >
               <FiX />
               Cerrar Sesión
             </button>
@@ -227,19 +349,58 @@ const AdminPanel = ({ onLogout, onBack }) => {
       </header>
 
       {/* Stats Summary */}
-      <div className="admin-stats">
-        <div className="stats-grid">
+      <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1.5rem'
+        }}>
           {ESTADOS.map(estado => {
             const count = pedidosPorEstado[estado.key].length;
             const info = getEstadoInfo(estado.key);
             return (
-              <div key={estado.key} className="stat-card" style={{ borderColor: info.border }}>
-                <div className="stat-icon" style={{ color: info.border }}>
+              <div 
+                key={estado.key} 
+                style={{
+                  background: 'white',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                  borderLeft: `4px solid ${info.border}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                }}
+              >
+                <div style={{ fontSize: '2rem', opacity: 0.8, color: info.border }}>
                   {info.icon}
                 </div>
-                <div className="stat-info">
-                  <span className="stat-number">{count}</span>
-                  <span className="stat-label">{info.label}</span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{
+                    fontSize: '2rem',
+                    fontWeight: '800',
+                    color: '#1e293b',
+                    lineHeight: 1
+                  }}>
+                    {count}
+                  </span>
+                  <span style={{
+                    fontSize: '0.9rem',
+                    color: '#64748b',
+                    fontWeight: '500',
+                    marginTop: '0.25rem'
+                  }}>
+                    {info.label}
+                  </span>
                 </div>
               </div>
             );
@@ -248,33 +409,73 @@ const AdminPanel = ({ onLogout, onBack }) => {
       </div>
 
       {/* Orders Board */}
-      <div className="orders-board">
+      <div style={{
+        padding: '0 2rem 2rem',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '1.5rem'
+      }}>
         {ESTADOS.map(estado => {
           const info = getEstadoInfo(estado.key);
           const pedidosEstado = pedidosPorEstado[estado.key];
           
           return (
-            <div key={estado.key} className="order-column">
-              <div 
-                className="column-header" 
-                style={{ 
-                  backgroundColor: info.color,
-                  borderColor: info.border,
-                  color: info.text 
-                }}
-              >
-                <div className="column-title">
+            <div 
+              key={estado.key} 
+              style={{
+                background: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                overflow: 'hidden',
+                height: 'fit-content'
+              }}
+            >
+              <div style={{
+                padding: '1rem 1.5rem',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontWeight: '600',
+                backgroundColor: info.color,
+                borderColor: info.border,
+                color: info.text
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}>
                   {info.icon}
                   <span>{info.label}</span>
                 </div>
-                <div className="column-count">
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  color: 'inherit',
+                  fontWeight: '700',
+                  fontSize: '0.9rem',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '20px',
+                  minWidth: '24px',
+                  textAlign: 'center'
+                }}>
                   {pedidosEstado.length}
                 </div>
               </div>
 
-              <div className="orders-list">
+              <div style={{
+                padding: '1rem',
+                maxHeight: '70vh',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem'
+              }}>
                 {pedidosEstado.length === 0 ? (
-                  <div className="empty-state">
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '2rem',
+                    color: '#94a3b8',
+                    fontStyle: 'italic'
+                  }}>
                     <p>No hay pedidos</p>
                   </div>
                 ) : (
@@ -284,44 +485,130 @@ const AdminPanel = ({ onLogout, onBack }) => {
                     const isExpanded = expandedId === pedido.id;
                     
                     return (
-                      <div key={pedido.id} className="order-card">
-                        <div className="order-header">
-                          <div className="customer-info">
-                            <div 
-                              className="customer-avatar"
-                              style={{ backgroundColor: info.border, color: '#fff' }}
-                            >
+                      <div 
+                        key={pedido.id} 
+                        style={{
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '10px',
+                          padding: '1rem',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                          e.currentTarget.style.borderColor = '#cbd5e1';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.boxShadow = 'none';
+                          e.currentTarget.style.borderColor = '#e2e8f0';
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          marginBottom: '0.75rem'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            flex: 1,
+                            minWidth: 0
+                          }}>
+                            <div style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: '700',
+                              fontSize: '1.1rem',
+                              flexShrink: 0,
+                              backgroundColor: info.border,
+                              color: '#fff'
+                            }}>
                               {pedido.nombre ? pedido.nombre.charAt(0).toUpperCase() : '?'}
                             </div>
-                            <div className="customer-details">
-                              <h4 className="customer-name">
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <h4 style={{
+                                fontSize: '1rem',
+                                fontWeight: '700',
+                                color: '#1e293b',
+                                margin: '0 0 0.25rem 0',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>
                                 {pedido.nombre || 'Cliente'}
                               </h4>
-                              <p className="product-name">
+                              <p style={{
+                                fontSize: '0.9rem',
+                                color: '#3b82f6',
+                                fontWeight: '600',
+                                margin: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>
                                 {pedido.producto || 'Producto'}
                               </p>
                             </div>
                           </div>
-                          <div className="order-time">
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            fontSize: '0.8rem',
+                            color: '#64748b',
+                            whiteSpace: 'nowrap'
+                          }}>
                             <FiClock />
                             <span>{formatElapsedTime(pedido.created_at)}</span>
                           </div>
                         </div>
 
-                        <div className="order-ingredients">
+                        <div style={{ marginBottom: '0.75rem' }}>
                           {renderIngredientes(pedido.personalizacion)}
                         </div>
 
                         {pedido.precio_total && (
-                          <div className="order-total">
+                          <div style={{
+                            marginBottom: '0.75rem',
+                            textAlign: 'right',
+                            fontSize: '1rem',
+                            color: '#059669'
+                          }}>
                             <strong>${pedido.precio_total.toLocaleString('es-CL')} CLP</strong>
                           </div>
                         )}
 
-                        <div className="order-actions">
+                        <div style={{
+                          display: 'flex',
+                          gap: '0.5rem',
+                          marginBottom: '0.75rem'
+                        }}>
                           <button 
                             onClick={() => generarBoletaPDF(pedido)}
-                            className="order-btn primary"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              padding: '0.5rem 0.75rem',
+                              border: 'none',
+                              borderRadius: '6px',
+                              fontSize: '0.8rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              flex: 1,
+                              justifyContent: 'center',
+                              background: '#3b82f6',
+                              color: 'white'
+                            }}
+                            onMouseOver={(e) => e.target.style.background = '#2563eb'}
+                            onMouseOut={(e) => e.target.style.background = '#3b82f6'}
                             title="Descargar boleta"
                           >
                             <FiDownload />
@@ -331,7 +618,30 @@ const AdminPanel = ({ onLogout, onBack }) => {
                           {!esFinal && (
                             <button 
                               onClick={() => setExpandedId(isExpanded ? null : pedido.id)}
-                              className="order-btn secondary"
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                padding: '0.5rem 0.75rem',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '6px',
+                                fontSize: '0.8rem',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                flex: 1,
+                                justifyContent: 'center',
+                                background: '#f1f5f9',
+                                color: '#475569'
+                              }}
+                              onMouseOver={(e) => {
+                                e.target.style.background = '#e2e8f0';
+                                e.target.style.color = '#334155';
+                              }}
+                              onMouseOut={(e) => {
+                                e.target.style.background = '#f1f5f9';
+                                e.target.style.color = '#475569';
+                              }}
                             >
                               {isExpanded ? <FiEyeOff /> : <FiEye />}
                               {isExpanded ? 'Ocultar' : 'Detalles'}
@@ -341,22 +651,56 @@ const AdminPanel = ({ onLogout, onBack }) => {
 
                         {/* Expanded Details */}
                         {isExpanded && !esFinal && (
-                          <div className="order-details">
-                            <div className="detail-item">
-                              <strong>Dirección:</strong>
-                              <span>{pedido.direccion || 'Retiro en local'}</span>
+                          <div style={{
+                            background: 'white',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '0.75rem',
+                            marginBottom: '0.75rem',
+                            fontSize: '0.9rem'
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              marginBottom: '0.5rem',
+                              gap: '1rem'
+                            }}>
+                              <strong style={{ color: '#374151', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                Dirección:
+                              </strong>
+                              <span style={{ color: '#6b7280', textAlign: 'right', wordBreak: 'break-word' }}>
+                                {pedido.direccion || 'Retiro en local'}
+                              </span>
                             </div>
-                            <div className="detail-item">
-                              <strong>Bebida:</strong>
-                              <span>
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              marginBottom: '0.5rem',
+                              gap: '1rem'
+                            }}>
+                              <strong style={{ color: '#374151', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                Bebida:
+                              </strong>
+                              <span style={{ color: '#6b7280', textAlign: 'right', wordBreak: 'break-word' }}>
                                 {pedido.bebida} 
                                 {pedido.tipo_bebida && ` (${pedido.tipo_bebida})`}
                               </span>
                             </div>
                             {pedido.resumen && (
-                              <div className="detail-item">
-                                <strong>Resumen:</strong>
-                                <span>{pedido.resumen}</span>
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                gap: '1rem'
+                              }}>
+                                <strong style={{ color: '#374151', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                  Resumen:
+                                </strong>
+                                <span style={{ color: '#6b7280', textAlign: 'right', wordBreak: 'break-word' }}>
+                                  {pedido.resumen}
+                                </span>
                               </div>
                             )}
                           </div>
@@ -364,17 +708,36 @@ const AdminPanel = ({ onLogout, onBack }) => {
 
                         {/* State Transition Buttons */}
                         {!esFinal && TRANSICIONES[actual].length > 0 && (
-                          <div className="state-actions">
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
                             {TRANSICIONES[actual].map(nuevo => {
                               const nuevoInfo = getEstadoInfo(nuevo);
                               return (
                                 <button
                                   key={nuevo}
                                   onClick={() => cambiarEstado(pedido.id, actual, nuevo)}
-                                  className="state-btn"
-                                  style={{ 
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    padding: '0.5rem 0.75rem',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontSize: '0.8rem',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    flex: 1,
+                                    justifyContent: 'center',
                                     backgroundColor: nuevoInfo.border,
                                     color: '#fff'
+                                  }}
+                                  onMouseOver={(e) => {
+                                    e.target.style.transform = 'translateY(-1px)';
+                                    e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
+                                  }}
+                                  onMouseOut={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = 'none';
                                   }}
                                 >
                                   {nuevoInfo.icon}
