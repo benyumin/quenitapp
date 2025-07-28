@@ -301,54 +301,69 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 .hero-content {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 1.2rem;
+  justify-content: center;
+  text-align: center;
   max-width: 700px;
   margin: 0 auto;
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 .hero-img {
-  width: 100px;
-  height: 80px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px var(--shadow-medium);
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
+  opacity: 0.15;
+  z-index: 1;
 }
 .hero-title {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 900;
   color: var(--text-primary);
-  margin-bottom: 0.7rem;
+  margin-bottom: 1rem;
   font-family: 'Poppins', 'Montserrat', sans-serif;
   letter-spacing: -1px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 3;
 }
 .hero-desc {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 1.2rem;
-  max-width: 320px;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 3;
 }
 .hero-section .hero-btn {
   display: block;
   margin: 0 auto;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  padding: 0.7rem 1.5rem;
+  padding: 1rem 2rem;
   border-radius: 1.2rem;
   background: var(--accent-primary);
   color: #fff;
   border: none;
-  box-shadow: 0 2px 8px var(--shadow-accent);
+  box-shadow: 0 4px 16px var(--shadow-accent);
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   text-align: center;
   letter-spacing: 0.5px;
+  position: relative;
+  z-index: 3;
 }
 .hero-section .hero-btn:hover {
   background: var(--accent-secondary);
@@ -598,7 +613,7 @@ footer {
   
   .hero-section {
     padding: 1.5rem 0 1rem 0;
-    min-height: 220px;
+    min-height: 250px;
     align-items: center;
   }
   .hero-content {
@@ -608,12 +623,11 @@ footer {
     gap: 1.2rem;
   }
   .hero-img {
-    width: 120px;
-    height: 90px;
+    opacity: 0.1;
   }
   
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
   
   .cart-page {
@@ -651,14 +665,28 @@ footer {
     font-size: 1.6rem;
   }
   
-
+  .hero-section {
+    padding: 1rem 0;
+    min-height: 200px;
+  }
+  
+  .hero-content {
+    padding: 0 1rem;
+  }
+  
+  .hero-img {
+    opacity: 0.08;
+  }
   
   .hero-title {
     font-size: 1.8rem;
+    margin-bottom: 0.8rem;
   }
   
   .hero-desc {
     font-size: 1rem;
+    margin-bottom: 1.2rem;
+    max-width: 400px;
   }
   
   .hero-btn {
@@ -719,7 +747,18 @@ footer {
     font-size: 1.4rem;
   }
   
-
+  .hero-section {
+    padding: 0.8rem 0;
+    min-height: 180px;
+  }
+  
+  .hero-content {
+    padding: 0 0.5rem;
+  }
+  
+  .hero-img {
+    opacity: 0.06;
+  }
   
   .dark-toggle, .cart-btn {
     padding: 0.4rem 0.6rem;
@@ -733,10 +772,15 @@ footer {
   
   .hero-title {
     font-size: 1.6rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.2;
   }
   
   .hero-desc {
     font-size: 0.9rem;
+    margin-bottom: 1rem;
+    max-width: 350px;
+    line-height: 1.4;
   }
   
   .hero-btn {
@@ -852,7 +896,18 @@ footer {
     font-size: 1.2rem;
   }
   
-
+  .hero-section {
+    padding: 0.5rem 0;
+    min-height: 150px;
+  }
+  
+  .hero-content {
+    padding: 0 0.3rem;
+  }
+  
+  .hero-img {
+    opacity: 0.04;
+  }
   
   .dark-toggle, .cart-btn {
     padding: 0.3rem 0.5rem;
@@ -866,10 +921,15 @@ footer {
   
   .hero-title {
     font-size: 1.4rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.1;
   }
   
   .hero-desc {
     font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+    max-width: 280px;
+    line-height: 1.3;
   }
   
   .hero-btn {
@@ -1619,3 +1679,259 @@ footer {
   }
 }
 /* --- Fin Panel Admin Premium Styles --- */
+/* Order Confirmation Modal Styles */
+.order-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.order-confirmation-modal {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.4s ease-out;
+}
+
+.confirmation-icon {
+  margin-bottom: 1rem;
+  font-size: 3rem;
+  animation: bounce 0.6s ease-out;
+}
+
+.order-confirmation-modal h2 {
+  color: var(--success-color);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.order-confirmation-modal p {
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.order-confirmation-modal p strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.confirmation-total {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+.confirmation-actions {
+  margin-top: 1.5rem;
+}
+
+.confirm-btn {
+  background: var(--success-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.confirm-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.confirm-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes urgent {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* Dark mode support */
+.dark-mode .order-confirmation-modal {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-mode .order-confirmation-modal h2 {
+  color: var(--success-color);
+}
+
+.dark-mode .order-confirmation-modal p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .order-confirmation-modal p strong {
+  color: var(--text-primary);
+}
+
+.dark-mode .confirmation-total {
+  background: var(--bg-tertiary);
+  color: var(--success-color);
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .order-confirmation-modal {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .confirmation-icon {
+    font-size: 2.5rem;
+  }
+  
+  .order-confirmation-modal h2 {
+    font-size: 1.3rem;
+  }
+  
+  .confirm-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Animaciones para notificaciones de nuevos pedidos */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.8), 0 0 0 4px rgba(239, 68, 68, 0.2);
+  }
+  100% {
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+  }
+}

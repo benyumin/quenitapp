@@ -119,7 +119,6 @@ const Menu = () => {
     { id: 'time', name: 'Más rápidos', icon: '⚡' }
   ];
 
-  // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,7 +127,6 @@ const Menu = () => {
       return matchesSearch && matchesCategory;
     });
 
-    // Sort products
     switch (sortBy) {
       case 'popular':
         filtered.sort((a, b) => b.popular - a.popular);
@@ -174,7 +172,7 @@ const Menu = () => {
           ¡Sabor, calidad y buena onda en cada bocado!
         </p>
         
-        {/* Search Bar */}
+        {}
         <div className="search-container">
           <div className="search-input-wrapper">
             <span className="search-icon" aria-hidden="true">🔍</span>

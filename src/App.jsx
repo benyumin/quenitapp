@@ -4,16 +4,18 @@ import Location from "./components/Location";
 import WhatsAppButton from "./components/WhatsAppButton";
 import OrderForm from "./components/OrderForm";
 import completoImg from "./assets/completo-italiano.jpg";
-import logoQuenitas from "./assets/logo quenitass.png";
+import logoQuenitasHero from "./assets/logoquenitamejorcalidad.jpeg";
+import logoQuenitas from "./assets/logoquenitamejorcalidad.jpeg";
 import "./App.css";
 import AdminPanel from './components/AdminPanel';
 import Login from './components/Login';
 
-// Lazy load components for better performance
 const LazyAdminPanel = lazy(() => import('./components/AdminPanel'));
+const LazyCocinaPanel = lazy(() => import('./components/CocinaPanel'));
+const LazyCajaPanel = lazy(() => import('./components/CajaPanel'));
+const LazyCajeroPanel = lazy(() => import('./components/CajeroPanel'));
 const LazyLogin = lazy(() => import('./components/Login'));
 
-// Custom hook for cart management
 const useCart = () => {
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('quenitas-cart');
@@ -105,8 +107,8 @@ function Hero() {
     <section className="hero-section" role="banner" aria-label="Bienvenidos a Quenitas Foodtruck">
       <div className="hero-content">
         <img 
-          src={completoImg} 
-          alt="Completo Quenitas - El sabor chileno sobre ruedas" 
+          src={logoQuenitasHero} 
+          alt="Logo Quenita's - El sabor chileno sobre ruedas" 
           className="hero-img"
           loading="eager"
           decoding="async"
@@ -157,7 +159,91 @@ function Notification({ message, type, isVisible, onClose }) {
   );
 }
 
-function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, clearCart, updateQuantity }) {
+function OrderConfirmation({ onConfirm, onCancel, total }) {
+  return (
+    <div className="order-confirmation-overlay">
+      <div className="order-confirmation-modal">
+        <div className="confirmation-icon">
+          <span role="img" aria-label="Éxito">🎉</span>
+          <span>¡Éxito!</span>
+        </div>
+        <h2>¡Pedido Confirmado!</h2>
+        <div style={{
+          textAlign: 'center',
+          margin: '20px 0',
+          padding: '15px',
+          background: 'linear-gradient(135deg, #e6f9ed 0%, #f0f9ff 100%)',
+          borderRadius: '12px',
+          border: '2px solid #34d399'
+        }}>
+          <p style={{
+            fontSize: '1.1em',
+            color: '#166534',
+            fontWeight: 600,
+            margin: '0 0 10px 0'
+          }}>
+            🚀 ¡Tu pedido ya está en nuestras manos!
+          </p>
+          <p style={{
+            fontSize: '1em',
+            color: '#059669',
+            margin: '0',
+            fontStyle: 'italic'
+          }}>
+            Nuestros chefs están preparando tu pedido con el amor y la calidad que caracteriza a Quenita's
+          </p>
+        </div>
+        
+        <div style={{
+          margin: '15px 0',
+          padding: '12px',
+          background: '#fef3c7',
+          borderRadius: '8px',
+          border: '1px solid #f59e0b'
+        }}>
+          <p style={{
+            fontSize: '1em',
+            color: '#92400e',
+            margin: '0',
+            fontWeight: 600,
+            textAlign: 'center'
+          }}>
+            ⏰ Tu pedido estará listo en aproximadamente 15-20 minutos
+          </p>
+        </div>
+        
+        <div className="confirmation-total">
+          <strong>Total: ${total} CLP</strong>
+        </div>
+        
+        <div style={{
+          margin: '15px 0',
+          padding: '10px',
+          background: '#f8fafc',
+          borderRadius: '8px',
+          fontSize: '0.9em',
+          color: '#64748b',
+          textAlign: 'center'
+        }}>
+          <p style={{margin: '0 0 5px 0'}}>
+            📱 Te notificaremos cuando esté listo
+          </p>
+          <p style={{margin: '0', fontSize: '0.85em'}}>
+            ¡Gracias por elegir el sabor chileno de Quenita's!
+          </p>
+        </div>
+        
+        <div className="confirmation-actions">
+          <button onClick={onConfirm} className="confirm-btn" aria-label="Confirmar pedido">
+            ¡Perfecto! 🎯
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, clearCart, updateQuantity, showOrderConfirmation, setShowOrderConfirmation, onOrderSubmit }) {
   const envio = cart.length > 0 ? 1500 : 0;
   const subtotal = cart.reduce((acc, item) => acc + item.price, 0);
   const total = subtotal + envio;
@@ -178,6 +264,14 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
 
   const handleQuantityChange = (idx, delta) => {
     updateQuantity(idx, delta);
+  };
+
+  const handleConfirmationClose = () => {
+    setShowOrderConfirmation(false);
+    // Limpiar el carrito después de confirmar
+    setCart([]);
+    // Volver al inicio de la página
+    window.location.href = '/';
   };
 
   return (
@@ -300,16 +394,14 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
         </div>
         {cart.length > 0 && (
           <div className="cart-actions">
-            <a 
-              href={waLink} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <button 
+              onClick={onOrderSubmit} 
               className="cart-wa-btn"
-              aria-label="Enviar pedido por WhatsApp"
+              aria-label="Realizar pedido"
             >
-              <span className="wa-icon" role="img" aria-label="WhatsApp">🟢</span> 
-              Enviar pedido por WhatsApp
-            </a>
+              <span role="img" aria-label="Realizar pedido">📱</span> 
+              Realizar Pedido
+            </button>
             <button 
               onClick={onBack} 
               className="cart-back-btn"
@@ -320,6 +412,13 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
           </div>
         )}
       </div>
+      {showOrderConfirmation && (
+        <OrderConfirmation 
+          onConfirm={handleConfirmationClose}
+          onCancel={handleConfirmationClose}
+          total={total}
+        />
+      )}
     </div>
   );
 }
@@ -331,12 +430,14 @@ function App() {
   
   const [showCart, setShowCart] = useState(false);
   const [cartPage, setCartPage] = useState(false);
+  const [showOrderForm, setShowOrderForm] = useState(false);
   const [adminView, setAdminView] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
   const [adminError, setAdminError] = useState('');
   const [route, setRoute] = useState(window.location.pathname);
+  const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
 
-  const ADMIN_EMAIL = 'benjaminalvarao12@gmail.com';
+  const ADMIN_EMAIL = 'benjaminalvarao12@gmail.com'; // Cambia por tu email
 
   useEffect(() => {
     const onPopState = () => setRoute(window.location.pathname);
@@ -355,9 +456,19 @@ function App() {
     showNotification(`¡${order.name} añadido al carrito! 🛒`, 'success');
   }, [addToCart, showNotification]);
 
+  const handleOrderSubmit = () => {
+    setShowOrderConfirmation(true); // Mostrar la confirmación
+  };
+
   const renderNavbar = () => (
     <header className="main-header" role="banner">
-      <nav role="navigation" aria-label="Navegación principal">
+      <nav role="navigation" aria-label="Navegación principal" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        padding: '0 2vw'
+      }}>
         <span 
           className="logo" 
           style={{display:'flex',alignItems:'center',gap:'0.6rem',cursor:'pointer'}} 
@@ -390,35 +501,93 @@ function App() {
             quenita's
           </span>
         </span>
-        <div className="header-actions">
-          {route !== '/admin-quenita' && (
-            <>
-              <button
-                className="dark-toggle"
-                onClick={toggleTheme}
-                aria-label={`Cambiar a modo ${darkMode ? 'claro' : 'oscuro'}`}
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </button>
-              <button 
-                className="cart-btn" 
-                onClick={() => setCartPage(true)} 
-                aria-label={`Ver carrito (${cart.length} productos)`}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="9" cy="21" r="1"/>
-                  <circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61l1.38-7.39H6.5"/>
-                </svg>
-                {cart.length > 0 && (
-                  <span className="cart-count" aria-label={`${cart.length} productos en el carrito`}>
+        
+        {/* Controles en la esquina superior derecha */}
+        {route !== '/admin-quenita' && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            background: 'var(--bg-secondary)',
+            borderRadius: '12px',
+            padding: '8px 12px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+            border: '1px solid var(--border-color)'
+          }}>
+            <button
+              className="dark-toggle"
+              onClick={toggleTheme}
+              aria-label={`Cambiar a modo ${darkMode ? 'claro' : 'oscuro'}`}
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                minWidth: '36px',
+                height: '36px',
+                color: 'var(--text-primary)'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'var(--accent-primary)'}
+              onMouseLeave={(e) => e.target.style.background = 'var(--bg-tertiary)'}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+            <button 
+              className="cart-btn" 
+              onClick={() => setCartPage(true)} 
+              aria-label={`Ver carrito (${cart.length} productos)`}
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                minWidth: '36px',
+                height: '36px',
+                color: 'var(--text-primary)'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'var(--accent-primary)'}
+              onMouseLeave={(e) => e.target.style.background = 'var(--bg-tertiary)'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1"/>
+                <circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 2-1.61l1.38-7.39H6.5"/>
+              </svg>
+                              {cart.length > 0 && (
+                  <span className="cart-count" aria-label={`${cart.length} productos en el carrito`} style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    background: '#ef4444',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '18px',
+                    height: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    border: '2px solid var(--bg-secondary)'
+                  }}>
                     {cart.length}
                   </span>
                 )}
-              </button>
-            </>
-          )}
-        </div>
+            </button>
+          </div>
+        )}
       </nav>
     </header>
   );
@@ -437,10 +606,11 @@ function App() {
           <Suspense fallback={<div className="loading-spinner">Cargando panel de administración...</div>}>
             {adminUser && adminUser.email === ADMIN_EMAIL ? (
               <LazyAdminPanel 
-              onLogout={() => { setAdminUser(null); setAdminError(''); }} 
-              onBack={() => { goTo('/'); setAdminError(''); }} 
-            />
-          ) : (
+                onLogout={() => { setAdminUser(null); setAdminError(''); }} 
+                onBack={() => { goTo('/'); setAdminError(''); }} 
+                setRoute={setRoute}
+              />
+            ) : (
               <div style={{
                 maxWidth:400,
                 margin:'3rem auto',
@@ -450,14 +620,14 @@ function App() {
                 boxShadow:'0 2px 12px var(--shadow-dark)'
               }}>
                 <LazyLogin onLogin={user => {
-                if (user.email === ADMIN_EMAIL) {
-                  setAdminUser(user);
-                  setAdminError('');
-                } else {
-                  setAdminUser(null);
-                  setAdminError('Acceso denegado: solo el administrador puede ingresar.');
-                }
-              }} />
+                  if (user.email === ADMIN_EMAIL) {
+                    setAdminUser(user);
+                    setAdminError('');
+                  } else {
+                    setAdminUser(null);
+                    setAdminError('Acceso denegado: solo el administrador puede ingresar.');
+                  }
+                }} />
                 {adminError && (
                   <div style={{
                     color:'red',
@@ -468,9 +638,26 @@ function App() {
                     {adminError}
                   </div>
                 )}
-            </div>
+              </div>
             )}
           </Suspense>
+        ) : route === '/cocina' ? (
+          <Suspense fallback={<div className="loading-spinner">Cargando panel de cocina...</div>}>
+            <LazyCocinaPanel onBack={() => goTo('/')} setRoute={setRoute} />
+          </Suspense>
+        ) : route === '/caja' ? (
+          <Suspense fallback={<div className="loading-spinner">Cargando panel de caja...</div>}>
+            <LazyCajaPanel onBack={() => goTo('/')} setRoute={setRoute} />
+          </Suspense>
+        ) : route === '/cajero' ? (
+          <Suspense fallback={<div className="loading-spinner">Cargando panel de cajero...</div>}>
+            <LazyCajeroPanel onBack={() => goTo('/')} setRoute={setRoute} />
+          </Suspense>
+        ) : showOrderForm ? (
+          <OrderForm onAddToCart={order => {
+            handleAddToCart(order);
+            setShowOrderForm(false);
+          }} />
         ) : cartPage ? (
           <CartPage 
             cart={cart} 
@@ -480,6 +667,9 @@ function App() {
             removeFromCart={removeFromCart}
             clearCart={clearCart}
             updateQuantity={updateQuantity}
+            showOrderConfirmation={showOrderConfirmation}
+            setShowOrderConfirmation={setShowOrderConfirmation}
+            onOrderSubmit={handleOrderSubmit}
           />
         ) : (
           <>
