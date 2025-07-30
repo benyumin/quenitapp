@@ -395,8 +395,53 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
   const renderIngredientes = (personalizacion) => {
     if (!personalizacion) return <span style={{color:'#aaa', fontStyle:'italic'}}>Sin personalización</span>;
     try {
-      const obj = JSON.parse(personalizacion);
-      const selected = Object.entries(obj).filter(([,v]) => v).map(([k]) => k);
+      const parsed = JSON.parse(personalizacion);
+      if (Array.isArray(parsed)) {
+        // Reunir customizaciones desde cada producto del array
+        const includedSet = new Set();
+        const excludedSet = new Set();
+        parsed.forEach(prod => {
+          if (prod && typeof prod === 'object' && prod.customizations) {
+            Object.entries(prod.customizations).forEach(([k, v]) => {
+              if (v) {
+                includedSet.add(k);
+              } else {
+                excludedSet.add(k);
+              }
+            });
+          } else if (typeof prod === 'string') {
+            // si vino como string lo ignoramos
+          }
+        });
+        const included = Array.from(includedSet);
+        const excluded = Array.from(excludedSet);
+        if (included.length === 0 && excluded.length === 0) return <span style={{color:'#aaa', fontStyle:'italic'}}>Sin personalización</span>;
+        return (
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {included.length > 0 && (
+              <div>
+                <div style={{fontSize:'0.8em',fontWeight:700,color:'#059669',marginBottom:4}}>✅ INCLUIR:</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                  {included.map((ing, idx) => (
+                    <span key={`incl-arr-${ing}-${idx}`} style={{background:'#10b981',color:'white',borderRadius:6,padding:'3px 8px',fontSize:'0.8em',fontWeight:700}}>{ing}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {excluded.length > 0 && (
+              <div>
+                <div style={{fontSize:'0.8em',fontWeight:700,color:'#dc2626',marginBottom:4}}>❌ NO INCLUIR:</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                  {excluded.map((ing, idx) => (
+                    <span key={`excl-arr-${ing}-${idx}`} style={{background:'#dc2626',color:'white',borderRadius:6,padding:'3px 8px',fontSize:'0.8em',fontWeight:700}}>{ing}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+      const selected = Object.entries(parsed).filter(([,v]) => v).map(([k]) => k);
       if (selected.length === 0) return <span style={{color:'#aaa', fontStyle:'italic'}}>Sin personalización</span>;
       return (
         <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
