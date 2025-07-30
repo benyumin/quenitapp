@@ -1935,3 +1935,171 @@ footer {
     box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
   }
 }
+
+/* Estilos adicionales para el CajeroPanel y modo oscuro */
+.step-buttons {
+  transition: all 0.3s ease;
+}
+
+.dark-mode .step-buttons {
+  border-top-color: var(--border-color);
+}
+
+.dark-mode button {
+  transition: all 0.2s ease;
+}
+
+.dark-mode button:hover {
+  transform: translateY(-1px);
+}
+
+/* Estilos para el botón de modo oscuro */
+.dark-mode-toggle {
+  transition: all 0.2s ease;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* Estilos para el botón de confirmar pedido */
+.confirm-pedido-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.confirm-pedido-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.confirm-pedido-btn:hover::before {
+  left: 100%;
+}
+
+/* Responsive para botones del CajeroPanel */
+@media (max-width: 768px) {
+  .step-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .step-buttons > div {
+    justify-content: center;
+  }
+  
+  .confirm-pedido-btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Estilos para productos en CajeroPanel */
+.product-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.product-card:hover::before {
+  opacity: 1;
+}
+
+.product-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image img {
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.05);
+}
+
+/* Animación para badges de categoría */
+.product-card .category-badge {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Estilos para tabs de navegación */
+.tab-navigation {
+  position: relative;
+}
+
+.tab-navigation::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 1px;
+  opacity: 0.3;
+}
+
+/* Responsive para productos */
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 16px !important;
+  }
+  
+  .product-card {
+    padding: 16px !important;
+  }
+  
+  .product-image {
+    height: 120px !important;
+  }
+  
+  .tab-navigation button {
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .product-card {
+    padding: 12px !important;
+  }
+  
+  .product-image {
+    height: 100px !important;
+  }
+}

@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { FiUser, FiShoppingCart, FiPlus, FiX, FiCheck, FiCoffee, FiArrowLeft, FiPackage, FiDollarSign } from 'react-icons/fi';
+import { FiUser, FiShoppingCart, FiPlus, FiX, FiCheck, FiCoffee, FiArrowLeft, FiPackage, FiDollarSign, FiSun, FiMoon } from 'react-icons/fi';
 import '../App.css';
 
 const PRODUCTOS = [
-  { id: 1, name: "Completo Italiano", price: 2500, category: "completos" },
-  { id: 2, name: "Completo Clásico", price: 2200, category: "completos" },
-  { id: 3, name: "Completo Especial", price: 2800, category: "completos" },
-  { id: 4, name: "Churrasco", price: 3500, category: "sándwiches" },
-  { id: 5, name: "Barros Luco", price: 3200, category: "sándwiches" },
-  { id: 6, name: "Papas Fritas", price: 1800, category: "acompañamientos" },
-  { id: 7, name: "Empanada de Queso", price: 1500, category: "acompañamientos" }
+  { id: 1, name: "Completo Italiano", price: 2500, category: "completos", image: "/src/assets/completo-italiano.jpg" },
+  { id: 2, name: "Completo Clásico", price: 2200, category: "completos", image: "/src/assets/completo-italiano.jpg" },
+  { id: 3, name: "Completo Especial", price: 2800, category: "completos", image: "/src/assets/completo-italiano.jpg" },
+  { id: 4, name: "Churrasco", price: 3500, category: "sándwiches", image: "/src/assets/churrasco.png" },
+  { id: 5, name: "Barros Luco", price: 3200, category: "sándwiches", image: "/src/assets/barro-luco.jpg" },
+  { id: 6, name: "Papas Fritas", price: 1800, category: "acompañamientos", image: "/src/assets/papas-fritas.jpg" },
+  { id: 7, name: "Empanada de Queso", price: 1500, category: "acompañamientos", image: "/src/assets/empanada-de-quesoo.png" }
 ];
 
 const BEBIDAS = [
-  { id: 1, name: "Coca-Cola", price: 800 },
-  { id: 2, name: "Fanta", price: 800 },
-  { id: 3, name: "Sprite", price: 800 },
-  { id: 4, name: "Café", price: 400 },
-  { id: 5, name: "Té", price: 300 }
+  { id: 1, name: "Coca-Cola", price: 800, image: "https://via.placeholder.com/200x120/ff0000/ffffff?text=Coca-Cola" },
+  { id: 2, name: "Fanta", price: 800, image: "https://via.placeholder.com/200x120/ff8800/ffffff?text=Fanta" },
+  { id: 3, name: "Sprite", price: 800, image: "https://via.placeholder.com/200x120/00ff00/ffffff?text=Sprite" },
+  { id: 4, name: "Café", price: 400, image: "https://via.placeholder.com/200x120/8B4513/ffffff?text=Café" },
+  { id: 5, name: "Té", price: 300, image: "https://via.placeholder.com/200x120/228B22/ffffff?text=Té" }
 ];
 
 const CajeroPanel = ({ onBack, setRoute }) => {
@@ -35,17 +35,59 @@ const CajeroPanel = ({ onBack, setRoute }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pedidoConfirmado, setPedidoConfirmado] = useState(null);
   const [activeTab, setActiveTab] = useState('productos');
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('quenitas-dark') === 'true';
+  });
+
+  // Función para cambiar el modo oscuro
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('quenitas-dark', newDarkMode);
+    document.body.classList.toggle('dark-mode', newDarkMode);
+  };
 
   const agregarAlCarrito = (item) => {
-    setCarrito(prev => [...prev, { ...item, id: Date.now() }]);
+    setCarrito(prev => {
+      // Buscar si el producto ya existe en el carrito
+      const existingItem = prev.find(cartItem => cartItem.name === item.name);
+      
+      if (existingItem) {
+        // Si ya existe, aumentar la cantidad
+        return prev.map(cartItem => 
+          cartItem.name === item.name 
+            ? { ...cartItem, quantity: (cartItem.quantity || 1) + 1 }
+            : cartItem
+        );
+      } else {
+        // Si no existe, agregarlo con cantidad 1
+        return [...prev, { ...item, id: Date.now(), quantity: 1 }];
+      }
+    });
   };
 
   const removerDelCarrito = (index) => {
     setCarrito(prev => prev.filter((_, i) => i !== index));
   };
 
+  const aumentarCantidad = (index) => {
+    setCarrito(prev => prev.map((item, i) => 
+      i === index ? { ...item, quantity: (item.quantity || 1) + 1 } : item
+    ));
+  };
+
+  const disminuirCantidad = (index) => {
+    setCarrito(prev => prev.map((item, i) => {
+      if (i === index) {
+        const newQuantity = (item.quantity || 1) - 1;
+        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+      }
+      return item;
+    }));
+  };
+
   const calcularTotal = () => {
-    return carrito.reduce((total, item) => total + item.price, 0);
+    return carrito.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
   };
 
   const calcularCambio = () => {
@@ -109,15 +151,19 @@ const CajeroPanel = ({ onBack, setRoute }) => {
       const pedidoData = {
         nombre: clienteNombre.trim(),
         telefono: telefono.trim(),
-        producto: carrito.map(item => item.name).join(', '),
+        producto: carrito.map(item => `${item.name} x${item.quantity || 1}`).join(', '),
         precio_total: calcularTotal(),
         estado: 'PENDIENTE',
         direccion: tipoEntrega === 'domicilio' ? direccion : 'Retiro en local',
         tipo_entrega: tipoEntrega === 'retiro' ? 'Retiro en local' : 'Domicilio',
-        bebida: carrito.filter(item => item.name.includes('Coca') || item.name.includes('Fanta') || item.name.includes('Sprite') || item.name.includes('Café') || item.name.includes('Té')).map(item => item.name).join(', '),
-        personalizacion: JSON.stringify({}),
-        resumen: observaciones ? observaciones : carrito.map(item => item.name).join(', '),
-        cantidad: carrito.length,
+        bebida: carrito.filter(item => item.name.includes('Coca') || item.name.includes('Fanta') || item.name.includes('Sprite') || item.name.includes('Café') || item.name.includes('Té')).map(item => `${item.name} x${item.quantity || 1}`).join(', '),
+        personalizacion: JSON.stringify(carrito.map(item => ({
+          nombre: item.name,
+          cantidad: item.quantity || 1,
+          precio: item.price
+        }))),
+        resumen: observaciones ? observaciones : carrito.map(item => `${item.name} x${item.quantity || 1}`).join(', '),
+        cantidad: carrito.reduce((total, item) => total + (item.quantity || 1), 0),
         metodo_pago: metodoPago
       };
 
@@ -140,488 +186,206 @@ const CajeroPanel = ({ onBack, setRoute }) => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f8fafc',
-      fontFamily: 'Inter, system-ui, sans-serif'
-    }}>
-      {/* Header mejorado */}
-      <div style={{
-        background: '#ffffff',
-        borderBottom: '1px solid #e5e7eb',
-        padding: '16px 0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          padding: '0 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '18px'
-            }}>
-              💰
-            </div>
-            <div>
-              <h1 style={{
-                margin: 0,
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                color: '#1f2937'
-              }}>
-                Cajero - Nuevo Pedido
-              </h1>
-              <p style={{
-                margin: '4px 0 0 0',
-                color: '#6b7280',
-                fontSize: '0.85rem'
-              }}>
-                Tomar pedidos de clientes en el local
-              </p>
-            </div>
-          </div>
-          
-          <div style={{display: 'flex', gap: '12px'}}>
-            <button
-              onClick={() => setRoute('/admin-quenita')}
-              style={{
-                background: '#1f2937',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              🏠 Panel Principal
-            </button>
-            
-            <button
-              onClick={() => setRoute('/cocina')}
-              style={{
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              🍳 Cocina
-            </button>
-            
-            <button
-              onClick={() => setRoute('/caja')}
-              style={{
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              💳 Caja
-            </button>
-            
-            <button
-              onClick={onBack}
-              style={{
-                background: '#6b7280',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              ← Volver
-            </button>
-          </div>
-        </div>
+    <div className="order-form-container">
+      <div className="order-form-content">
+        <div className="order-form-left">
+          <h2 className="order-form-title">¡Haz tu pedido!</h2>
+              
+          <div className="progress-bar">
+            <div className="progress-step active">1</div>
+            <div className="progress-step active">2</div>
+            <div className="progress-step active">3</div>
+            <div className="progress-step active">4</div>
       </div>
 
-      {/* Contenido principal */}
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '24px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 400px',
-        gap: '24px'
-      }}>
-        {/* Panel izquierdo */}
-        <div>
-          {/* Información del cliente */}
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '16px',
-            padding: '24px',
-            marginBottom: '24px',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-          }}>
-            <h2 style={{
-              margin: '0 0 20px 0',
-              fontSize: '1.3rem',
-              fontWeight: 700,
-              color: '#1f2937',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
-              <FiUser size={20} color="#6b7280"/>
-              Información del Cliente
-            </h2>
+          <div className="step-container">
+            <h3>👤 Información del Cliente</h3>
             
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px'}}>
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  fontSize: '0.9rem'
-                }}>
-                  Nombre *
-                </label>
+            <div className="customer-inputs">
                 <input
                   type="text"
+                placeholder="Nombre del cliente"
                   value={clienteNombre}
                   onChange={(e) => setClienteNombre(e.target.value)}
-                  placeholder="Nombre del cliente"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '2px solid #e5e7eb',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                />
-              </div>
-              
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  fontSize: '0.9rem'
-                }}>
-                  Teléfono *
-                </label>
+                className="form-input"
+                required
+              />
                 <input
                   type="tel"
+                placeholder="+56912345678"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="+56912345678"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '2px solid #e5e7eb',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                />
-              </div>
+                className="form-input"
+                required
+              />
             </div>
             
-            <div style={{marginBottom: '20px'}}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontWeight: 600,
-                color: '#374151',
-                fontSize: '0.9rem'
-              }}>
-                Tipo de Entrega
-              </label>
-              <select
-                value={tipoEntrega}
-                onChange={(e) => setTipoEntrega(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '2px solid #e5e7eb',
-                  fontSize: '0.95rem',
-                  transition: 'all 0.2s ease',
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+            <div className="options-grid">
+              <button
+                type="button"
+                className={`option-btn ${tipoEntrega === 'retiro' ? 'selected' : ''}`}
+                onClick={() => setTipoEntrega('retiro')}
               >
-                <option value="retiro">🏪 Retiro en Local</option>
-                <option value="domicilio">🚚 Domicilio</option>
-              </select>
+                🏪 Retiro en local
+              </button>
+              <button
+                type="button"
+                className={`option-btn ${tipoEntrega === 'domicilio' ? 'selected' : ''}`}
+                onClick={() => setTipoEntrega('domicilio')}
+              >
+                🚚 Domicilio
+              </button>
             </div>
             
             {tipoEntrega === 'domicilio' && (
-              <div style={{marginBottom: '20px'}}>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  fontSize: '0.9rem'
-                }}>
-                  Dirección
-                </label>
+              <div className="address-input">
                 <input
                   type="text"
+                  placeholder="Dirección de entrega"
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
-                  placeholder="Dirección de entrega"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '2px solid #e5e7eb',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  className="form-input"
+                  required
                 />
               </div>
             )}
             
-            <div style={{marginBottom: '20px'}}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontWeight: 600,
-                color: '#374151',
-                fontSize: '0.9rem'
-              }}>
-                Observaciones
-              </label>
-              <textarea
-                value={observaciones}
-                onChange={(e) => setObservaciones(e.target.value)}
-                placeholder="Instrucciones especiales..."
-                rows={3}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '2px solid #e5e7eb',
-                  fontSize: '0.95rem',
-                  resize: 'vertical',
-                  transition: 'all 0.2s ease',
-                  outline: 'none',
-                  fontFamily: 'inherit'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-              />
-            </div>
-
-            <div style={{marginBottom: '20px'}}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontWeight: 600,
-                color: '#374151',
-                fontSize: '0.9rem'
-              }}>
-                Método de Pago
-              </label>
-              <select
-                value={metodoPago}
-                onChange={(e) => setMetodoPago(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  border: '2px solid #e5e7eb',
-                  fontSize: '0.95rem',
-                  transition: 'all 0.2s ease',
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+            <div className="options-grid">
+              <button
+                type="button"
+                className={`option-btn ${metodoPago === 'efectivo' ? 'selected' : ''}`}
+                onClick={() => setMetodoPago('efectivo')}
               >
-                <option value="efectivo">💵 Efectivo</option>
-                <option value="debito">💳 Tarjeta de Débito</option>
-                <option value="credito">💳 Tarjeta de Crédito</option>
-              </select>
+                💰 Efectivo
+              </button>
+              <button
+                type="button"
+                className={`option-btn ${metodoPago === 'debito' ? 'selected' : ''}`}
+                onClick={() => setMetodoPago('debito')}
+              >
+                💳 Débito
+              </button>
+              <button
+                type="button"
+                className={`option-btn ${metodoPago === 'credito' ? 'selected' : ''}`}
+                onClick={() => setMetodoPago('credito')}
+              >
+                💳 Crédito
+              </button>
             </div>
 
             {metodoPago === 'efectivo' && (
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  fontSize: '0.9rem'
-                }}>
-                  Monto Recibido
-                </label>
+              <div className="customer-inputs">
                 <input
                   type="number"
+                  placeholder="Monto recibido"
                   value={montoRecibido}
                   onChange={(e) => setMontoRecibido(e.target.value)}
-                  placeholder="Monto en efectivo"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '2px solid #e5e7eb',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  className="form-input"
+                  min={calcularTotal()}
                 />
-                {montoRecibido && (
-                  <div style={{
-                    marginTop: '8px',
-                    padding: '12px',
-                    background: '#fef3c7',
-                    border: '1px solid #f59e0b',
-                    borderRadius: '8px',
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <FiDollarSign color="#f59e0b"/>
-                    <strong>Cambio:</strong> ${calcularCambio().toLocaleString()}
-                  </div>
-                )}
               </div>
             )}
 
             {(metodoPago === 'debito' || metodoPago === 'credito') && (
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  fontSize: '0.9rem'
-                }}>
-                  Número de Tarjeta
-                </label>
+              <div className="customer-inputs">
                 <input
                   type="text"
+                  placeholder="Número de tarjeta"
                   value={numeroTarjeta}
                   onChange={(e) => setNumeroTarjeta(e.target.value)}
-                  placeholder="1234 5678 9012 3456"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '10px',
-                    border: '2px solid #e5e7eb',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#10b981'}
-                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  className="form-input"
+                  maxLength={16}
                 />
               </div>
             )}
+
+            <div className="customer-inputs">
+              <textarea
+                placeholder="Observaciones especiales..."
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                className="form-input"
+                rows={3}
+                style={{ resize: 'vertical' }}
+              />
+            </div>
           </div>
 
-          {/* Tabs para Productos y Bebidas */}
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '16px',
-            padding: '24px',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-          }}>
-            <div style={{
+          <div className="step-container">
+            <h3>🍽️ Productos Disponibles</h3>
+            
+            <div className="tab-navigation" style={{
               display: 'flex',
-              gap: '2px',
+              gap: '12px',
               marginBottom: '24px',
-              background: '#f3f4f6',
-              borderRadius: '10px',
-              padding: '4px'
+              background: 'var(--bg-tertiary)',
+              padding: '12px',
+              borderRadius: '16px',
+              border: '1px solid var(--border-color)'
             }}>
               <button
                 onClick={() => setActiveTab('productos')}
                 style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '8px',
+                  padding: '14px 24px',
                   border: 'none',
-                  background: activeTab === 'productos' ? '#ffffff' : 'transparent',
-                  color: activeTab === 'productos' ? '#1f2937' : '#6b7280',
-                  fontWeight: activeTab === 'productos' ? 600 : 500,
+                  borderRadius: '12px',
+                  background: activeTab === 'productos' ? 'var(--accent-primary)' : 'transparent',
+                  color: activeTab === 'productos' ? 'white' : 'var(--text-secondary)',
+                  fontWeight: 700,
                   cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  boxShadow: activeTab === 'productos' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '1rem',
+                  boxShadow: activeTab === 'productos' ? '0 4px 12px rgba(46, 204, 113, 0.3)' : 'none',
+                  transform: activeTab === 'productos' ? 'translateY(-2px)' : 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'productos') {
+                    e.target.style.background = 'var(--bg-secondary)';
+                    e.target.style.color = 'var(--text-primary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'productos') {
+                    e.target.style.background = 'transparent';
+                    e.target.style.color = 'var(--text-secondary)';
+                  }
                 }}
               >
-                🍔 Productos
+                🍽️ Productos
               </button>
               <button
                 onClick={() => setActiveTab('bebidas')}
                 style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '8px',
+                  padding: '14px 24px',
                   border: 'none',
-                  background: activeTab === 'bebidas' ? '#ffffff' : 'transparent',
-                  color: activeTab === 'bebidas' ? '#1f2937' : '#6b7280',
-                  fontWeight: activeTab === 'bebidas' ? 600 : 500,
+                  borderRadius: '12px',
+                  background: activeTab === 'bebidas' ? 'var(--accent-secondary)' : 'transparent',
+                  color: activeTab === 'bebidas' ? 'white' : 'var(--text-secondary)',
+                  fontWeight: 700,
                   cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  boxShadow: activeTab === 'bebidas' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '1rem',
+                  boxShadow: activeTab === 'bebidas' ? '0 4px 12px rgba(52, 152, 219, 0.3)' : 'none',
+                  transform: activeTab === 'bebidas' ? 'translateY(-2px)' : 'translateY(0)'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'bebidas') {
+                    e.target.style.background = 'var(--bg-secondary)';
+                    e.target.style.color = 'var(--text-primary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'bebidas') {
+                    e.target.style.background = 'transparent';
+                    e.target.style.color = 'var(--text-secondary)';
+                  }
                 }}
               >
                 🥤 Bebidas
@@ -629,73 +393,181 @@ const CajeroPanel = ({ onBack, setRoute }) => {
             </div>
 
             {activeTab === 'productos' && (
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px'}}>
-                {PRODUCTOS.map(producto => (
-                  <div key={producto.id} style={{
-                    background: '#f9fafb',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    position: 'relative'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.borderColor = '#10b981';
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                  onClick={() => agregarAlCarrito(producto)}
+              <div className="products-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '24px',
+                padding: '0',
+                marginTop: '20px'
+              }}>
+                {PRODUCTOS.map((producto) => (
+                  <div
+                    key={producto.id}
+                    className="product-card"
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '16px',
+                      padding: '20px',
+                      border: '2px solid var(--border-color)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-4px) scale(1.02)';
+                      e.target.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+                      e.target.style.borderColor = 'var(--accent-primary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0) scale(1)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                      e.target.style.borderColor = 'var(--border-color)';
+                    }}
                   >
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-                      <div style={{flex: 1}}>
-                        <div style={{
-                          fontWeight: 700,
-                          color: '#1f2937',
-                          marginBottom: '6px',
-                          fontSize: '1rem'
+                    {/* Badge de categoría */}
+                    <div className="category-badge" style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      background: 'var(--accent-primary)',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      zIndex: 2
+                    }}>
+                      {producto.category}
+                    </div>
+
+                    {/* Imagen del producto */}
+                    <div className="product-image" style={{
+                      width: '100%',
+                      height: '160px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      borderRadius: '12px',
+                      marginBottom: '16px',
+                      background: 'linear-gradient(135deg, var(--bg-tertiary), var(--border-color))'
+                    }}>
+                      <img 
+                        src={producto.image} 
+                        alt={producto.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          borderRadius: '12px',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, var(--bg-tertiary), var(--border-color))',
+                        borderRadius: '12px',
+                        display: 'none',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '3rem',
+                        color: 'var(--text-muted)',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0
+                      }}>
+                        🍽️
+                      </div>
+                    </div>
+
+                    {/* Información del producto */}
+                    <div className="product-info" style={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}>
+                      <div>
+                        <h4 style={{
+                          margin: '0 0 8px 0',
+                          fontSize: '1.1rem',
+                          fontWeight: '700',
+                          color: 'var(--text-primary)',
+                          textAlign: 'center',
+                          lineHeight: '1.3'
                         }}>
                           {producto.name}
-                        </div>
-                        <div style={{
-                          fontSize: '0.85rem',
-                          color: '#6b7280',
-                          textTransform: 'capitalize'
+                        </h4>
+                        
+                        <div className="product-price" style={{
+                          fontSize: '1.3rem',
+                          fontWeight: '800',
+                          color: 'var(--accent-primary)',
+                          textAlign: 'center',
+                          marginBottom: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px'
                         }}>
-                          {producto.category}
+                          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>$</span>
+                          {producto.price.toLocaleString()}
                         </div>
                       </div>
-                      <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px'}}>
-                        <span style={{
-                          fontSize: '1.1rem',
-                          fontWeight: 700,
-                          color: '#10b981'
-                        }}>
-                          ${producto.price.toLocaleString()}
-                        </span>
-                        <button
-                          style={{
-                            background: '#10b981',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = '#059669'}
-                          onMouseLeave={(e) => e.target.style.background = '#10b981'}
-                        >
-                          <FiPlus size={14}/> Agregar
-                        </button>
-                      </div>
+
+                      {/* Botón de agregar */}
+                      <button
+                        className="admin-btn"
+                        style={{
+                          background: 'var(--accent-primary)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '12px 20px',
+                          fontSize: '1rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          width: '100%',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = '#059669';
+                          e.target.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'var(--accent-primary)';
+                          e.target.style.transform = 'translateY(0)';
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          agregarAlCarrito(producto);
+                        }}
+                      >
+                        <FiPlus size={16} />
+                        Agregar al Pedido
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -703,286 +575,459 @@ const CajeroPanel = ({ onBack, setRoute }) => {
             )}
 
             {activeTab === 'bebidas' && (
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px'}}>
-                {BEBIDAS.map(bebida => (
-                  <div key={bebida.id} style={{
-                    background: '#f9fafb',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                  onClick={() => agregarAlCarrito(bebida)}
+              <div className="products-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '24px',
+                padding: '0',
+                marginTop: '20px'
+              }}>
+                {BEBIDAS.map((bebida) => (
+                  <div
+                    key={bebida.id}
+                    className="product-card"
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '16px',
+                      padding: '20px',
+                      border: '2px solid var(--border-color)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-4px) scale(1.02)';
+                      e.target.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+                      e.target.style.borderColor = 'var(--accent-secondary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0) scale(1)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                      e.target.style.borderColor = 'var(--border-color)';
+                    }}
                   >
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                    {/* Badge de categoría */}
+                    <div className="category-badge" style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      background: 'var(--accent-secondary)',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      zIndex: 2
+                    }}>
+                      Bebida
+                    </div>
+
+                    {/* Imagen del producto */}
+                    <div className="product-image" style={{
+                      width: '100%',
+                      height: '160px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      borderRadius: '12px',
+                      marginBottom: '16px',
+                      background: 'linear-gradient(135deg, var(--bg-tertiary), var(--border-color))'
+                    }}>
+                      <img 
+                        src={bebida.image} 
+                        alt={bebida.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          borderRadius: '12px',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'scale(1)';
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, var(--bg-tertiary), var(--border-color))',
+                        borderRadius: '12px',
+                        display: 'none',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '3rem',
+                        color: 'var(--text-muted)',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0
+                      }}>
+                        🥤
+                      </div>
+                    </div>
+
+                    {/* Información del producto */}
+                    <div className="product-info" style={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}>
                       <div>
-                        <div style={{
-                          fontWeight: 700,
-                          color: '#1f2937',
-                          marginBottom: '4px',
-                          fontSize: '1rem'
+                        <h4 style={{
+                          margin: '0 0 8px 0',
+                          fontSize: '1.1rem',
+                          fontWeight: '700',
+                          color: 'var(--text-primary)',
+                          textAlign: 'center',
+                          lineHeight: '1.3'
                         }}>
                           {bebida.name}
-                        </div>
-                        <div style={{
-                          fontSize: '0.85rem',
-                          color: '#6b7280'
+                        </h4>
+                        
+                        <div className="product-price" style={{
+                          fontSize: '1.3rem',
+                          fontWeight: '800',
+                          color: 'var(--accent-secondary)',
+                          textAlign: 'center',
+                          marginBottom: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px'
                         }}>
-                          Bebida
+                          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>$</span>
+                          {bebida.price.toLocaleString()}
                         </div>
                       </div>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-                        <span style={{
-                          fontSize: '1.1rem',
-                          fontWeight: 700,
-                          color: '#3b82f6'
-                        }}>
-                          ${bebida.price.toLocaleString()}
-                        </span>
-                        <button
-                          style={{
-                            background: '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = '#2563eb'}
-                          onMouseLeave={(e) => e.target.style.background = '#3b82f6'}
-                        >
-                          <FiPlus size={14}/> Agregar
-                        </button>
-                      </div>
+
+                      {/* Botón de agregar */}
+                      <button
+                        className="admin-btn"
+                        style={{
+                          background: 'var(--accent-secondary)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '12px 20px',
+                          fontSize: '1rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          width: '100%',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = '#2563eb';
+                          e.target.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'var(--accent-secondary)';
+                          e.target.style.transform = 'translateY(0)';
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          agregarAlCarrito(bebida);
+                        }}
+                      >
+                        <FiPlus size={16} />
+                        Agregar al Pedido
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
         </div>
 
-        {/* Panel derecho - Carrito */}
-        <div style={{
-          background: '#ffffff',
-          borderRadius: '16px',
-          padding: '24px',
-          height: 'fit-content',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-          position: 'sticky',
-          top: '24px'
-        }}>
-          <h2 style={{
-            margin: '0 0 20px 0',
-            fontSize: '1.3rem',
-            fontWeight: 700,
-            color: '#1f2937',
+          <div className="step-buttons" style={{
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '10px'
+            gap: '16px',
+            padding: '20px 0',
+            borderTop: '1px solid var(--border-color)',
+            marginTop: '20px'
           }}>
-            <FiShoppingCart size={20} color="#6b7280"/>
-            Carrito
-          </h2>
-
-          {carrito.length === 0 ? (
+            {/* Botones de la izquierda */}
             <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              color: '#6b7280'
+              display: 'flex',
+              gap: '12px',
+              alignItems: 'center'
             }}>
-              <div style={{
-                fontSize: '4rem',
-                marginBottom: '20px',
-                opacity: 0.4
-              }}>
-                🛒
-              </div>
-              <h3 style={{
-                margin: '0 0 12px 0',
-                fontSize: '1.1rem',
-                fontWeight: 600,
-                color: '#374151'
-              }}>
-                El carrito está vacío
-              </h3>
-              <p style={{
-                fontSize: '0.9rem',
-                margin: 0,
-                opacity: 0.7
-              }}>
-                Agrega productos para comenzar
-              </p>
+              <button 
+                onClick={toggleDarkMode} 
+                className="dark-mode-toggle"
+                style={{
+                  background: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  fontSize: '0.9em',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'var(--accent-primary)'}
+                onMouseLeave={(e) => e.target.style.background = 'var(--bg-tertiary)'}
+              >
+                {darkMode ? <FiMoon size={16}/> : <FiSun size={16}/>}
+                {darkMode ? 'Modo Oscuro' : 'Modo Claro'}
+              </button>
+              <button 
+                onClick={onBack} 
+                style={{
+                  background: '#6B7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  fontSize: '0.9em',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#4B5563'}
+                onMouseLeave={(e) => e.target.style.background = '#6B7280'}
+              >
+                <FiArrowLeft size={16}/> Volver
+              </button>
             </div>
-          ) : (
-            <>
-              <div style={{marginBottom: '20px', maxHeight: '400px', overflowY: 'auto'}}>
-                {carrito.map((item, index) => (
-                  <div key={index} style={{
-                    background: '#f9fafb',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    marginBottom: '12px',
-                    border: '1px solid #e5e7eb',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{flex: 1}}>
-                      <div style={{
-                        fontWeight: 600,
-                        color: '#1f2937',
-                        marginBottom: '4px',
-                        fontSize: '1rem'
-                      }}>
-                        {item.name}
+
+            {/* Botón principal de confirmar */}
+            <button 
+              onClick={confirmarPedido}
+              disabled={loading || carrito.length === 0}
+              className="confirm-pedido-btn"
+              style={{
+                background: carrito.length === 0 ? '#9CA3AF' : '#10B981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '14px 28px',
+                fontSize: '1.1em',
+                fontWeight: '700',
+                cursor: carrito.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease',
+                minWidth: '200px',
+                justifyContent: 'center',
+                boxShadow: carrito.length === 0 ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                if (carrito.length > 0) {
+                  e.target.style.background = '#059669';
+                  e.target.style.transform = 'translateY(-2px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (carrito.length > 0) {
+                  e.target.style.background = '#10B981';
+                  e.target.style.transform = 'translateY(0)';
+                }
+              }}
+            >
+              {loading ? (
+                <>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid transparent',
+                    borderTop: '2px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}/>
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  💰 Confirmar Pedido
+                  {carrito.length > 0 && (
+                    <span style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      borderRadius: '12px',
+                      padding: '2px 8px',
+                      fontSize: '0.8em',
+                      fontWeight: '600'
+                    }}>
+                      ${calcularTotal().toLocaleString()}
+                    </span>
+                  )}
+                </>
+              )}
+            </button>
+          </div>
                       </div>
-                      <div style={{
-                        fontSize: '0.85rem',
-                        color: '#6b7280'
-                      }}>
-                        ${item.price.toLocaleString()}
-                      </div>
-                    </div>
+
+        <div className="order-summary">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3>📋 Resumen:</h3>
+            {carrito.length > 0 && (
                     <button
-                      onClick={() => removerDelCarrito(index)}
+                onClick={limpiarTodo}
                       style={{
                         background: '#ef4444',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
-                        padding: '8px',
+                  padding: '8px 12px',
                         cursor: 'pointer',
+                  fontSize: '0.8rem',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'all 0.2s ease'
+                  gap: '4px'
                       }}
-                      onMouseEnter={(e) => e.target.style.background = '#dc2626'}
-                      onMouseLeave={(e) => e.target.style.background = '#ef4444'}
                     >
-                      <FiX size={16}/>
+                🗑️ Limpiar
                     </button>
+            )}
                   </div>
-                ))}
-              </div>
-
-              <div style={{
-                borderTop: '2px solid #e5e7eb',
-                paddingTop: '20px',
-                marginBottom: '20px'
-              }}>
+          <div className="summary-content">
+            {clienteNombre && (
+              <p><strong>Cliente:</strong> {clienteNombre}</p>
+            )}
+            {telefono && (
+              <p><strong>Teléfono:</strong> {telefono}</p>
+            )}
+            <p><strong>Tipo de entrega:</strong> {tipoEntrega === 'retiro' ? 'Retiro en local' : 'Domicilio'}</p>
+            {tipoEntrega === 'domicilio' && direccion && (
+              <p><strong>Dirección:</strong> {direccion}</p>
+            )}
+            <p><strong>Método de pago:</strong> {metodoPago}</p>
+            
+            {carrito.length > 0 && (
+              <>
+                <p><strong>Productos:</strong></p>
+                <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                  {carrito.map((item, index) => (
+                    <li key={index} style={{ marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{item.name} x{item.quantity || 1}</span>
+                        <span style={{ color: '#10b981', fontWeight: 600 }}>
+                          ${(item.price * (item.quantity || 1)).toLocaleString()}
+                        </span>
+                      </div>
                 <div style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: '1.3rem',
-                  fontWeight: 700,
-                  color: '#1f2937'
-                }}>
-                  <span>Total:</span>
-                  <span style={{color: '#10b981'}}>${calcularTotal().toLocaleString()}</span>
-                </div>
-              </div>
-
-              <div style={{display: 'flex', gap: '12px'}}>
+                        gap: '8px', 
+                        marginTop: '4px',
+                        justifyContent: 'center'
+                      }}>
                 <button
-                  onClick={limpiarTodo}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            disminuirCantidad(index);
+                          }}
                   style={{
-                    flex: 1,
-                    padding: '14px 16px',
-                    borderRadius: '10px',
-                    border: '2px solid #ef4444',
-                    background: 'transparent',
-                    color: '#ef4444',
-                    fontWeight: 600,
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            width: '24px',
+                            height: '24px',
                     cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#fef2f2';
-                    e.target.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'transparent';
-                    e.target.style.transform = 'translateY(0)';
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                   }}
                 >
-                  Limpiar
+                          -
                 </button>
+                        <span style={{ 
+                          minWidth: '20px', 
+                          textAlign: 'center',
+                          fontWeight: 600
+                        }}>
+                          {item.quantity || 1}
+                        </span>
                 <button
-                  onClick={confirmarPedido}
-                  disabled={loading || !clienteNombre.trim() || !telefono.trim() || carrito.length === 0 || (metodoPago === 'efectivo' && (!montoRecibido || parseFloat(montoRecibido) < calcularTotal())) || ((metodoPago === 'debito' || metodoPago === 'credito') && !numeroTarjeta.trim())}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            aumentarCantidad(index);
+                          }}
                   style={{
-                    flex: 2,
-                    padding: '14px 16px',
-                    borderRadius: '10px',
-                    border: 'none',
-                                      background: loading || !clienteNombre.trim() || !telefono.trim() || carrito.length === 0 || (metodoPago === 'efectivo' && (!montoRecibido || parseFloat(montoRecibido) < calcularTotal())) || ((metodoPago === 'debito' || metodoPago === 'credito') && !numeroTarjeta.trim())
-                    ? '#9ca3af' : '#10b981',
+                            background: '#10b981',
                   color: 'white',
-                  fontWeight: 600,
-                  cursor: loading || !clienteNombre.trim() || !telefono.trim() || carrito.length === 0 || (metodoPago === 'efectivo' && (!montoRecibido || parseFloat(montoRecibido) < calcularTotal())) || ((metodoPago === 'debito' || metodoPago === 'credito') && !numeroTarjeta.trim()) ? 'not-allowed' : 'pointer',
+                            border: 'none',
+                            borderRadius: '4px',
+                            width: '24px',
+                            height: '24px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s ease',
-                                      boxShadow: loading || !clienteNombre.trim() || !telefono.trim() || carrito.length === 0 || (metodoPago === 'efectivo' && (!montoRecibido || parseFloat(montoRecibido) < calcularTotal())) || ((metodoPago === 'debito' || metodoPago === 'credito') && !numeroTarjeta.trim())
-                    ? 'none' 
-                    : '0 4px 12px rgba(16, 185, 129, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  if (!loading && clienteNombre.trim() && telefono.trim() && carrito.length > 0 && !(metodoPago === 'efectivo' && (!montoRecibido || parseFloat(montoRecibido) < calcularTotal())) && !((metodoPago === 'debito' || metodoPago === 'credito') && !numeroTarjeta.trim())) {
-                    e.target.style.transform = 'translateY(-2px)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                }}
-                >
-                  {loading ? (
-                    <>
-                      <div style={{
-                        width: '16px',
-                        height: '16px',
-                        border: '2px solid transparent',
-                        borderTop: '2px solid white',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite'
-                      }}/>
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      <FiCheck size={16}/> Confirmar Pedido
+                            justifyContent: 'center'
+                          }}
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removerDelCarrito(index);
+                          }}
+                          style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                            marginLeft: '8px'
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            
+            {metodoPago === 'efectivo' && montoRecibido && (
+              <>
+                <p><strong>Monto recibido:</strong> ${parseFloat(montoRecibido).toLocaleString()}</p>
+                <p><strong>Cambio:</strong> ${calcularCambio().toLocaleString()}</p>
                     </>
                   )}
-                </button>
+            
+            <div className="total-price">
+              <strong>Total: ${calcularTotal().toLocaleString()}</strong>
               </div>
-            </>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Modal de confirmación */}
+      
       {showConfirmModal && pedidoConfirmado && (
         <div style={{
           position: 'fixed',
@@ -990,70 +1035,63 @@ const CajeroPanel = ({ onBack, setRoute }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
+          background: 'rgba(0, 0, 0, 0.5)',
           display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
+          justifyContent: 'center',
           zIndex: 1000
         }}>
           <div style={{
-            background: '#ffffff',
+            background: 'white',
             padding: '32px',
             borderRadius: '16px',
             maxWidth: '500px',
             width: '90%',
-            textAlign: 'center',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+            textAlign: 'center'
           }}>
-            <div style={{fontSize: '4rem', marginBottom: '20px'}}>✅</div>
-            <h3 style={{margin: '0 0 16px 0', color: '#1f2937', fontSize: '1.5rem', fontWeight: 700}}>
+            <div style={{
+              background: '#10b981',
+              borderRadius: '50%',
+              width: '60px',
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              fontSize: '2rem'
+            }}>
+              ✅
+            </div>
+            <h2 style={{ margin: '0 0 16px 0', color: '#1f2937' }}>
               ¡Pedido Confirmado!
-            </h3>
-            <p style={{margin: '0 0 24px 0', color: '#6b7280', fontSize: '1rem'}}>
-              El pedido ha sido creado exitosamente y está en la cola de preparación.
+            </h2>
+            <p style={{ margin: '0 0 24px 0', color: '#6b7280' }}>
+              El pedido ha sido guardado exitosamente en la base de datos.
             </p>
             <div style={{
-              background: '#f0f9ff',
-              border: '2px solid #3b82f6',
-              borderRadius: '12px',
-              padding: '20px',
+              background: '#f3f4f6',
+              padding: '16px',
+              borderRadius: '8px',
               marginBottom: '24px',
               textAlign: 'left'
             }}>
-              <div style={{fontWeight: 700, marginBottom: '12px', color: '#1f2937'}}>Detalles del pedido:</div>
-              <div style={{marginBottom: '8px'}}><strong>Cliente:</strong> {pedidoConfirmado.nombre}</div>
-              <div style={{marginBottom: '8px'}}><strong>Teléfono:</strong> {pedidoConfirmado.telefono}</div>
-              <div style={{marginBottom: '8px'}}><strong>Productos:</strong> {pedidoConfirmado.producto}</div>
-              <div style={{marginBottom: '8px'}}><strong>Total:</strong> ${pedidoConfirmado.precio_total?.toLocaleString()}</div>
-              <div style={{marginBottom: '8px'}}><strong>Método de Pago:</strong> {
-                pedidoConfirmado.metodo_pago === 'efectivo' ? 'Efectivo' :
-                pedidoConfirmado.metodo_pago === 'debito' ? 'Tarjeta de Débito' :
-                pedidoConfirmado.metodo_pago === 'credito' ? 'Tarjeta de Crédito' : 'Efectivo'
-              }</div>
-              <div><strong>Estado:</strong> Pendiente</div>
-              {pedidoConfirmado.resumen && (
-                <div style={{marginTop: '8px'}}><strong>Observaciones:</strong> {pedidoConfirmado.resumen}</div>
-              )}
+              <p><strong>ID:</strong> {pedidoConfirmado.id}</p>
+              <p><strong>Cliente:</strong> {pedidoConfirmado.nombre}</p>
+              <p><strong>Total:</strong> ${pedidoConfirmado.precio_total?.toLocaleString()}</p>
+              <p><strong>Estado:</strong> {pedidoConfirmado.estado}</p>
             </div>
             <button
-              onClick={() => {
-                setShowConfirmModal(false);
-                setPedidoConfirmado(null);
-              }}
+              onClick={() => setShowConfirmModal(false)}
               style={{
                 background: '#10b981',
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
-                padding: '14px 28px',
+                borderRadius: '8px',
+                padding: '12px 24px',
                 fontSize: '1rem',
                 fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                cursor: 'pointer'
               }}
-              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-              onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
             >
               Continuar
             </button>

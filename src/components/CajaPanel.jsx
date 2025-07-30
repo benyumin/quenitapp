@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import {
   FiArrowLeft, FiRefreshCw, FiCheckCircle, FiXCircle, FiFileText, FiEye, FiEyeOff,
   FiPackage, FiClock, FiDollarSign, FiUser, FiMapPin, FiInfo,
-  FiCoffee, FiShoppingCart, FiUserPlus
+  FiCoffee, FiShoppingCart, FiUserPlus, FiSun, FiMoon
 } from 'react-icons/fi';
 import '../App.css';
 import logoQuenitas from '../assets/logoquenitamejorcalidad.jpeg';
@@ -21,6 +21,17 @@ const CajaPanel = ({ onBack, setRoute }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [pedidosAnteriores, setPedidosAnteriores] = useState([]);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('quenitas-dark') === 'true';
+  });
+
+  // Función para cambiar el modo oscuro
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('quenitas-dark', newDarkMode);
+    document.body.classList.toggle('dark-mode', newDarkMode);
+  };
 
   // Función para reproducir sonido de notificación
   const playNotificationSound = () => {
@@ -53,7 +64,7 @@ const CajaPanel = ({ onBack, setRoute }) => {
       const { data } = await supabase
         .from('pedidos')
         .select('*')
-        .in('estado', ['PENDIENTE', 'LISTO'])
+        .eq('estado', 'LISTO')
         .order('created_at', { ascending: true });
       
       const pedidosActuales = data || [];
@@ -565,30 +576,57 @@ const CajaPanel = ({ onBack, setRoute }) => {
 
         {pedido.estado === 'LISTO' && (
           <div style={{display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16}}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                cambiarEstado(pedido, 'ENTREGADO');
-              }}
-              className="admin-btn"
-              style={{
-                background: '#10B981',
-                color: '#fff',
-                padding: '14px 20px',
-                fontWeight: 700,
-                fontSize: '1em',
-                borderRadius: 10,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                minHeight: '48px',
-                minWidth: '100px',
-                justifyContent: 'center',
-                width: '100%'
-              }}
-            >
-              <FiCheckCircle/> {esDomicilio ? 'Entregado' : 'Cliente recogió'}
-            </button>
+            {esDomicilio ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cambiarEstado(pedido, 'EN_ENTREGA');
+                }}
+                className="admin-btn"
+                style={{
+                  background: '#F97316',
+                  color: '#fff',
+                  padding: '14px 20px',
+                  fontWeight: 700,
+                  fontSize: '1em',
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  minHeight: '48px',
+                  minWidth: '100px',
+                  justifyContent: 'center',
+                  width: '100%'
+                }}
+              >
+                🚚 Enviar al repartidor
+              </button>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cambiarEstado(pedido, 'ENTREGADO');
+                }}
+                className="admin-btn"
+                style={{
+                  background: '#10B981',
+                  color: '#fff',
+                  padding: '14px 20px',
+                  fontWeight: 700,
+                  fontSize: '1em',
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  minHeight: '48px',
+                  minWidth: '100px',
+                  justifyContent: 'center',
+                  width: '100%'
+                }}
+              >
+                <FiCheckCircle/> Cliente recogió
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -656,30 +694,45 @@ const CajaPanel = ({ onBack, setRoute }) => {
             Manejar pedidos listos y entregas
           </p>
         </div>
-        <button
-          onClick={onBack}
-          style={{
-            background: '#6B7280',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            fontSize: '1em',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
+        <div style={{display: 'flex', gap: '12px'}}>
+          <button 
+            onClick={toggleDarkMode} 
+            className="admin-btn" 
+            style={{
+              fontSize: '1em',
+              padding: '8px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            {darkMode ? <FiMoon/> : <FiSun/>}
+          </button>
+          <button
+            onClick={onBack}
+            style={{
+              background: '#6B7280',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 20px',
+              fontSize: '1em',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}
         >
           <FiArrowLeft size={16}/> Volver
         </button>
+        </div>
       </div>
 
       {/* Botones de navegación rápida */}
       <div style={{
-        background: '#fff',
-        borderBottom: '1px solid #e5e7eb',
+        background: 'var(--bg-secondary)',
+        borderBottom: '1px solid var(--border-color)',
         padding: '16px 24px',
         marginBottom: '0'
       }}>
@@ -692,7 +745,7 @@ const CajaPanel = ({ onBack, setRoute }) => {
         }}>
           <span style={{
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-muted)',
             fontSize: '0.9em',
             marginRight: 8
           }}>
@@ -769,6 +822,24 @@ const CajaPanel = ({ onBack, setRoute }) => {
             }}
           >
             <FiUserPlus/> Cajero
+          </button>
+          
+          <button
+            onClick={() => setRoute('/repartidor')}
+            className="admin-btn"
+            style={{
+              background: '#F97316',
+              color: '#fff',
+              padding: '10px 16px',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: '0.9em',
+              fontWeight: 600
+            }}
+          >
+            🚚 Repartidor
           </button>
         </div>
       </div>

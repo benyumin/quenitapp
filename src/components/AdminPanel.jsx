@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import {
   FiPhone, FiClock, FiFileText, FiChevronRight, FiChevronLeft, FiCheckCircle, FiXCircle, FiInfo, FiUser,
   FiSearch, FiFilter, FiActivity, FiRefreshCw, FiEye, FiEyeOff, FiCheck, FiX, FiAlertCircle,
-  FiCoffee, FiShoppingCart, FiUserPlus
+  FiCoffee, FiShoppingCart, FiUserPlus, FiSun, FiMoon
 } from 'react-icons/fi';
 import '../App.css';
 import logoQuenitas from '../assets/logoquenitamejorcalidad.jpeg';
@@ -293,18 +293,40 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('quenitas-dark') === 'true';
+  });
 
-  useEffect(() => {
+  // Función para cambiar el modo oscuro
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('quenitas-dark', newDarkMode);
+    document.body.classList.toggle('dark-mode', newDarkMode);
+  };
+
   const fetchPedidos = async () => {
     setLoading(true);
-      const { data } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Error al cargar pedidos:', error);
+      } else {
+        console.log('✅ Pedidos cargados:', data?.length || 0, 'pedidos');
       setPedidos(data || []);
+      }
+    } catch (error) {
+      console.error('❌ Error en fetchPedidos:', error);
+    }
     setLoading(false);
   };
+
+  useEffect(() => {
     fetchPedidos();
     
-    // Auto-refresh cada 30 segundos
-    const interval = setInterval(fetchPedidos, 30000);
+    // Auto-refresh cada 10 segundos
+    const interval = setInterval(fetchPedidos, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -397,9 +419,9 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
         key={pedido.id} 
         className="admin-card" 
         style={{
-          background: esSeleccionado ? '#f0f9ff' : '#fff',
+          background: esSeleccionado ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
           borderRadius: 16,
-          boxShadow: esSeleccionado ? '0 4px 20px rgba(37, 99, 235, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+          boxShadow: esSeleccionado ? '0 4px 20px var(--shadow-medium)' : '0 2px 8px var(--shadow-light)',
           padding: '1.2rem',
           margin: '0 auto',
           maxWidth: 420,
@@ -407,7 +429,7 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
           flexDirection: 'column',
           gap: 12,
           transition: 'all 0.3s ease',
-          border: `2px solid ${esSeleccionado ? '#3b82f6' : info.border}`,
+          border: `2px solid ${esSeleccionado ? 'var(--accent-secondary)' : info.border}`,
           position: 'relative',
           cursor: 'pointer'
         }}
@@ -432,13 +454,13 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
             {pedido.nombre ? pedido.nombre.charAt(0).toUpperCase() : '?'}
           </span>
           <div style={{flex: 1, minWidth: 0}}>
-            <div style={{fontWeight: 900, fontSize: '1.3em', color: '#1f2937', lineHeight: 1.2, marginBottom: 4}}>
+            <div style={{fontWeight: 900, fontSize: '1.3em', color: 'var(--text-primary)', lineHeight: 1.2, marginBottom: 4}}>
               {pedido.nombre || 'Cliente'}
             </div>
-            <div style={{fontWeight: 700, fontSize: '1.1em', color: '#38bdf8', marginBottom: 4}}>
+            <div style={{fontWeight: 700, fontSize: '1.1em', color: 'var(--accent-secondary)', marginBottom: 4}}>
               {pedido.producto || 'Producto'}
             </div>
-            <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: '1em', color: '#64748b', fontWeight: 600}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: '1em', color: 'var(--text-muted)', fontWeight: 600}}>
               <FiClock/> {formatElapsedTime(pedido.created_at)}
             </div>
             {/* Indicador de tipo de pedido */}
@@ -471,10 +493,10 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
           <div style={{
             marginTop: 12,
             padding: '12px',
-            background: '#f8fafc',
+            background: 'var(--bg-tertiary)',
             borderRadius: 12,
             fontSize: '0.95em',
-            color: '#374151'
+            color: 'var(--text-secondary)'
           }}>
             <div style={{marginBottom: 8}}>
               <strong>Tipo de pedido:</strong> 
@@ -614,24 +636,37 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
   };
 
   return (
-    <div style={{minHeight:'100vh',background:'#f6f8fa',padding:0,fontFamily:'Inter,Poppins,Montserrat,sans-serif'}}>
+    <div style={{minHeight:'100vh',background:'var(--bg-primary)',padding:0,fontFamily:'Inter,Poppins,Montserrat,sans-serif'}}>
       {/* Header */}
-      <header style={{position:'sticky',top:0,zIndex:20,background:'#f6f8fa',boxShadow:'0 2px 8px rgba(0,0,0,0.1)',padding:'1rem 0',marginBottom:0}}>
+      <header style={{position:'sticky',top:0,zIndex:20,background:'var(--bg-primary)',boxShadow:'0 2px 8px var(--shadow-light)',padding:'1rem 0',marginBottom:0}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:'100vw',margin:'0 auto',padding:'0 2vw'}}>
-          <span style={{fontWeight:900,fontSize:'1.8rem',color:'#2563eb',letterSpacing:'-1px',display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontWeight:900,fontSize:'1.8rem',color:'var(--accent-secondary)',letterSpacing:'-1px',display:'flex',alignItems:'center',gap:10}}>
             <FiUser/> quenita's Admin
           </span>
           <div style={{display:'flex',gap:10}}>
             <button onClick={onBack} className="admin-btn secondary" style={{fontSize:'1em',padding:'8px 16px'}}>Volver</button>
             <button onClick={onLogout} className="admin-btn danger" style={{fontSize:'1em',padding:'8px 16px'}}>Salir</button>
+            <button 
+              onClick={toggleDarkMode} 
+              className="admin-btn" 
+              style={{
+                fontSize: '1em',
+                padding: '8px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}
+            >
+              {darkMode ? <FiMoon/> : <FiSun/>}
+            </button>
       </div>
         </div>
       </header>
 
       {/* Botones de navegación rápida */}
       <div style={{
-        background: '#fff',
-        borderBottom: '1px solid #e5e7eb',
+        background: 'var(--bg-secondary)',
+        borderBottom: '1px solid var(--border-color)',
         padding: '1rem 2vw'
       }}>
         <div style={{
@@ -643,7 +678,7 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
         }}>
           <span style={{
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-muted)',
             fontSize: '0.9em',
             marginRight: 8
           }}>
@@ -721,38 +756,75 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
           >
             <FiUserPlus/> Cajero
           </button>
+          
+          <button
+            onClick={() => setRoute('/repartidor')}
+            className="admin-btn"
+            style={{
+              background: '#F97316',
+              color: '#fff',
+              padding: '10px 16px',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: '0.9em',
+              fontWeight: 600
+            }}
+          >
+            🚚 Repartidor
+          </button>
+          
+          <button
+            onClick={() => setRoute('/calendario')}
+            className="admin-btn"
+            style={{
+              background: '#8B5CF6',
+              color: '#fff',
+              padding: '10px 16px',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: '0.9em',
+              fontWeight: 600
+            }}
+          >
+            📅 Calendario
+          </button>
         </div>
       </div>
 
       {/* Controles y filtros */}
-      <div style={{padding:'2rem 2vw',background:'#fff',borderBottom:'1px solid #e5e7eb'}}>
+      <div style={{padding:'2rem 2vw',background:'var(--bg-secondary)',borderBottom:'1px solid var(--border-color)'}}>
         <div style={{display:'flex',flexWrap:'wrap',gap:20,alignItems:'center',justifyContent:'space-between'}}>
           {/* Búsqueda */}
-          <div style={{display:'flex',alignItems:'center',gap:12,flex:1,minWidth:250,background:'#f9fafb',borderRadius:12,padding:'4px 16px',border:'2px solid #e5e7eb'}}>
-            <FiSearch style={{color:'#6b7280',fontSize:'1.2em'}}/>
-            <input
-              type="text"
-              placeholder="Buscar por nombre del cliente..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                border: 'none',
-                outline: 'none',
-                fontSize: '1.1em',
-                padding: '12px 8px',
-                background: 'transparent',
-                flex: 1,
-                minWidth: 200,
-                fontWeight: 500
-              }}
-            />
+          <div style={{display:'flex',alignItems:'center',gap:12,flex:1,minWidth:250,background:'var(--bg-tertiary)',borderRadius:12,padding:'4px 16px',border:'2px solid var(--border-color)'}}>
+            <FiSearch style={{color:'var(--text-muted)',fontSize:'1.2em'}}/>
+                          <input
+                type="text"
+                placeholder="Buscar por nombre del cliente..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '1.1em',
+                  padding: '12px 8px',
+                  background: 'transparent',
+                  flex: 1,
+                  minWidth: 200,
+                  fontWeight: 500,
+                  color: 'var(--text-primary)'
+                }}
+              />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#6b7280',
+                  color: 'var(--text-muted)',
                   cursor: 'pointer',
                   fontSize: '1.2em',
                   padding: '4px'
@@ -765,19 +837,20 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
 
           {/* Filtro por estado */}
           <div style={{display:'flex',alignItems:'center',gap:12}}>
-            <FiFilter style={{color:'#6b7280',fontSize:'1.2em'}}/>
+            <FiFilter style={{color:'var(--text-muted)',fontSize:'1.2em'}}/>
             <select
               value={filterEstado}
               onChange={(e) => setFilterEstado(e.target.value)}
               style={{
-                border: '2px solid #e5e7eb',
+                border: '2px solid var(--border-color)',
                 borderRadius: 12,
                 padding: '12px 16px',
                 fontSize: '1.1em',
-                background: '#fff',
+                background: 'var(--bg-secondary)',
                 fontWeight: 500,
                 minHeight: '48px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                color: 'var(--text-primary)'
               }}
             >
               <option value="TODOS">Todos los estados</option>
@@ -811,12 +884,7 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
 
           {/* Botón refresh */}
           <button
-            onClick={async () => {
-              setLoading(true);
-              const { data } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
-              setPedidos(data || []);
-              setLoading(false);
-            }}
+            onClick={fetchPedidos}
             className="admin-btn secondary"
             style={{
               padding: '12px 20px',
@@ -832,6 +900,46 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
             }}
           >
             <FiRefreshCw/> Actualizar
+          </button>
+          
+          {/* Botón de prueba */}
+          <button
+            onClick={async () => {
+              console.log('🧪 Probando conexión con Supabase...');
+              try {
+                const { data, error } = await supabase
+                  .from('pedidos')
+                  .select('count')
+                  .limit(1);
+                
+                if (error) {
+                  console.error('❌ Error de conexión:', error);
+                  alert('Error de conexión: ' + error.message);
+                } else {
+                  console.log('✅ Conexión exitosa');
+                  alert('Conexión exitosa con Supabase');
+                }
+              } catch (err) {
+                console.error('❌ Error:', err);
+                alert('Error: ' + err.message);
+              }
+            }}
+            className="admin-btn"
+            style={{
+              background: '#8B5CF6',
+              padding: '12px 20px',
+              borderRadius: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: '1rem',
+              fontWeight: 600,
+              minHeight: '48px',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)'
+            }}
+          >
+            🧪 Probar Conexión
           </button>
         </div>
 
@@ -991,17 +1099,17 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
           zIndex: 1000
         }}>
           <div style={{
-            background: '#fff',
+            background: 'var(--bg-secondary)',
             borderRadius: 16,
             padding: '2rem',
             maxWidth: 400,
             width: '90%',
             textAlign: 'center'
           }}>
-            <div style={{fontSize: '1.5rem', marginBottom: 16, color: '#374151'}}>
+            <div style={{fontSize: '1.5rem', marginBottom: 16, color: 'var(--text-primary)'}}>
               ¿Confirmar cambio de estado?
             </div>
-            <div style={{marginBottom: 20, color: '#6b7280'}}>
+            <div style={{marginBottom: 20, color: 'var(--text-muted)'}}>
               Cambiar pedido de <strong>{getEstadoInfo(pendingAction.pedido.estado || 'PENDIENTE').label}</strong> a{' '}
               <strong>{getEstadoInfo(pendingAction.nuevoEstado).label}</strong>
             </div>

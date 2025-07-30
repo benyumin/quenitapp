@@ -6,6 +6,11 @@ import fajitaImg from "../assets/fajitasdepollo.png";
 import assImg from "../assets/ass.jpg";
 import empanadaImg from "../assets/empanada-de-quesoo.png";
 import churrascoImg from "../assets/churrasco.png";
+// Importar imágenes de bebidas (puedes agregar tus propias imágenes aquí)
+import cocaColaImg from "../assets/coca-cola.png";
+import fantaImg from "../assets/fanta.jpg";
+import cafeImg from "../assets/cafe.jpg";
+import teImg from "../assets/te.jpg";
 import './OrderForm.css';
 import { supabase } from '../supabaseClient';
 
@@ -22,11 +27,11 @@ const products = [
 ];
 
 const beverages = [
-  { name: "Coca-Cola", price: 800, icon: "🥤" },
-  { name: "Fanta", price: 800, icon: "🥤" },
-  { name: "Café Americano", price: 400, icon: "☕" },
-  { name: "Té Negro", price: 300, icon: "🫖" },
-  { name: "Sin bebida", price: 0, icon: "❌" }
+  { name: "Coca-Cola", price: 800, image: cocaColaImg },
+  { name: "Fanta", price: 800, image: fantaImg },
+  { name: "Café Americano", price: 400, image: cafeImg },
+  { name: "Té Negro", price: 300, image: teImg },
+  { name: "Sin bebida", price: 0, image: null }
 ];
 
 const productCustomizations = {
@@ -57,6 +62,39 @@ const productCustomizations = {
     { name: "Mayonesa", price: 0, default: true },
     { name: "Chucrut", price: 200, default: false },
     { name: "Mayo de Ajo", price: 300, default: false }
+  ],
+  "ASS Italiano": [
+    { name: "Palta", price: 0, default: true },
+    { name: "Tomate", price: 0, default: true },
+    { name: "Mayonesa", price: 0, default: true },
+    { name: "Chucrut", price: 200, default: false },
+    { name: "Mayo de Ajo", price: 300, default: false }
+  ],
+  "Papas Fritas Chicas": [
+    { name: "Sal", price: 0, default: true },
+    { name: "Ketchup", price: 0, default: true },
+    { name: "Mayonesa", price: 0, default: true },
+    { name: "Mostaza", price: 0, default: false },
+    { name: "Salsa de Ajo", price: 200, default: false }
+  ],
+  "Fajita de Pollo": [
+    { name: "Salsa de Tomate", price: 0, default: true },
+    { name: "Queso", price: 300, default: false },
+    { name: "Crema", price: 200, default: false },
+    { name: "Guacamole", price: 400, default: false },
+    { name: "Salsa Picante", price: 100, default: false }
+  ],
+  "Empanada de Queso": [
+    { name: "Salsa de Tomate", price: 0, default: true },
+    { name: "Mostaza", price: 0, default: false },
+    { name: "Mayonesa", price: 0, default: false },
+    { name: "Salsa de Ajo", price: 200, default: false }
+  ],
+  "Pan Queso Caliente": [
+    { name: "Mantequilla", price: 0, default: true },
+    { name: "Mermelada", price: 200, default: false },
+    { name: "Miel", price: 200, default: false },
+    { name: "Queso Extra", price: 300, default: false }
   ]
 };
 
@@ -77,6 +115,19 @@ const OrderForm = ({ onAddToCart }) => {
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCVV, setCardCVV] = useState('');
   const [cardRut, setCardRut] = useState('');
+  const [cart, setCart] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationProduct, setNotificationProduct] = useState(null);
+
+  // Limpiar el carrito cuando el componente se monta
+  useEffect(() => {
+    setCart([]);
+    setStep(1);
+    setSelectedProduct(null);
+    setSelectedBeverage(null);
+    setCustomizations({});
+  }, []);
 
   const getCurrentCustomizations = () => {
     if (!selectedProduct || !productCustomizations[selectedProduct.name]) return [];
@@ -86,9 +137,76 @@ const OrderForm = ({ onAddToCart }) => {
   const calculateTotal = () => {
     const productPrice = selectedProduct ? selectedProduct.price : 0;
     const beveragePrice = selectedBeverage ? selectedBeverage.price : 0;
-    const customizationPrice = getCurrentCustomizations().reduce((total, custom) => total + custom.price, 0);
+    const customizationPrice = getCurrentCustomizations().reduce((total, custom) => total + (custom.price || 0), 0);
     
-    return productPrice + beveragePrice + customizationPrice;
+    const total = productPrice + beveragePrice + customizationPrice;
+    return isNaN(total) ? 0 : total;
+  };
+
+  const calculateCartTotal = () => {
+    const total = cart.reduce((total, item) => {
+      const itemTotal = (item.total || 0) * (item.quantity || 1);
+      return total + (isNaN(itemTotal) ? 0 : itemTotal);
+    }, 0);
+    return isNaN(total) ? 0 : total;
+  };
+
+  const confirmOrder = () => {
+    if (!selectedProduct) {
+      return;
+    }
+
+    const total = calculateTotal();
+    const order = {
+      name: selectedProduct.name,
+      price: selectedProduct.price || 0,
+      image: selectedProduct.image,
+      beverage: selectedBeverage ? selectedBeverage.name : 'Sin bebida',
+      beveragePrice: selectedBeverage ? selectedBeverage.price : 0,
+      customizations: getCurrentCustomizations(),
+      customizationPrice: getCurrentCustomizations().reduce((total, custom) => total + (custom.price || 0), 0),
+      total: isNaN(total) ? 0 : total,
+      quantity: 1
+    };
+
+    // Agregar al carrito y continuar al siguiente paso
+    setCart([order]);
+    
+    // Ir al paso 5 (información del cliente)
+    setStep(5);
+  };
+
+  const removeFromCart = (index) => {
+    setCart(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const increaseQuantity = (index) => {
+    setCart(prev => prev.map((item, i) => 
+      i === index ? { ...item, quantity: (item.quantity || 1) + 1 } : item
+    ));
+  };
+
+  const decreaseQuantity = (index) => {
+    setCart(prev => prev.map((item, i) => {
+      if (i === index) {
+        const newQuantity = (item.quantity || 1) - 1;
+        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+      }
+      return item;
+    }));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  const showSuccessNotification = (product) => {
+    setNotificationProduct(product);
+    setShowNotification(true);
+    setTimeout(() => {
+      setShowNotification(false);
+      setNotificationProduct(null);
+    }, 3000);
   };
 
   const handlePhoneChange = (e) => {
@@ -195,22 +313,29 @@ const OrderForm = ({ onAddToCart }) => {
       return;
     }
 
-    if (!selectedProduct) {
-      alert('Por favor selecciona un producto');
+    if (cart.length === 0) {
+      alert('Por favor agrega al menos un producto al carrito');
       return;
     }
 
+    setIsSubmitting(true);
+
+    // Crear una sola orden con todos los productos del carrito
     const order = {
       name: customerName.trim(),
       phone: phone.trim(),
       address: address.trim(),
-      product: selectedProduct.name,
-      price: selectedProduct.price,
-      beverage: selectedBeverage ? selectedBeverage.name : 'Sin bebida',
-      beveragePrice: selectedBeverage ? selectedBeverage.price : 0,
-      customizations: getCurrentCustomizations(),
-      customizationPrice: getCurrentCustomizations().reduce((total, custom) => total + custom.price, 0),
-      total: calculateTotal(),
+      products: cart.map(item => ({
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        beverage: item.beverage,
+        beveragePrice: item.beveragePrice,
+        customizations: item.customizations,
+        customizationPrice: item.customizationPrice,
+        quantity: item.quantity || 1
+      })),
+      total: calculateCartTotal(),
       deliveryMethod,
       paymentMethod,
       cardHolderName: paymentMethod === 'Tarjeta' ? cardHolderName.trim() : '',
@@ -221,33 +346,12 @@ const OrderForm = ({ onAddToCart }) => {
     };
 
     try {
-      const { data, error } = await supabase
-        .from('pedidos')
-        .insert([{
-          nombre: order.name,
-          telefono: order.phone,
-          direccion: order.address || 'Retiro en local',
-          producto: order.product,
-          precio_total: order.total,
-          estado: 'PENDIENTE',
-          tipo_entrega: deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
-          bebida: order.beverage,
-          personalizacion: JSON.stringify(order.customizations),
-          resumen: `${order.product}${order.customizations.length > 0 ? ` con ${order.customizations.map(c => c.name).join(', ')}` : ''}`,
-          cantidad: 1,
-          metodo_pago: order.paymentMethod.toLowerCase(),
-          rut_titular: order.cardRut,
-          numero_tarjeta: order.cardNumber,
-          fecha_vencimiento: order.cardExpiry,
-          cvv: order.cardCVV
-        }]);
-
-      if (error) throw error;
-
+      // Enviar toda la orden al carrito principal
       onAddToCart(order);
       
-      // Reset form
+      // Reset form y carrito
       setStep(1);
+      setCart([]);
       setSelectedProduct(null);
       setSelectedBeverage(null);
       setCustomizations({});
@@ -263,8 +367,10 @@ const OrderForm = ({ onAddToCart }) => {
       setCardRut('');
       
     } catch (error) {
-      console.error('Error creating pedido:', error);
+      console.error('Error al crear el pedido:', error);
       alert('Error al crear el pedido. Por favor intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -275,6 +381,19 @@ const OrderForm = ({ onAddToCart }) => {
     }));
   };
 
+  // Auto-select default customizations when product changes
+  useEffect(() => {
+    if (selectedProduct && productCustomizations[selectedProduct.name]) {
+      const defaultCustomizations = {};
+      productCustomizations[selectedProduct.name].forEach(custom => {
+        if (custom.default) {
+          defaultCustomizations[custom.name] = true;
+        }
+      });
+      setCustomizations(defaultCustomizations);
+    }
+  }, [selectedProduct]);
+
   const nextStep = () => {
     if (step === 1 && !selectedProduct) {
       alert('Por favor selecciona un producto');
@@ -284,11 +403,23 @@ const OrderForm = ({ onAddToCart }) => {
       alert('Por favor selecciona una bebida');
       return;
     }
-    setStep(step + 1);
+    if (step === 3 && !selectedProduct) {
+      alert('Por favor selecciona un producto');
+      return;
+    }
+    if (step === 5 && (!customerName || !phone)) {
+      alert('Por favor completa tu nombre y teléfono');
+      return;
+    }
+    if (step < 6) {
+      setStep(step + 1);
+    }
   };
 
   const prevStep = () => {
-    setStep(step - 1);
+    if (step > 1) {
+      setStep(step - 1);
+    }
   };
 
   const renderStep = () => {
@@ -297,16 +428,30 @@ const OrderForm = ({ onAddToCart }) => {
         return (
           <div className="step-container">
             <h3>🍽️ ¿Qué te gustaría comer?</h3>
+            <p style={{ 
+              textAlign: 'center', 
+              color: 'var(--muted-text, #6b7280)', 
+              marginBottom: '20px',
+              fontSize: '0.9rem'
+            }}>
+              Haz clic en un producto para seleccionarlo
+            </p>
             <div className="products-grid">
               {products.map(product => (
                 <div
                   key={product.name}
                   onClick={() => setSelectedProduct(product)}
                   className={`product-card ${selectedProduct?.name === product.name ? 'selected' : ''}`}
+                  style={{
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    transform: selectedProduct?.name === product.name ? 'scale(1.02)' : 'scale(1)',
+                    boxShadow: selectedProduct?.name === product.name ? '0 8px 25px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
                 >
                   <img src={product.image} alt={product.name} className="product-image" />
                   <div className="product-info">
-                    <h4>{product.name}</h4>
+                    <h4 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>{product.name}</h4>
                     <p className="product-price">${product.price.toLocaleString()}</p>
                     {product.popular && <span className="popular-badge">🔥</span>}
                   </div>
@@ -314,7 +459,7 @@ const OrderForm = ({ onAddToCart }) => {
               ))}
             </div>
             <button onClick={nextStep} className="next-btn" disabled={!selectedProduct}>
-              Continuar →
+              {selectedProduct ? `Continuar con ${selectedProduct.name} →` : 'Selecciona un producto'}
             </button>
           </div>
         );
@@ -323,6 +468,15 @@ const OrderForm = ({ onAddToCart }) => {
         return (
           <div className="step-container">
             <h3>🥤 ¿Qué bebida prefieres?</h3>
+            <p style={{ 
+              textAlign: 'center', 
+              color: 'var(--text-color, inherit)', 
+              marginBottom: '20px',
+              fontSize: '0.9rem',
+              fontWeight: '500'
+            }}>
+              Selecciona una bebida para tu {selectedProduct?.name}
+            </p>
             <div className="beverages-grid">
               {beverages.map(beverage => (
                 <div
@@ -330,9 +484,13 @@ const OrderForm = ({ onAddToCart }) => {
                   onClick={() => setSelectedBeverage(beverage)}
                   className={`beverage-card ${selectedBeverage?.name === beverage.name ? 'selected' : ''}`}
                 >
-                  <span className="beverage-icon">{beverage.icon}</span>
+                  {beverage.image ? (
+                    <img src={beverage.image} alt={beverage.name} className="beverage-image" />
+                  ) : (
+                    <div className="beverage-no-image">❌</div>
+                  )}
                   <div className="beverage-info">
-                    <h4>{beverage.name}</h4>
+                    <h4 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>{beverage.name}</h4>
                     <p className="beverage-price">
                       {beverage.price > 0 ? `$${beverage.price.toLocaleString()}` : 'Gratis'}
                     </p>
@@ -349,44 +507,123 @@ const OrderForm = ({ onAddToCart }) => {
           </div>
         );
 
-      case 3:
-        return (
-          <div className="step-container">
-            <h3>⚙️ Personaliza tu pedido</h3>
-            {selectedProduct && productCustomizations[selectedProduct.name] ? (
-              <div className="customizations-grid">
-                {productCustomizations[selectedProduct.name].map(custom => (
-                  <div
-                    key={custom.name}
-                    onClick={() => toggleCustomization(custom.name)}
-                    className={`customization-card ${customizations[custom.name] ? 'selected' : ''}`}
-                  >
-                    <div className="customization-info">
-                      <h4>{custom.name}</h4>
-                      {custom.price > 0 && <p className="customization-price">+${custom.price}</p>}
-                    </div>
-                    <div className="customization-checkbox">
-                      {customizations[custom.name] ? '✓' : ''}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="no-customizations">No hay personalizaciones disponibles para este producto.</p>
-            )}
-            <div className="step-buttons">
-              <button onClick={prevStep} className="prev-btn">← Volver</button>
-              <button onClick={nextStep} className="next-btn">
-                Continuar →
-              </button>
-            </div>
-          </div>
-        );
+             case 3:
+         return (
+           <div className="step-container">
+             <h3>⚙️ Personaliza tu pedido</h3>
+             <p style={{ 
+               textAlign: 'center', 
+               color: 'var(--text-color, inherit)', 
+               marginBottom: '20px',
+               fontSize: '0.9rem',
+               fontWeight: '500'
+             }}>
+               Personaliza tu {selectedProduct?.name} con los ingredientes que prefieras
+             </p>
+             {selectedProduct && productCustomizations[selectedProduct.name] ? (
+               <>
+                 <div className="customizations-grid">
+                   {productCustomizations[selectedProduct.name].map(custom => (
+                     <div
+                       key={custom.name}
+                       onClick={() => toggleCustomization(custom.name)}
+                       className={`customization-card ${customizations[custom.name] ? 'selected' : ''}`}
+                     >
+                       <div className="customization-info">
+                         <h4 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>{custom.name}</h4>
+                         {custom.price > 0 && <p className="customization-price">+${custom.price}</p>}
+                         {custom.default && <span className="default-badge">Por defecto</span>}
+                       </div>
+                       <div className="customization-checkbox">
+                         {customizations[custom.name] ? '✓' : ''}
+                       </div>
+                     </div>
+                   ))}
+                                  </div>
+                </>
+             ) : (
+               <div style={{ 
+                 textAlign: 'center', 
+                 padding: '40px 20px',
+                 background: 'var(--card-bg, #f8fafc)',
+                 borderRadius: '12px',
+                 border: '2px dashed var(--border-color, #d1d5db)'
+               }}>
+                 <p style={{ color: 'var(--muted-text, #6b7280)', margin: '0', fontSize: '1rem' }}>
+                   🎯 Este producto no requiere personalización adicional.
+                 </p>
+                 <p style={{ color: 'var(--muted-text, #9ca3af)', margin: '8px 0 0 0', fontSize: '0.9rem' }}>
+                   Tu {selectedProduct?.name} viene listo para disfrutar.
+                 </p>
+               </div>
+             )}
+             <div className="step-buttons">
+               <button onClick={prevStep} className="prev-btn">← Volver</button>
+               <button onClick={nextStep} className="next-btn" disabled={!selectedProduct}>
+                 Continuar →
+               </button>
+             </div>
+           </div>
+         );
 
-      case 4:
-        return (
-          <div className="step-container">
-            <h3>👤 Tu información</h3>
+             case 4:
+         return (
+           <div className="step-container">
+             <h3>✅ Revisa tu pedido</h3>
+             <p style={{ 
+               textAlign: 'center', 
+               color: 'var(--muted-text, #6b7280)', 
+               marginBottom: '20px',
+               fontSize: '0.9rem'
+             }}>
+               Confirma que todo esté correcto antes de continuar
+             </p>
+             
+             <div style={{ 
+               background: 'rgb(26, 122, 218)', 
+               padding: '20px', 
+               borderRadius: '12px', 
+               marginBottom: '20px',
+               border: '1px solid rgb(106, 138, 202)',
+               color: 'white',
+               boxShadow: '0 4px 12px rgba(26, 122, 218, 0.3)'
+             }}>
+               <h4 style={{ margin: '0 0 16px 0', color: 'white' }}>📋 Resumen del pedido:</h4>
+               
+               <div style={{ marginBottom: '16px' }}>
+                 <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Producto:</strong> {selectedProduct?.name}</p>
+                 <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Bebida:</strong> {selectedBeverage?.name || 'Sin bebida'}</p>
+                 {getCurrentCustomizations().length > 0 && (
+                   <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Personalizaciones:</strong> {getCurrentCustomizations().map(c => c.name).join(', ')}</p>
+                 )}
+                 <div style={{ 
+                   borderTop: '1px solid rgba(255, 255, 255, 0.3)', 
+                   paddingTop: '8px', 
+                   marginTop: '8px',
+                   fontWeight: 'bold',
+                   fontSize: '1.1rem'
+                 }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', color: 'white' }}>
+                     <span>Total:</span>
+                     <span style={{ color: '#10b981' }}>${(calculateTotal() || 0).toLocaleString()}</span>
+                   </div>
+                 </div>
+               </div>
+             </div>
+             
+             <div className="step-buttons">
+               <button onClick={prevStep} className="prev-btn">← Volver</button>
+               <button onClick={confirmOrder} className="submit-btn" disabled={!selectedProduct}>
+                 ✅ Confirmar pedido
+               </button>
+             </div>
+           </div>
+         );
+
+       case 5:
+         return (
+           <div className="step-container">
+             <h3>👤 Tu información</h3>
             <div className="customer-inputs">
               <input
                 type="text"
@@ -407,7 +644,135 @@ const OrderForm = ({ onAddToCart }) => {
               />
             </div>
             
-            <h3>🚚 ¿Cómo quieres tu pedido?</h3>
+            {/* Carrito */}
+            {cart.length > 0 && (
+              <div className="cart-section">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3>🛒 Tu carrito ({cart.length} productos)</h3>
+                  <button
+                    onClick={clearCart}
+                    style={{
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    🗑️ Limpiar
+                  </button>
+                </div>
+                <div className="cart-items">
+                  {cart.map((item, index) => (
+                                         <div key={index} className="cart-item" style={{
+                       background: 'var(--card-item-bg, white)',
+                       border: '1px solid var(--border-color, #e5e7eb)',
+                       borderRadius: '8px',
+                       padding: '12px',
+                       marginBottom: '8px',
+                       display: 'flex',
+                       justifyContent: 'space-between',
+                       alignItems: 'center'
+                     }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            objectFit: 'cover',
+                            borderRadius: '4px'
+                          }}
+                        />
+                        <div>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem' }}>
+                            {item.name} x{item.quantity || 1}
+                          </h4>
+                                                     <p style={{ margin: '0', fontSize: '0.8rem', color: 'var(--muted-text, #6b7280)' }}>
+                             {item.beverage} - ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
+                           </p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          onClick={() => decreaseQuantity(index)}
+                          style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            width: '24px',
+                            height: '24px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          -
+                        </button>
+                        <span style={{ minWidth: '20px', textAlign: 'center', fontWeight: 600 }}>
+                          {item.quantity || 1}
+                        </span>
+                        <button
+                          onClick={() => increaseQuantity(index)}
+                          style={{
+                            background: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            width: '24px',
+                            height: '24px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => removeFromCart(index)}
+                          style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                            marginLeft: '8px'
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ 
+                  background: 'var(--total-bg, #f3f4f6)', 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  marginTop: '12px',
+                  textAlign: 'right'
+                }}>
+                  <h4 style={{ margin: '0', color: 'var(--accent-color, #10b981)' }}>
+                    Total: ${(calculateCartTotal() || 0).toLocaleString()}
+                  </h4>
+                </div>
+              </div>
+            )}
+            
+            <h3 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>🚚 ¿Cómo quieres tu pedido?</h3>
             <div className="options-grid">
               <button
                 type="button"
@@ -438,7 +803,7 @@ const OrderForm = ({ onAddToCart }) => {
               </div>
             )}
 
-            <h3>💳 ¿Cómo vas a pagar?</h3>
+            <h3 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>💳 ¿Cómo vas a pagar?</h3>
             <div className="options-grid">
               <button
                 type="button"
@@ -511,8 +876,109 @@ const OrderForm = ({ onAddToCart }) => {
 
             <div className="step-buttons">
               <button onClick={prevStep} className="prev-btn">← Volver</button>
+              <button onClick={nextStep} className="next-btn" disabled={!customerName || !phone}>
+                Continuar →
+              </button>
+            </div>
+          </div>
+        );
+
+             case 6:
+         return (
+           <div className="step-container">
+             <h3 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>✅ Confirmar tu pedido</h3>
+            
+            <div style={{ 
+              background: 'var(--card-bg, #f8fafc)', 
+              padding: '20px', 
+              borderRadius: '12px', 
+              marginBottom: '20px',
+              border: '1px solid var(--border-color, #e5e7eb)',
+              color: 'var(--text-color, inherit)'
+            }}>
+              <h4 style={{ margin: '0 0 16px 0', color: 'var(--text-color, inherit)' }}>📋 Resumen del pedido:</h4>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{ color: 'var(--text-color, inherit)' }}><strong>Cliente:</strong> {customerName}</p>
+                <p style={{ color: 'var(--text-color, inherit)' }}><strong>Teléfono:</strong> {phone}</p>
+                <p style={{ color: 'var(--text-color, inherit)' }}><strong>Entrega:</strong> {deliveryMethod}</p>
+                {deliveryMethod === 'Domicilio' && address && (
+                  <p style={{ color: 'var(--text-color, inherit)' }}><strong>Dirección:</strong> {address}</p>
+                )}
+                <p style={{ color: 'var(--text-color, inherit)' }}><strong>Pago:</strong> {paymentMethod}</p>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border-color, #e5e7eb)', paddingTop: '16px' }}>
+                <h5 style={{ margin: '0 0 8px 0', color: 'var(--text-color, inherit)' }}>Productos:</h5>
+                {cart.length > 0 ? (
+                  cart.map((item, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                      padding: '8px',
+                      background: 'var(--card-item-bg, white)',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color, #e5e7eb)',
+                      color: 'var(--text-color, inherit)'
+                    }}>
+                      <div>
+                        <span style={{ fontWeight: 'bold', color: 'var(--text-color, inherit)' }}>{item.name}</span>
+                        {item.beverage && item.beverage !== 'Sin bebida' && (
+                          <div style={{ fontSize: '0.9rem', color: 'var(--muted-text, #6b7280)' }}>
+                            + {item.beverage}
+                          </div>
+                        )}
+                        {item.customizations && item.customizations.length > 0 && (
+                          <div style={{ fontSize: '0.8rem', color: 'var(--muted-text, #6b7280)' }}>
+                            {item.customizations.map(c => c.name).join(', ')}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontWeight: 'bold', color: 'var(--text-color, inherit)' }}>
+                          x{item.quantity || 1}
+                        </div>
+                        <div style={{ color: 'var(--accent-color, #10b981)', fontWeight: 'bold' }}>
+                          ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '20px', 
+                    color: 'var(--muted-text, #6b7280)',
+                    fontStyle: 'italic'
+                  }}>
+                    No hay productos en el carrito
+                  </div>
+                )}
+                <div style={{ 
+                  borderTop: '1px solid var(--border-color, #e5e7eb)', 
+                  paddingTop: '12px', 
+                  marginTop: '12px',
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem',
+                  background: 'var(--total-bg, #f3f4f6)',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  color: 'var(--text-color, inherit)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Total:</span>
+                    <span style={{ color: 'var(--accent-color, #10b981)' }}>${(calculateCartTotal() || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="step-buttons">
+              <button onClick={prevStep} className="prev-btn">← Volver</button>
               <button onClick={handleSubmit} className="submit-btn">
-                🛒 ¡HACER PEDIDO!
+                🛒 ¡REALIZAR PEDIDO!
               </button>
             </div>
           </div>
@@ -527,47 +993,127 @@ const OrderForm = ({ onAddToCart }) => {
     <div className="order-form-container">
       <div className="order-form-content">
         <div className="order-form-left">
-          <h2 className="order-form-title">¡Haz tu pedido!</h2>
+          <h2 className="order-form-title" style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>¡Haz tu pedido!</h2>
           
-          {/* Progress Bar */}
-          <div className="progress-bar">
-            <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>
-            <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2</div>
-            <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3</div>
-            <div className={`progress-step ${step >= 4 ? 'active' : ''}`}>4</div>
-          </div>
+                     {/* Progress Bar */}
+           <div className="progress-bar">
+             <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>
+             <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2</div>
+             <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3</div>
+             <div className={`progress-step ${step >= 4 ? 'active' : ''}`}>4</div>
+             <div className={`progress-step ${step >= 5 ? 'active' : ''}`}>5</div>
+             <div className={`progress-step ${step >= 6 ? 'active' : ''}`}>6</div>
+           </div>
 
           {renderStep()}
         </div>
 
-        {/* Resumen del Pedido */}
-        <div className="order-summary">
-          <h3>📋 Resumen:</h3>
-          <div className="summary-content">
-            {selectedProduct && (
-              <p><strong>Producto:</strong> {selectedProduct.name}</p>
-            )}
-            {selectedBeverage && (
-              <p><strong>Bebida:</strong> {selectedBeverage.name}</p>
-            )}
-            {getCurrentCustomizations().length > 0 && (
-              <p><strong>Con:</strong> {getCurrentCustomizations().map(c => c.name).join(', ')}</p>
-            )}
-            {step >= 4 && (
-              <>
-                <p><strong>Entrega:</strong> {deliveryMethod}</p>
-                {deliveryMethod === 'Domicilio' && address && (
-                  <p><strong>Dirección:</strong> {address}</p>
-                )}
-                <p><strong>Pago:</strong> {paymentMethod}</p>
-              </>
-            )}
-            <div className="total-price">
-              <strong>Total: ${calculateTotal().toLocaleString()}</strong>
+                 {/* Resumen del Pedido */}
+         <div className="order-summary">
+           <h3>📋 Resumen:</h3>
+           <div className="summary-content">
+             {cart.length > 0 && step >= 4 ? (
+               <>
+                 <p><strong>Productos en carrito:</strong></p>
+                 {cart.map((item, index) => (
+                   <p key={index} style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                     • {item.name} x{item.quantity || 1} - ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
+                   </p>
+                 ))}
+                 {step >= 6 && (
+                   <>
+                     <p><strong>Entrega:</strong> {deliveryMethod}</p>
+                     {deliveryMethod === 'Domicilio' && address && (
+                       <p><strong>Dirección:</strong> {address}</p>
+                     )}
+                     <p><strong>Pago:</strong> {paymentMethod}</p>
+                   </>
+                 )}
+                 <div className="total-price">
+                   <strong>Total: ${(calculateCartTotal() || 0).toLocaleString()}</strong>
+                 </div>
+               </>
+             ) : (
+               <>
+                 {selectedProduct ? (
+                   <>
+                     <p><strong>Producto:</strong> {selectedProduct.name}</p>
+                     {selectedBeverage && (
+                       <p><strong>Bebida:</strong> {selectedBeverage.name}</p>
+                     )}
+                     {getCurrentCustomizations().length > 0 && (
+                       <p><strong>Con:</strong> {getCurrentCustomizations().map(c => c.name).join(', ')}</p>
+                     )}
+                     <div className="total-price">
+                       <strong>Total: ${(calculateTotal() || 0).toLocaleString()}</strong>
+                     </div>
+                   </>
+                 ) : (
+                   <p style={{ color: 'var(--muted-text, #6b7280)', fontStyle: 'italic' }}>
+                     Selecciona un producto para ver el resumen
+                   </p>
+                 )}
+               </>
+             )}
+           </div>
+         </div>
+      </div>
+      
+      {/* Notificación elegante */}
+      {showNotification && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            padding: '16px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
+            zIndex: 1000,
+            animation: 'slideInRight 0.3s ease-out',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            maxWidth: '300px'
+          }}
+        >
+          <div style={{
+            width: '24px',
+            height: '24px',
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px'
+          }}>
+            ✓
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: '2px' }}>
+              ¡Producto agregado!
+            </div>
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+              {notificationProduct?.name} agregado al carrito
             </div>
           </div>
+          <button
+            onClick={() => setShowNotification(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '18px',
+              marginLeft: 'auto'
+            }}
+          >
+            ×
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 };

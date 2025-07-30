@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import {
   FiArrowLeft, FiRefreshCw, FiCheckCircle, FiXCircle, FiFileText, FiEye, FiEyeOff,
   FiPackage, FiClock, FiDollarSign, FiUser, FiMapPin, FiInfo, FiPlay,
-  FiCoffee, FiShoppingCart, FiUserPlus
+  FiCoffee, FiShoppingCart, FiUserPlus, FiSun, FiMoon
 } from 'react-icons/fi';
 import '../App.css';
 import logoQuenitas from '../assets/logoquenitamejorcalidad.jpeg';
@@ -16,6 +16,9 @@ const CocinaPanel = ({ onBack, setRoute }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('quenitas-dark') === 'true';
+  });
   
   // Estados para notificaciones de nuevos pedidos
   const [nuevosPedidos, setNuevosPedidos] = useState([]);
@@ -23,14 +26,28 @@ const CocinaPanel = ({ onBack, setRoute }) => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [pedidosAnteriores, setPedidosAnteriores] = useState([]);
 
+  // Función para cambiar el modo oscuro
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('quenitas-dark', newDarkMode);
+    document.body.classList.toggle('dark-mode', newDarkMode);
+  };
+
   // Función para cargar pedidos
   const fetchPedidos = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('pedidos')
         .select('*')
-        .in('estado', ['PENDIENTE', 'EN_PREPARACION'])
+        .in('estado', ['PENDIENTE', 'EN_PREPARACION', 'LISTO'])
         .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error('❌ Error al cargar pedidos en cocina:', error);
+      } else {
+        console.log('✅ Pedidos cargados en cocina:', data?.length || 0, 'pedidos');
+      }
       
       const pedidosActuales = data || [];
       setPedidos(pedidosActuales);
@@ -289,7 +306,7 @@ const CocinaPanel = ({ onBack, setRoute }) => {
     doc.line(15, y, 195, y);
     y += 10;
     
-    // Ingredientes
+  
     doc.setFont('helvetica', 'bold');
     doc.text('Ingredientes:', 15, y);
     y += 8;
@@ -422,14 +439,14 @@ const CocinaPanel = ({ onBack, setRoute }) => {
       <div 
         key={pedido.id} 
         style={{
-          background: estadoInfo.color,
+          background: 'var(--bg-secondary)',
           border: `2px solid ${estadoInfo.border}`,
           borderRadius: '16px',
           padding: '20px',
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           transform: esSeleccionado ? 'scale(1.02)' : 'scale(1)',
-          boxShadow: esSeleccionado ? '0 8px 25px rgba(0,0,0,0.15)' : '0 4px 12px rgba(0,0,0,0.1)',
+          boxShadow: esSeleccionado ? '0 8px 25px var(--shadow-dark)' : '0 4px 12px var(--shadow-light)',
           position: 'relative',
           height: 'fit-content',
           ...(esUrgente && {
@@ -508,7 +525,7 @@ const CocinaPanel = ({ onBack, setRoute }) => {
           )}
         </div>
 
-        {/* Detalles expandidos */}
+        
         {esSeleccionado && (
           <div style={{
             borderTop: '1px solid var(--border-color)',
@@ -634,6 +651,131 @@ const CocinaPanel = ({ onBack, setRoute }) => {
             </button>
           </div>
         )}
+
+        {pedido.estado === 'LISTO' && (
+          <>
+            {/* Botones pequeños */}
+            <div style={{display: 'flex', gap: 8, marginTop: 12}}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  generarBoletaPDF(pedido);
+                }}
+                className="admin-btn"
+                style={{
+                  background: '#3B82F6',
+                  color: '#fff',
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  fontSize: '0.85em',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  flex: 1,
+                  justifyContent: 'center'
+                }}
+              >
+                <FiFileText size={14}/> Boleta
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPedido(pedido);
+                }}
+                className="admin-btn"
+                style={{
+                  background: '#9CA3AF',
+                  color: '#fff',
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  fontSize: '0.85em',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  flex: 1,
+                  justifyContent: 'center'
+                }}
+              >
+                <FiEye size={14}/> Ver
+              </button>
+            </div>
+
+            {/* Botones principales */}
+            <div style={{display: 'flex', gap: 8, marginTop: 12}}>
+              {pedido.tipo_entrega === 'Domicilio' ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    cambiarEstado(pedido, 'EN_ENTREGA');
+                  }}
+                  className="admin-btn"
+                  style={{
+                    background: '#F97316',
+                    color: '#fff',
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    fontSize: '0.9em',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    flex: 1,
+                    justifyContent: 'center'
+                  }}
+                >
+                  🚚 Enviar a domicilio
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    cambiarEstado(pedido, 'ENTREGADO');
+                  }}
+                  className="admin-btn"
+                  style={{
+                    background: '#10B981',
+                    color: '#fff',
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    fontSize: '0.9em',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    flex: 1,
+                    justifyContent: 'center'
+                  }}
+                >
+                  <FiCheckCircle size={16}/> Cliente recogió
+                </button>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cambiarEstado(pedido, 'CANCELADO');
+                }}
+                className="admin-btn"
+                style={{
+                  background: '#EF4444',
+                  color: '#fff',
+                  padding: '12px 16px',
+                  fontWeight: 700,
+                  fontSize: '0.9em',
+                  borderRadius: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  flex: 1,
+                  justifyContent: 'center'
+                }}
+              >
+                <FiXCircle size={16}/> Cancelar
+              </button>
+            </div>
+          </>
+        )}
       </div>
     );
   };
@@ -672,7 +814,7 @@ const CocinaPanel = ({ onBack, setRoute }) => {
             color: 'var(--text-secondary)',
             fontSize: '1rem'
           }}>
-            Preparar pedidos pendientes
+            Preparar y gestionar pedidos
           </p>
           <div style={{
             fontSize: '0.9em',
@@ -688,30 +830,45 @@ const CocinaPanel = ({ onBack, setRoute }) => {
             })}
           </div>
         </div>
-        <button
-          onClick={onBack}
-          style={{
-            background: '#6B7280',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px 20px',
-            fontSize: '1em',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <FiArrowLeft size={16}/> Volver
-        </button>
+        <div style={{display: 'flex', gap: '12px'}}>
+          <button 
+            onClick={toggleDarkMode} 
+            className="admin-btn" 
+            style={{
+              fontSize: '1em',
+              padding: '8px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+            {darkMode ? <FiMoon/> : <FiSun/>}
+          </button>
+          <button
+            onClick={onBack}
+            style={{
+              background: '#6B7280',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 20px',
+              fontSize: '1em',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <FiArrowLeft size={16}/> Volver
+          </button>
+        </div>
       </div>
 
       {/* Botones de navegación rápida */}
       <div style={{
-        background: '#fff',
-        borderBottom: '1px solid #e5e7eb',
+        background: 'var(--bg-secondary)',
+        borderBottom: '1px solid var(--border-color)',
         padding: '16px 24px',
         marginBottom: '0'
       }}>
@@ -724,7 +881,7 @@ const CocinaPanel = ({ onBack, setRoute }) => {
         }}>
           <span style={{
             fontWeight: 600,
-            color: '#6b7280',
+            color: 'var(--text-muted)',
             fontSize: '0.9em',
             marginRight: 8
           }}>
@@ -801,6 +958,24 @@ const CocinaPanel = ({ onBack, setRoute }) => {
             }}
           >
             <FiUserPlus/> Cajero
+          </button>
+          
+          <button
+            onClick={() => setRoute('/repartidor')}
+            className="admin-btn"
+            style={{
+              background: '#F97316',
+              color: '#fff',
+              padding: '10px 16px',
+              borderRadius: 8,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: '0.9em',
+              fontWeight: 600
+            }}
+          >
+            🚚 Repartidor
           </button>
         </div>
       </div>
@@ -906,6 +1081,22 @@ const CocinaPanel = ({ onBack, setRoute }) => {
             </div>
             <div style={{fontSize: '0.8em', color: '#1E40AF', fontWeight: 600}}>
               En Preparación
+            </div>
+          </div>
+          
+          <div style={{
+            background: '#D1FAE5',
+            border: '2px solid #10B981',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            textAlign: 'center',
+            minWidth: '80px'
+          }}>
+            <div style={{fontSize: '1.5rem', fontWeight: 700, color: '#065F46'}}>
+              {pedidos.filter(p => p.estado === 'LISTO').length}
+            </div>
+            <div style={{fontSize: '0.8em', color: '#065F46', fontWeight: 600}}>
+              Listo
             </div>
           </div>
           

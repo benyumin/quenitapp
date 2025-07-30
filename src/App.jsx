@@ -9,11 +9,14 @@ import logoQuenitas from "./assets/logoquenitamejorcalidad.jpeg";
 import "./App.css";
 import AdminPanel from './components/AdminPanel';
 import Login from './components/Login';
+import { supabase } from './supabaseClient';
 
 const LazyAdminPanel = lazy(() => import('./components/AdminPanel'));
 const LazyCocinaPanel = lazy(() => import('./components/CocinaPanel'));
 const LazyCajaPanel = lazy(() => import('./components/CajaPanel'));
 const LazyCajeroPanel = lazy(() => import('./components/CajeroPanel'));
+const LazyRepartidorPanel = lazy(() => import('./components/RepartidorPanel'));
+const LazyCalendarView = lazy(() => import('./components/CalendarView'));
 const LazyLogin = lazy(() => import('./components/Login'));
 
 const useCart = () => {
@@ -27,7 +30,17 @@ const useCart = () => {
   }, [cart]);
 
   const addToCart = useCallback((order) => {
-    setCart(prev => [...prev, { ...order, quantity: order.quantity || 1 }]);
+    console.log('🛒 Agregando orden al carrito:', order);
+    
+    // Si la orden tiene productos (viene del formulario), procesarla correctamente
+    if (order.products && Array.isArray(order.products)) {
+      console.log('📦 Orden con múltiples productos detectada');
+      setCart(prev => [...prev, order]);
+    } else {
+      // Orden individual (viene del menú)
+      console.log('🍽️ Orden individual detectada');
+      setCart(prev => [...prev, { ...order, quantity: order.quantity || 1 }]);
+    }
   }, []);
 
   const removeFromCart = useCallback((idx, itemName) => {
@@ -245,9 +258,26 @@ function OrderConfirmation({ onConfirm, onCancel, total }) {
 
 function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, clearCart, updateQuantity, showOrderConfirmation, setShowOrderConfirmation, onOrderSubmit }) {
   const envio = cart.length > 0 ? 1500 : 0;
-  const subtotal = cart.reduce((acc, item) => acc + item.price, 0);
+  const subtotal = cart.reduce((acc, item) => {
+    // Si es una orden con múltiples productos (viene del formulario)
+    if (item.products && Array.isArray(item.products)) {
+      return acc + (item.total || 0);
+    }
+    // Orden individual (viene del menú)
+    return acc + (item.price || 0);
+  }, 0);
   const total = subtotal + envio;
-  const waText = cart.map((item, i) => `Pedido ${i+1}: ${item.summary}`).join("\n\n");
+  const waText = cart.map((item, i) => {
+    // Si es una orden con múltiples productos (viene del formulario)
+    if (item.products && Array.isArray(item.products)) {
+      const productsText = item.products.map(product => 
+        `${product.name} x${product.quantity || 1}`
+      ).join(', ');
+      return `Pedido ${i+1} (${item.name}): ${productsText}`;
+    }
+    // Orden individual (viene del menú)
+    return `Pedido ${i+1}: ${item.summary || item.name}`;
+  }).join("\n\n");
   const waLink = `https://wa.me/56971297911?text=${encodeURIComponent(waText + `\n\nTotal: $${total} CLP`)}&app_absent=0`;
   
   const handleRemove = (idx, itemName) => {
@@ -266,12 +296,108 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
     updateQuantity(idx, delta);
   };
 
-  const handleConfirmationClose = () => {
-    setShowOrderConfirmation(false);
-    // Limpiar el carrito después de confirmar
-    setCart([]);
-    // Volver al inicio de la página
-    window.location.href = '/';
+  const handleConfirmationClose = async () => {
+    try {
+      console.log('🛒 Iniciando guardado de pedidos del carrito:', cart.length, 'items');
+      
+      // Verificar si es una orden con múltiples productos o productos individuales
+      const isMultiProductOrder = cart.length > 0 && cart[0].products;
+      
+      if (isMultiProductOrder) {
+        // Nueva estructura: orden con múltiples productos
+        for (const order of cart) {
+          console.log('📝 Guardando orden con múltiples productos:', order);
+          
+          // Crear un resumen de todos los productos
+          const productsSummary = order.products.map(product => 
+            `${product.name} x${product.quantity}`
+          ).join(', ');
+          
+          const { data, error } = await supabase
+            .from('pedidos')
+            .insert([{
+              nombre: order.name,
+              telefono: order.phone,
+              direccion: order.address || 'Retiro en local',
+              producto: productsSummary,
+              precio_total: order.total,
+              estado: 'PENDIENTE',
+              tipo_entrega: order.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
+              bebida: order.products.map(p => p.beverage).filter(b => b !== 'Sin bebida').join(', '),
+              personalizacion: JSON.stringify(order.products),
+              resumen: productsSummary,
+              cantidad: order.products.reduce((total, p) => total + (p.quantity || 1), 0),
+              metodo_pago: order.paymentMethod ? order.paymentMethod.toLowerCase() : 'efectivo',
+              rut_titular: order.cardRut || '',
+              numero_tarjeta: order.cardNumber || '',
+              fecha_vencimiento: order.cardExpiry || '',
+              cvv: order.cardCVV || ''
+            }]);
+
+          if (error) {
+            console.error('Error guardando orden con múltiples productos:', error);
+            throw error;
+          }
+
+          console.log('✅ Orden con múltiples productos guardada exitosamente:', {
+            id: data?.[0]?.id,
+            nombre: data?.[0]?.nombre,
+            producto: data?.[0]?.producto,
+            estado: data?.[0]?.estado,
+            created_at: data?.[0]?.created_at
+          });
+        }
+      } else {
+        // Estructura anterior: productos individuales
+        for (const item of cart) {
+          console.log('📝 Guardando item individual:', item);
+          const { data, error } = await supabase
+            .from('pedidos')
+            .insert([{
+              nombre: item.name,
+              telefono: item.phone,
+              direccion: item.address || 'Retiro en local',
+              producto: item.product,
+              precio_total: item.price,
+              estado: 'PENDIENTE',
+              tipo_entrega: item.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
+              bebida: item.beverage,
+              personalizacion: JSON.stringify(item.customizations),
+              resumen: `${item.product}${item.customizations && item.customizations.length > 0 ? ` con ${item.customizations.map(c => c.name).join(', ')}` : ''}`,
+              cantidad: item.quantity || 1,
+              metodo_pago: item.paymentMethod ? item.paymentMethod.toLowerCase() : 'efectivo',
+              rut_titular: item.cardRut || '',
+              numero_tarjeta: item.cardNumber || '',
+              fecha_vencimiento: item.cardExpiry || '',
+              cvv: item.cardCVV || ''
+            }]);
+
+          if (error) {
+            console.error('Error guardando pedido individual:', error);
+            throw error;
+          }
+
+          console.log('✅ Pedido individual guardado exitosamente:', {
+            id: data?.[0]?.id,
+            nombre: data?.[0]?.nombre,
+            producto: data?.[0]?.producto,
+            estado: data?.[0]?.estado,
+            created_at: data?.[0]?.created_at
+          });
+        }
+      }
+
+      console.log('✅ Todos los pedidos guardados exitosamente en la base de datos');
+      
+      setShowOrderConfirmation(false);
+      // Limpiar el carrito después de confirmar
+      setCart([]);
+      // Volver al inicio de la página
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error al guardar pedidos:', error);
+      alert('Error al guardar los pedidos. Por favor intenta de nuevo.');
+    }
   };
 
   return (
@@ -324,24 +450,177 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
           </div>
         ) : (
             <div role="list" aria-label="Productos en el carrito">
-              {cart.map((item, idx) => (
-                <div key={idx} className="cart-item-row" role="listitem">
-                  <div className="cart-item-img">
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-              <div className="cart-item-info">
-                    <h3>{item.name}</h3>
-                    <div style={{fontSize:'0.98em',color:'var(--text-secondary)'}}>
-                      {item.summary}
+              {cart.map((item, idx) => {
+                // Si es una orden con múltiples productos (viene del formulario)
+                if (item.products && Array.isArray(item.products)) {
+                  return (
+                    <div key={idx} className="cart-item-row" role="listitem">
+                      <div className="cart-item-img" style={{
+                        width: '60px',
+                        height: '60px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: '10px',
+                        flexShrink: 0
+                      }}>
+                        <img 
+                          src={item.products[0]?.image || '/placeholder.jpg'} 
+                          alt="Pedido múltiple" 
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '10px'
+                          }}
+                        />
+                        <div style={{
+                          display: 'none',
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
+                          borderRadius: '10px',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.5rem',
+                          color: '#9ca3af',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0
+                        }}>
+                          🍽️
+                        </div>
+                      </div>
+                      <div className="cart-item-info">
+                        <h3>Pedido de {item.name}</h3>
+                        <div style={{fontSize:'0.98em',color:'var(--text-secondary)'}}>
+                          {item.products.length} producto{item.products.length > 1 ? 's' : ''}
+                        </div>
+                        <div style={{
+                          fontSize: '0.85em',
+                          color: '#6b7280',
+                          marginTop: '4px',
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '4px'
+                        }}>
+                          {item.products.map((product, pIdx) => (
+                            <span key={pIdx} style={{
+                              background: '#f3f4f6',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '0.8em'
+                            }}>
+                              {product.name} x{product.quantity || 1}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="cart-item-price">
+                        <span>${item.total?.toLocaleString() || '0'}</span>
+                      </div>
+                      <div className="cart-item-actions">
+                        <button 
+                          onClick={() => removeFromCart(idx, `Pedido de ${item.name}`)}
+                          className="remove-btn"
+                          aria-label="Eliminar pedido"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
-                {item.beverage && (
-                      <div style={{fontSize:'0.98em',color:'var(--text-secondary)'}}>
-                        {item.beverage} ({item.beverageType})
+                  );
+                }
+                
+                // Orden individual (viene del menú)
+                return (
+                  <div key={idx} className="cart-item-row" role="listitem">
+                    <div className="cart-item-img" style={{
+                      width: '60px',
+                      height: '60px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      borderRadius: '10px',
+                      flexShrink: 0
+                    }}>
+                      <img 
+                        src={item.image} 
+                        alt={item.product || item.name} 
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: '10px'
+                        }}
+                      />
+                      <div style={{
+                        display: 'none',
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
+                        borderRadius: '10px',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.5rem',
+                        color: '#9ca3af',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0
+                      }}>
+                        🍽️
+                      </div>
+                    </div>
+                    <div className="cart-item-info">
+                      <h3>{item.product || item.name}</h3>
+                    <div style={{fontSize:'0.98em',color:'var(--text-secondary)'}}>
+                      {item.beverage && item.beverage !== 'Sin bebida' ? (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: item.beverageColor ? `${item.beverageColor}20` : '#f3f4f6',
+                          color: item.beverageColor || '#6b7280',
+                          fontSize: '0.85em'
+                        }}>
+                          {item.beverageIcon} {item.beverage}
+                        </span>
+                      ) : (
+                        <span style={{color: '#9ca3af', fontStyle: 'italic'}}>Sin bebida</span>
+                      )}
+                    </div>
+                    {item.customizations && item.customizations.length > 0 && (
+                      <div style={{
+                        fontSize: '0.85em',
+                        color: '#6b7280',
+                        marginTop: '4px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '4px'
+                      }}>
+                        {item.customizations.map((custom, i) => (
+                          <span key={i} style={{
+                            background: '#f1f5f9',
+                            color: '#374151',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '0.8em'
+                          }}>
+                            {custom.name}
+                          </span>
+                        ))}
                       </div>
                 )}
                 <button 
@@ -371,8 +650,9 @@ function CartPage({ cart, setCart, onBack, showNotification, removeFromCart, cle
                   <div className="cart-item-price" aria-label={`Precio: ${item.price} CLP`}>
                     ${item.price} CLP
                   </div>
-              </div>
-              ))}
+                </div>
+              );
+            })}
             </div>
         )}
       </div>
@@ -652,6 +932,14 @@ function App() {
         ) : route === '/cajero' ? (
           <Suspense fallback={<div className="loading-spinner">Cargando panel de cajero...</div>}>
             <LazyCajeroPanel onBack={() => goTo('/')} setRoute={setRoute} />
+          </Suspense>
+        ) : route === '/repartidor' ? (
+          <Suspense fallback={<div className="loading-spinner">Cargando panel de repartidor...</div>}>
+            <LazyRepartidorPanel onBack={() => goTo('/')} setRoute={setRoute} />
+          </Suspense>
+        ) : route === '/calendario' ? (
+          <Suspense fallback={<div className="loading-spinner">Cargando calendario de pedidos...</div>}>
+            <LazyCalendarView onBack={() => goTo('/')} setRoute={setRoute} />
           </Suspense>
         ) : showOrderForm ? (
           <OrderForm onAddToCart={order => {
