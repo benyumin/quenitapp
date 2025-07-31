@@ -646,20 +646,7 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
           <div style={{display:'flex',gap:10}}>
             <button onClick={onBack} className="admin-btn secondary" style={{fontSize:'1em',padding:'8px 16px'}}>Volver</button>
             <button onClick={onLogout} className="admin-btn danger" style={{fontSize:'1em',padding:'8px 16px'}}>Salir</button>
-            <button 
-              onClick={toggleDarkMode} 
-              className="admin-btn" 
-              style={{
-                fontSize: '1em',
-                padding: '8px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}
-            >
-              {darkMode ? <FiMoon/> : <FiSun/>}
-            </button>
-      </div>
+          </div>
         </div>
       </header>
 
@@ -902,45 +889,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
             <FiRefreshCw/> Actualizar
           </button>
           
-          {/* Botón de prueba */}
-          <button
-            onClick={async () => {
-              console.log('🧪 Probando conexión con Supabase...');
-              try {
-                const { data, error } = await supabase
-                  .from('pedidos')
-                  .select('count')
-                  .limit(1);
-                
-                if (error) {
-                  console.error('❌ Error de conexión:', error);
-                  alert('Error de conexión: ' + error.message);
-                } else {
-                  console.log('✅ Conexión exitosa');
-                  alert('Conexión exitosa con Supabase');
-                }
-              } catch (err) {
-                console.error('❌ Error:', err);
-                alert('Error: ' + err.message);
-              }
-            }}
-            className="admin-btn"
-            style={{
-              background: '#8B5CF6',
-              padding: '12px 20px',
-              borderRadius: 12,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              fontSize: '1rem',
-              fontWeight: 600,
-              minHeight: '48px',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)'
-            }}
-          >
-            🧪 Probar Conexión
-          </button>
         </div>
 
 
