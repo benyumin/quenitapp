@@ -381,15 +381,10 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
   }, {});
 
   // Calcular estadísticas
-  const stats = {
-    total: pedidos.length,
-    pendientes: pedidos.filter(p => (p.estado || 'PENDIENTE') === 'PENDIENTE').length,
-    enPreparacion: pedidos.filter(p => p.estado === 'EN_PREPARACION').length,
-    listos: pedidos.filter(p => p.estado === 'LISTO').length,
-    enEntrega: pedidos.filter(p => p.estado === 'EN_ENTREGA').length,
-    entregados: pedidos.filter(p => p.estado === 'ENTREGADO').length,
-    cancelados: pedidos.filter(p => p.estado === 'CANCELADO').length,
-  };
+  const stats = ESTADOS.reduce((acc, est) => {
+    acc[est.key.toLowerCase()] = pedidos.filter(p => (p.estado || 'PENDIENTE') === est.key).length;
+    return acc;
+  }, { total: pedidos.length });
 
   // Render ingredientes
   const renderIngredientes = (personalizacion) => {
