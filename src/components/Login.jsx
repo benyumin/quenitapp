@@ -33,10 +33,10 @@ const Login = ({ onLogin }) => {
   return (
     <form onSubmit={handleLogin} style={{maxWidth: 400, margin: '3rem auto', padding: 24, background: 'var(--bg-secondary)', borderRadius: 12, boxShadow: '0 2px 12px var(--shadow-dark)'}}>
       <h2 style={{textAlign:'center',marginBottom:24}}>Login Admin</h2>
-      <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required style={{width:'100%',margin:'8px 0',padding:10,borderRadius:8,border:'1.5px solid var(--border-color)'}} />
+      <input type="email" id="login-email" name="login-email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required style={{width:'100%',margin:'8px 0',padding:10,borderRadius:8,border:'1.5px solid var(--border-color)'}} />
       {!showReset && (
         <>
-          <input type="password" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)} required style={{width:'100%',margin:'8px 0',padding:10,borderRadius:8,border:'1.5px solid var(--border-color)'}} />
+          <input type="password" id="login-password" name="login-password" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)} required style={{width:'100%',margin:'8px 0',padding:10,borderRadius:8,border:'1.5px solid var(--border-color)'}} />
           {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
           <button type="submit" style={{width:'100%',padding:'10px',marginTop:8,borderRadius:8,background:'var(--accent-primary)',color:'#fff',fontWeight:700}} disabled={loading}>{loading ? 'Entrando...' : 'Entrar'}</button>
           <div style={{marginTop:12, textAlign:'right'}}>

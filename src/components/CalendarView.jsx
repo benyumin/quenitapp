@@ -419,26 +419,93 @@ const CalendarView = ({ onBack, setRoute }) => {
   return (
     <div style={{minHeight:'100vh',background:'var(--bg-primary)',padding:0,fontFamily:'Inter,Poppins,Montserrat,sans-serif'}}>
       {/* Header */}
-      <header style={{position:'sticky',top:0,zIndex:20,background:'var(--bg-primary)',boxShadow:'0 2px 8px var(--shadow-light)',padding:'1rem 0',marginBottom:0}}>
+      <header style={{
+        position:'sticky',
+        top:0,
+        zIndex:20,
+        background:'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        boxShadow:'0 4px 20px rgba(0,0,0,0.15)',
+        padding:'1.5rem 0',
+        marginBottom:0
+      }}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:'100vw',margin:'0 auto',padding:'0 2vw'}}>
-          <span style={{fontWeight:900,fontSize:'1.8rem',color:'var(--accent-secondary)',letterSpacing:'-1px',display:'flex',alignItems:'center',gap:10}}>
-            <FiCalendar/> Calendario de Pedidos
+          <span style={{
+            fontWeight:900,
+            fontSize:'2rem',
+            color:'#fff',
+            letterSpacing:'-1px',
+            display:'flex',
+            alignItems:'center',
+            gap:12,
+            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '50%',
+              width: 50,
+              height: 50,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255,255,255,0.3)'
+            }}>
+              <FiCalendar style={{fontSize: '1.5em', color: '#fff'}}/>
+            </div>
+            Calendario de Pedidos
           </span>
-          <div style={{display:'flex',gap:10}}>
+          <div style={{display:'flex',gap:12}}>
             <button 
               onClick={toggleDarkMode} 
               className="admin-btn" 
               style={{
                 fontSize: '1em',
-                padding: '8px 16px',
+                padding: '12px 16px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 8
+                gap: 8,
+                background: 'rgba(255,255,255,0.2)',
+                border: '2px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+                borderRadius: 12,
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255,255,255,0.3)';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255,255,255,0.2)';
+                e.target.style.transform = 'translateY(0)';
               }}
             >
               {darkMode ? <FiMoon/> : <FiSun/>}
             </button>
-            <button onClick={onBack} className="admin-btn secondary" style={{fontSize:'1em',padding:'8px 16px'}}>Volver</button>
+            <button 
+              onClick={onBack} 
+              className="admin-btn secondary" 
+              style={{
+                fontSize:'1em',
+                padding:'12px 20px',
+                background: 'rgba(255,255,255,0.1)',
+                border: '2px solid rgba(255,255,255,0.3)',
+                color: '#fff',
+                borderRadius: 12,
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255,255,255,0.2)';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255,255,255,0.1)';
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              ← Volver
+            </button>
           </div>
         </div>
       </header>
@@ -672,6 +739,8 @@ const CalendarView = ({ onBack, setRoute }) => {
             <FiSearch style={{color:'#6b7280',fontSize:'1em'}}/>
             <input
               type="text"
+              id="search-orders"
+              name="search-orders"
               placeholder="Buscar pedidos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -734,10 +803,11 @@ const CalendarView = ({ onBack, setRoute }) => {
                 </div>
 
                 {/* Días del calendario */}
-                <div style={{display:'grid',gridTemplateColumns:'repeat(7, 1fr)',gap:4}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(7, 1fr)',gap:6}}>
                   {calendarDays.map((day, index) => {
                     const dayStats = getStatsForDate(day.date);
                     const isSelected = day.date.toDateString() === selectedDate.toDateString();
+                    const hasPedidos = dayStats.total > 0;
                     
                     return (
                       <div
@@ -750,39 +820,150 @@ const CalendarView = ({ onBack, setRoute }) => {
                         }}
                         style={{
                           aspectRatio: '1',
-                          padding: '8px',
-                          borderRadius: 8,
+                          padding: '12px 8px',
+                          borderRadius: 12,
                           cursor: day.isCurrentMonth ? 'pointer' : 'default',
-                          border: isSelected ? '2px solid #2563eb' : '1px solid #e5e7eb',
-                          background: isSelected ? '#eff6ff' : day.isCurrentMonth ? '#fff' : '#f9fafb',
+                          border: isSelected ? '3px solid #2563eb' : hasPedidos ? '2px solid #10b981' : '1px solid #e5e7eb',
+                          background: isSelected 
+                            ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' 
+                            : day.isToday 
+                              ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'
+                              : hasPedidos 
+                                ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)'
+                                : day.isCurrentMonth 
+                                  ? '#fff' 
+                                  : '#f9fafb',
                           color: day.isCurrentMonth ? '#1f2937' : '#9ca3af',
                           fontWeight: day.isToday ? 900 : 600,
-                          fontSize: '0.9em',
+                          fontSize: '1em',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
                           position: 'relative',
-                          transition: 'all 0.2s ease',
-                          opacity: day.isCurrentMonth ? 1 : 0.5
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          opacity: day.isCurrentMonth ? 1 : 0.4,
+                          transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                          boxShadow: isSelected 
+                            ? '0 8px 25px rgba(37, 99, 235, 0.25)' 
+                            : hasPedidos 
+                              ? '0 4px 12px rgba(16, 185, 129, 0.15)'
+                              : day.isToday 
+                                ? '0 4px 12px rgba(245, 158, 11, 0.15)'
+                                : '0 2px 4px rgba(0,0,0,0.05)',
+                          '&:hover': {
+                            transform: day.isCurrentMonth ? 'scale(1.02)' : 'scale(1)',
+                            boxShadow: day.isCurrentMonth ? '0 6px 20px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.05)'
+                          }
+                        }}
+                        onMouseEnter={(e) => {
+                          if (day.isCurrentMonth) {
+                            e.target.style.transform = 'scale(1.02)';
+                            e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.1)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (day.isCurrentMonth) {
+                            e.target.style.transform = isSelected ? 'scale(1.05)' : 'scale(1)';
+                            e.target.style.boxShadow = isSelected 
+                              ? '0 8px 25px rgba(37, 99, 235, 0.25)' 
+                              : hasPedidos 
+                                ? '0 4px 12px rgba(16, 185, 129, 0.15)'
+                                : day.isToday 
+                                  ? '0 4px 12px rgba(245, 158, 11, 0.15)'
+                                  : '0 2px 4px rgba(0,0,0,0.05)';
+                          }
                         }}
                       >
-                        <span style={{marginBottom:4}}>{day.date.getDate()}</span>
-                        {dayStats.total > 0 && (
-                          <span style={{
-                            background: '#2563eb',
-                            color: '#fff',
+                        {/* Indicador de "Hoy" */}
+                        {day.isToday && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '4px',
+                            width: '8px',
+                            height: '8px',
+                            background: '#f59e0b',
                             borderRadius: '50%',
-                            width: 20,
-                            height: 20,
+                            animation: 'pulse 2s infinite'
+                          }} />
+                        )}
+                        
+                        <span style={{
+                          marginBottom: 6,
+                          fontSize: day.isToday ? '1.1em' : '1em',
+                          color: day.isToday ? '#92400e' : day.isCurrentMonth ? '#1f2937' : '#9ca3af'
+                        }}>
+                          {day.date.getDate()}
+                        </span>
+                        
+                        {/* Badge de pedidos */}
+                        {hasPedidos && (
+                          <div style={{
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.7em',
-                            fontWeight: 700
+                            gap: 2
                           }}>
-                            {dayStats.total}
-                          </span>
+                            <span style={{
+                              background: isSelected ? '#2563eb' : '#10b981',
+                              color: '#fff',
+                              borderRadius: '12px',
+                              padding: '2px 8px',
+                              fontSize: '0.7em',
+                              fontWeight: 800,
+                              minWidth: '20px',
+                              textAlign: 'center',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              animation: hasPedidos ? 'bounce 1s ease-in-out' : 'none'
+                            }}>
+                              {dayStats.total}
+                            </span>
+                            <span style={{
+                              fontSize: '0.6em',
+                              color: isSelected ? '#2563eb' : '#059669',
+                              fontWeight: 700
+                            }}>
+                              pedidos
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Indicador de estados */}
+                        {hasPedidos && (
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '4px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
+                            gap: 2
+                          }}>
+                            {dayStats.pendientes > 0 && (
+                              <div style={{
+                                width: '6px',
+                                height: '6px',
+                                background: '#fbbf24',
+                                borderRadius: '50%'
+                              }} />
+                            )}
+                            {dayStats.enPreparacion > 0 && (
+                              <div style={{
+                                width: '6px',
+                                height: '6px',
+                                background: '#4dd0e1',
+                                borderRadius: '50%'
+                              }} />
+                            )}
+                            {dayStats.entregados > 0 && (
+                              <div style={{
+                                width: '6px',
+                                height: '6px',
+                                background: '#34d399',
+                                borderRadius: '50%'
+                              }} />
+                            )}
+                          </div>
                         )}
                       </div>
                     );
@@ -815,25 +996,100 @@ const CalendarView = ({ onBack, setRoute }) => {
                 {showStats && (
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                    gap: 12,
-                    marginBottom: 16
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: 16,
+                    marginBottom: 20
                   }}>
-                    <div style={{textAlign:'center',padding:'12px',background:'#f8fafc',borderRadius:8}}>
-                      <div style={{fontSize:'1.5em',fontWeight:900,color:'#2563eb'}}>{selectedDateStats.total}</div>
-                      <div style={{fontSize:'0.8em',color:'#6b7280',fontWeight:600}}>Total</div>
+                    <div style={{
+                      textAlign:'center',
+                      padding:'16px 12px',
+                      background:'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                      borderRadius:12,
+                      border: '2px solid #3b82f6',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
+                      transition: 'all 0.3s ease',
+                      transform: 'translateY(0)',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-4px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.25)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)';
+                    }}>
+                      <div style={{fontSize:'2em',fontWeight:900,color:'#1e40af',marginBottom:4}}>{selectedDateStats.total}</div>
+                      <div style={{fontSize:'0.9em',color:'#374151',fontWeight:700}}>Total Pedidos</div>
                     </div>
-                    <div style={{textAlign:'center',padding:'12px',background:'#fef3c7',borderRadius:8}}>
-                      <div style={{fontSize:'1.5em',fontWeight:900,color:'#92400e'}}>{selectedDateStats.domicilio}</div>
-                      <div style={{fontSize:'0.8em',color:'#6b7280',fontWeight:600}}>Domicilio</div>
+                    
+                    <div style={{
+                      textAlign:'center',
+                      padding:'16px 12px',
+                      background:'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                      borderRadius:12,
+                      border: '2px solid #f59e0b',
+                      boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)',
+                      transition: 'all 0.3s ease',
+                      transform: 'translateY(0)',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-4px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.25)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.15)';
+                    }}>
+                      <div style={{fontSize:'2em',fontWeight:900,color:'#92400e',marginBottom:4}}>{selectedDateStats.domicilio}</div>
+                      <div style={{fontSize:'0.9em',color:'#374151',fontWeight:700}}>🚚 Domicilio</div>
                     </div>
-                    <div style={{textAlign:'center',padding:'12px',background:'#dbeafe',borderRadius:8}}>
-                      <div style={{fontSize:'1.5em',fontWeight:900,color:'#1e40af'}}>{selectedDateStats.retiro}</div>
-                      <div style={{fontSize:'0.8em',color:'#6b7280',fontWeight:600}}>Retiro</div>
+                    
+                    <div style={{
+                      textAlign:'center',
+                      padding:'16px 12px',
+                      background:'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                      borderRadius:12,
+                      border: '2px solid #3b82f6',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
+                      transition: 'all 0.3s ease',
+                      transform: 'translateY(0)',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-4px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.25)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)';
+                    }}>
+                      <div style={{fontSize:'2em',fontWeight:900,color:'#1e40af',marginBottom:4}}>{selectedDateStats.retiro}</div>
+                      <div style={{fontSize:'0.9em',color:'#374151',fontWeight:700}}>🏪 Retiro</div>
                     </div>
-                    <div style={{textAlign:'center',padding:'12px',background:'#dcfce7',borderRadius:8}}>
-                      <div style={{fontSize:'1.5em',fontWeight:900,color:'#166534'}}>${selectedDateStats.totalVentas.toLocaleString()}</div>
-                      <div style={{fontSize:'0.8em',color:'#6b7280',fontWeight:600}}>Ventas</div>
+                    
+                    <div style={{
+                      textAlign:'center',
+                      padding:'16px 12px',
+                      background:'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+                      borderRadius:12,
+                      border: '2px solid #10b981',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)',
+                      transition: 'all 0.3s ease',
+                      transform: 'translateY(0)',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-4px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.25)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.15)';
+                    }}>
+                      <div style={{fontSize:'1.8em',fontWeight:900,color:'#166534',marginBottom:4}}>${selectedDateStats.totalVentas.toLocaleString()}</div>
+                      <div style={{fontSize:'0.9em',color:'#374151',fontWeight:700}}>💰 Ventas</div>
                     </div>
                   </div>
                 )}
@@ -888,16 +1144,84 @@ const CalendarView = ({ onBack, setRoute }) => {
                 </h3>
                 
                 {filteredPedidos.length === 0 ? (
-                  <div style={{textAlign:'center',padding:'2rem',color:'#6b7280'}}>
-                    <FiCalendar style={{fontSize:'3rem',marginBottom:16}}/>
-                    <div style={{fontSize:'1.1em',marginBottom:8}}>No hay pedidos</div>
-                    <div style={{color:'#9ca3af'}}>
-                      {searchTerm || filterEstado !== 'TODOS' 
-                        ? 'Intenta ajustar los filtros de búsqueda' 
-                        : viewMode === 'calendar' 
-                          ? 'No se registraron pedidos en esta fecha'
-                          : 'No hay pedidos registrados en el sistema'}
+                  <div style={{
+                    textAlign:'center',
+                    padding:'3rem 2rem',
+                    color:'#6b7280',
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                    borderRadius: 16,
+                    border: '2px dashed #cbd5e1',
+                    margin: '1rem 0'
+                  }}>
+                    <div style={{
+                      width: 80,
+                      height: 80,
+                      background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1.5rem',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}>
+                      <FiCalendar style={{fontSize:'2.5rem',color:'#64748b'}}/>
                     </div>
+                    <div style={{
+                      fontSize:'1.3em',
+                      marginBottom:12,
+                      fontWeight: 700,
+                      color: '#475569'
+                    }}>
+                      {searchTerm || filterEstado !== 'TODOS' 
+                        ? 'No se encontraron resultados' 
+                        : viewMode === 'calendar' 
+                          ? 'Día sin pedidos'
+                          : 'Sin pedidos registrados'}
+                    </div>
+                    <div style={{
+                      color:'#64748b',
+                      fontSize: '1em',
+                      lineHeight: 1.5,
+                      maxWidth: 400,
+                      margin: '0 auto'
+                    }}>
+                      {searchTerm || filterEstado !== 'TODOS' 
+                        ? 'Intenta ajustar los filtros de búsqueda o ampliar el rango de fechas' 
+                        : viewMode === 'calendar' 
+                          ? 'No se registraron pedidos en esta fecha. Los pedidos aparecerán aquí cuando se realicen.'
+                          : 'No hay pedidos registrados en el sistema. Los pedidos aparecerán aquí cuando se realicen.'}
+                    </div>
+                    {(searchTerm || filterEstado !== 'TODOS') && (
+                      <button
+                        onClick={() => {
+                          setSearchTerm('');
+                          setFilterEstado('TODOS');
+                        }}
+                        style={{
+                          marginTop: '1.5rem',
+                          padding: '10px 20px',
+                          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: '0.9em',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+                        }}
+                      >
+                        Limpiar filtros
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div style={{

@@ -3,22 +3,35 @@ import { supabase } from '../supabaseClient';
 import { FiUser, FiShoppingCart, FiPlus, FiX, FiCheck, FiCoffee, FiArrowLeft, FiPackage, FiDollarSign, FiSun, FiMoon } from 'react-icons/fi';
 import '../App.css';
 
+const IMAGES = {
+  completoItaliano: new URL('../assets/completo-italiano.jpg', import.meta.url).href,
+  churrasco: new URL('../assets/churrasco.png', import.meta.url).href,
+  barroLuco: new URL('../assets/barro-luco.jpg', import.meta.url).href,
+  papasFritas: new URL('../assets/papas-fritas.jpg', import.meta.url).href,
+  empanadaQueso: new URL('../assets/empanada-de-quesoo.png', import.meta.url).href,
+  cocaCola: new URL('../assets/coca-cola.png', import.meta.url).href,
+  fanta: new URL('../assets/fanta.jpg', import.meta.url).href,
+  cafe: new URL('../assets/cafe.jpg', import.meta.url).href,
+  te: new URL('../assets/te.jpg', import.meta.url).href,
+  logoQuenitas: new URL('../assets/logoquenitamejorcalidad.jpeg', import.meta.url).href
+};
+
 const PRODUCTOS = [
-  { id: 1, name: "Completo Italiano", price: 2500, category: "completos", image: "/src/assets/completo-italiano.jpg" },
-  { id: 2, name: "Completo Clásico", price: 2200, category: "completos", image: "/src/assets/completo-italiano.jpg" },
-  { id: 3, name: "Completo Especial", price: 2800, category: "completos", image: "/src/assets/completo-italiano.jpg" },
-  { id: 4, name: "Churrasco", price: 3500, category: "sándwiches", image: "/src/assets/churrasco.png" },
-  { id: 5, name: "Barros Luco", price: 3200, category: "sándwiches", image: "/src/assets/barro-luco.jpg" },
-  { id: 6, name: "Papas Fritas", price: 1800, category: "acompañamientos", image: "/src/assets/papas-fritas.jpg" },
-  { id: 7, name: "Empanada de Queso", price: 1500, category: "acompañamientos", image: "/src/assets/empanada-de-quesoo.png" }
+  { id: 1, name: "Completo Italiano", price: 2500, category: "completos", image: IMAGES.completoItaliano },
+  { id: 2, name: "Completo Clásico", price: 2200, category: "completos", image: IMAGES.completoItaliano },
+  { id: 3, name: "Completo Especial", price: 2800, category: "completos", image: IMAGES.completoItaliano },
+  { id: 4, name: "Churrasco", price: 3500, category: "sándwiches", image: IMAGES.churrasco },
+  { id: 5, name: "Barros Luco", price: 3200, category: "sándwiches", image: IMAGES.barroLuco },
+  { id: 6, name: "Papas Fritas", price: 1800, category: "acompañamientos", image: IMAGES.papasFritas },
+  { id: 7, name: "Empanada de Queso", price: 1500, category: "acompañamientos", image: IMAGES.empanadaQueso }
 ];
 
 const BEBIDAS = [
-  { id: 1, name: "Coca-Cola", price: 800, image: "https://via.placeholder.com/200x120/ff0000/ffffff?text=Coca-Cola" },
-  { id: 2, name: "Fanta", price: 800, image: "https://via.placeholder.com/200x120/ff8800/ffffff?text=Fanta" },
-  { id: 3, name: "Sprite", price: 800, image: "https://via.placeholder.com/200x120/00ff00/ffffff?text=Sprite" },
-  { id: 4, name: "Café", price: 400, image: "https://via.placeholder.com/200x120/8B4513/ffffff?text=Café" },
-  { id: 5, name: "Té", price: 300, image: "https://via.placeholder.com/200x120/228B22/ffffff?text=Té" }
+  { id: 1, name: "Coca-Cola", price: 800, image: IMAGES.cocaCola },
+  { id: 2, name: "Fanta", price: 800, image: IMAGES.fanta },
+  { id: 3, name: "Sprite", price: 800, image: IMAGES.cocaCola }, // Usar imagen de Coca-Cola como placeholder
+  { id: 4, name: "Café", price: 400, image: IMAGES.cafe },
+  { id: 5, name: "Té", price: 300, image: IMAGES.te }
 ];
 
 const CajeroPanel = ({ onBack, setRoute }) => {
@@ -39,7 +52,6 @@ const CajeroPanel = ({ onBack, setRoute }) => {
     return localStorage.getItem('quenitas-dark') === 'true';
   });
 
-  // Función para cambiar el modo oscuro
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -49,18 +61,15 @@ const CajeroPanel = ({ onBack, setRoute }) => {
 
   const agregarAlCarrito = (item) => {
     setCarrito(prev => {
-      // Buscar si el producto ya existe en el carrito
       const existingItem = prev.find(cartItem => cartItem.name === item.name);
       
       if (existingItem) {
-        // Si ya existe, aumentar la cantidad
         return prev.map(cartItem => 
           cartItem.name === item.name 
             ? { ...cartItem, quantity: (cartItem.quantity || 1) + 1 }
             : cartItem
         );
       } else {
-        // Si no existe, agregarlo con cantidad 1
         return [...prev, { ...item, id: Date.now(), quantity: 1 }];
       }
     });
@@ -204,20 +213,24 @@ const CajeroPanel = ({ onBack, setRoute }) => {
             <div className="customer-inputs">
                 <input
                   type="text"
-                placeholder="Nombre del cliente"
+                  id="cliente-nombre"
+                  name="cliente-nombre"
+                  placeholder="Nombre del cliente"
                   value={clienteNombre}
                   onChange={(e) => setClienteNombre(e.target.value)}
-                className="form-input"
-                required
-              />
+                  className="form-input"
+                  required
+                />
                 <input
                   type="tel"
-                placeholder="+56912345678"
+                  id="cliente-telefono"
+                  name="cliente-telefono"
+                  placeholder="+56912345678"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
-                className="form-input"
-                required
-              />
+                  className="form-input"
+                  required
+                />
             </div>
             
             <div className="options-grid">
@@ -241,6 +254,8 @@ const CajeroPanel = ({ onBack, setRoute }) => {
               <div className="address-input">
                 <input
                   type="text"
+                  id="direccion-entrega"
+                  name="direccion-entrega"
                   placeholder="Dirección de entrega"
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
@@ -278,6 +293,8 @@ const CajeroPanel = ({ onBack, setRoute }) => {
               <div className="customer-inputs">
                 <input
                   type="number"
+                  id="monto-recibido"
+                  name="monto-recibido"
                   placeholder="Monto recibido"
                   value={montoRecibido}
                   onChange={(e) => setMontoRecibido(e.target.value)}
@@ -291,6 +308,8 @@ const CajeroPanel = ({ onBack, setRoute }) => {
               <div className="customer-inputs">
                 <input
                   type="text"
+                  id="numero-tarjeta"
+                  name="numero-tarjeta"
                   placeholder="Número de tarjeta"
                   value={numeroTarjeta}
                   onChange={(e) => setNumeroTarjeta(e.target.value)}
@@ -302,6 +321,8 @@ const CajeroPanel = ({ onBack, setRoute }) => {
 
             <div className="customer-inputs">
               <textarea
+                id="observaciones"
+                name="observaciones"
                 placeholder="Observaciones especiales..."
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
@@ -531,7 +552,6 @@ const CajeroPanel = ({ onBack, setRoute }) => {
                         </div>
                       </div>
 
-                      {/* Botón de agregar */}
                       <button
                         className="admin-btn"
                         style={{

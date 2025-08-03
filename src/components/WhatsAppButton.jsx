@@ -19,7 +19,7 @@ const WhatsAppButton = () => (
       justifyContent: 'center',
       fontSize: '2rem',
       boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-      zIndex: 1000,
+      zIndex: 100,
       textDecoration: 'none',
     }}
     aria-label="WhatsApp"

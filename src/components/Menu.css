@@ -89,7 +89,7 @@
 }
 
 .clear-search-btn:hover {
-  color: var(--error-color);
+  color: #9CA3AF;
   background: var(--bg-tertiary);
 }
 
@@ -253,7 +253,7 @@
 .menu-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
+  gap: 2.2rem;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
@@ -262,7 +262,7 @@
 /* Menu Item */
 .menu-item {
   background: var(--bg-secondary);
-  border-radius: 18px;
+  border-radius: 1.5rem;
   box-shadow: 0 8px 30px var(--shadow-medium);
   border: 1.5px solid var(--border-color);
   position: relative;
@@ -270,6 +270,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  align-items: center;
   animation: fadeInUp 0.6s ease-out;
 }
 
@@ -359,7 +360,6 @@
   font-size: 1rem;
   line-height: 1.5;
   margin: 0;
-  flex: 1;
 }
 
 /* Product Info */
@@ -399,7 +399,7 @@
 }
 
 .price {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--accent-primary);
 }
@@ -416,6 +416,8 @@
   padding: 4rem 2rem;
   max-width: 500px;
   margin: 0 auto;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .no-results-icon {
@@ -427,14 +429,16 @@
 .no-results h3 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
   margin-bottom: 1rem;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .no-results p {
   color: var(--text-secondary);
   margin-bottom: 2rem;
   line-height: 1.6;
+  transition: color 0.3s ease;
 }
 
 .reset-filters-btn {
@@ -498,7 +502,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .menu-header {
     padding: 0 1rem;
   }
@@ -518,68 +522,6 @@
   .category-btn {
     padding: 0.6rem 0.8rem;
     font-size: 0.85rem;
-  }
-  
-  .menu-list {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-    padding: 0 0.5rem;
-  }
-  
-  .menu-item-content {
-    padding: 1.2rem;
-  }
-  
-  .menu-item-title {
-    font-size: 1.2rem;
-  }
-  
-  .product-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .price {
-    font-size: 1.3rem;
-  }
-  
-  .no-results {
-    padding: 3rem 1rem;
-  }
-  
-  .no-results-icon {
-    font-size: 3rem;
-  }
-  
-  .no-results h3 {
-    font-size: 1.3rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .menu-header h2 {
-    font-size: 1.6rem;
-  }
-  
-  .search-input {
-    padding: 0.8rem 0.8rem 0.8rem 2.5rem;
-    font-size: 0.95rem;
-  }
-  
-  .search-icon {
-    left: 0.8rem;
-    font-size: 1rem;
-  }
-  
-  .clear-search-btn {
-    right: 0.8rem;
-    font-size: 1.2rem;
-  }
-  
-  .category-btn {
-    padding: 0.5rem 0.7rem;
-    font-size: 0.8rem;
   }
   
   .sort-select {
@@ -615,5 +557,98 @@
   
   .price {
     font-size: 1.2rem;
+  }
+  
+  .no-results {
+    padding: 3rem 1rem;
+  }
+  
+  .no-results-icon {
+    font-size: 3rem;
+  }
+  
+  .no-results h3 {
+    font-size: 1.3rem;
+  }
+  
+  .no-results p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .search-input {
+    padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .search-icon {
+    left: 0.8rem;
+    font-size: 1rem;
+  }
+  
+  .clear-search-btn {
+    right: 0.8rem;
+    font-size: 1.2rem;
+  }
+  
+  .category-btn {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+  }
+  
+  .sort-select {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .menu-action-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .social-link {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .menu-item-image {
+    height: 160px;
+  }
+  
+  .menu-item-content {
+    padding: 0.8rem;
+  }
+  
+  .menu-item-title {
+    font-size: 1rem;
+  }
+  
+  .description {
+    font-size: 0.9rem;
+  }
+  
+  .price {
+    font-size: 1.1rem;
+  }
+  
+  .no-results {
+    padding: 2rem 0.5rem;
+  }
+  
+  .no-results-icon {
+    font-size: 2.5rem;
+  }
+  
+  .no-results h3 {
+    font-size: 1.2rem;
+  }
+  
+  .no-results p {
+    font-size: 0.85rem;
   }
 } 

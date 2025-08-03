@@ -157,17 +157,23 @@ const OrderForm = ({ onAddToCart }) => {
     }
 
     const total = calculateTotal();
+    console.log('🔍 Customizations antes de guardar:', customizations);
+    console.log('🔍 Producto seleccionado:', selectedProduct.name);
+    console.log('🔍 ProductCustomizations disponibles:', productCustomizations[selectedProduct.name]);
+    
     const order = {
       name: selectedProduct.name,
       price: selectedProduct.price || 0,
       image: selectedProduct.image,
       beverage: selectedBeverage ? selectedBeverage.name : 'Sin bebida',
       beveragePrice: selectedBeverage ? selectedBeverage.price : 0,
-      customizations: getCurrentCustomizations(),
+      customizations: customizations, // Guardar el objeto customizations directamente
       customizationPrice: getCurrentCustomizations().reduce((total, custom) => total + (custom.price || 0), 0),
       total: isNaN(total) ? 0 : total,
       quantity: 1
     };
+    
+    console.log('🔍 Order creado:', order);
 
     // Agregar al carrito y continuar al siguiente paso
     setCart([order]);
@@ -210,16 +216,32 @@ const OrderForm = ({ onAddToCart }) => {
   };
 
   const handlePhoneChange = (e) => {
-    let value = e.target.value.replace(/\D/g, '');
+    let value = e.target.value;
     
-    // Limitar a 9 dígitos (formato chileno)
-    if (value.length > 9) {
-      value = value.substring(0, 9);
+    // Si el usuario está borrando, permitir borrar completamente
+    if (value === '') {
+      setPhone('');
+      return;
+    }
+    
+    // Remover todos los caracteres que no sean números
+    let numbersOnly = value.replace(/[^\d]/g, '');
+    
+    // Si empieza con +569, removerlo para procesar solo los números
+    if (numbersOnly.startsWith('569')) {
+      numbersOnly = numbersOnly.substring(3);
+    }
+    
+    // Limitar a 8 dígitos (formato chileno sin el +569)
+    if (numbersOnly.length > 8) {
+      numbersOnly = numbersOnly.substring(0, 8);
     }
     
     // Formatear como +569XXXXXXXX
-    if (value.length > 0) {
-      value = '+569' + value;
+    if (numbersOnly.length > 0) {
+      value = '+569' + numbersOnly;
+    } else {
+      value = '';
     }
     
     setPhone(value);
@@ -270,7 +292,7 @@ const OrderForm = ({ onAddToCart }) => {
       return false;
     }
     
-    if (!phone.trim() || phone.length < 12) {
+    if (!phone.trim() || !phone.match(/^\+569\d{8}$/)) {
       alert('Por favor ingresa un teléfono válido (+569XXXXXXXX)');
       return false;
     }
@@ -384,13 +406,11 @@ const OrderForm = ({ onAddToCart }) => {
   // Auto-select default customizations when product changes
   useEffect(() => {
     if (selectedProduct && productCustomizations[selectedProduct.name]) {
-      const defaultCustomizations = {};
+      const allCustomizations = {};
       productCustomizations[selectedProduct.name].forEach(custom => {
-        if (custom.default) {
-          defaultCustomizations[custom.name] = true;
-        }
+        allCustomizations[custom.name] = custom.default || false;
       });
-      setCustomizations(defaultCustomizations);
+      setCustomizations(allCustomizations);
     }
   }, [selectedProduct]);
 
@@ -594,7 +614,23 @@ const OrderForm = ({ onAddToCart }) => {
                  <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Producto:</strong> {selectedProduct?.name}</p>
                  <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Bebida:</strong> {selectedBeverage?.name || 'Sin bebida'}</p>
                  {getCurrentCustomizations().length > 0 && (
-                   <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Personalizaciones:</strong> {getCurrentCustomizations().map(c => c.name).join(', ')}</p>
+                   <div style={{ color: 'white', marginBottom: '8px' }}>
+                     <strong style={{ color: '#10b981' }}>🧀 Ingredientes:</strong>
+                     <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                       {getCurrentCustomizations().map(c => (
+                         <span key={c.name} style={{
+                           background: 'rgba(16, 185, 129, 0.2)',
+                           color: '#10b981',
+                           padding: '2px 6px',
+                           borderRadius: '4px',
+                           fontSize: '0.8rem',
+                           fontWeight: '600'
+                         }}>
+                           {c.name}
+                         </span>
+                       ))}
+                     </div>
+                   </div>
                  )}
                  <div style={{ 
                    borderTop: '1px solid rgba(255, 255, 255, 0.3)', 
@@ -627,6 +663,8 @@ const OrderForm = ({ onAddToCart }) => {
             <div className="customer-inputs">
               <input
                 type="text"
+                id="customer-name"
+                name="customer-name"
                 placeholder="Tu nombre"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -635,11 +673,15 @@ const OrderForm = ({ onAddToCart }) => {
               />
               <input
                 type="tel"
+                id="customer-phone"
+                name="customer-phone"
                 placeholder="+56912345678"
                 value={phone}
                 onChange={handlePhoneChange}
                 className="form-input"
                 maxLength={12}
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
               />
             </div>
@@ -694,9 +736,19 @@ const OrderForm = ({ onAddToCart }) => {
                           <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem' }}>
                             {item.name} x{item.quantity || 1}
                           </h4>
-                                                     <p style={{ margin: '0', fontSize: '0.8rem', color: 'var(--muted-text, #6b7280)' }}>
-                             {item.beverage} - ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
-                           </p>
+                          <p style={{ margin: '0', fontSize: '0.8rem', color: 'var(--muted-text, #6b7280)' }}>
+                            {item.beverage} - ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
+                          </p>
+                          {item.customizations && Object.keys(item.customizations).length > 0 && (
+                            <div style={{ marginTop: '4px' }}>
+                              <p style={{ margin: '0', fontSize: '0.75rem', color: '#2563eb', fontWeight: '600' }}>
+                                🧀 Ingredientes: {Object.entries(item.customizations)
+                                  .filter(([, selected]) => selected)
+                                  .map(([name]) => name)
+                                  .join(', ')}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -794,6 +846,8 @@ const OrderForm = ({ onAddToCart }) => {
               <div className="address-input">
                 <input
                   type="text"
+                  id="delivery-address"
+                  name="delivery-address"
                   placeholder="Dirección de entrega"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
@@ -826,6 +880,8 @@ const OrderForm = ({ onAddToCart }) => {
                 <div className="card-inputs">
                   <input
                     type="text"
+                    id="card-holder-name"
+                    name="card-holder-name"
                     placeholder="Nombre del titular"
                     value={cardHolderName}
                     onChange={(e) => setCardHolderName(e.target.value)}
@@ -834,6 +890,8 @@ const OrderForm = ({ onAddToCart }) => {
                   />
                   <input
                     type="text"
+                    id="card-rut"
+                    name="card-rut"
                     placeholder="RUT del titular (XX.XXX.XXX-X)"
                     value={cardRut}
                     onChange={handleCardRutChange}
@@ -845,6 +903,8 @@ const OrderForm = ({ onAddToCart }) => {
                 <div className="card-inputs">
                   <input
                     type="text"
+                    id="card-number"
+                    name="card-number"
                     placeholder="Número de tarjeta"
                     value={cardNumber}
                     onChange={handleCardNumberChange}
@@ -854,6 +914,8 @@ const OrderForm = ({ onAddToCart }) => {
                   />
                   <input
                     type="text"
+                    id="card-expiry"
+                    name="card-expiry"
                     placeholder="MM/YY"
                     value={cardExpiry}
                     onChange={handleCardExpiryChange}
@@ -863,6 +925,8 @@ const OrderForm = ({ onAddToCart }) => {
                   />
                   <input
                     type="text"
+                    id="card-cvv"
+                    name="card-cvv"
                     placeholder="CVV"
                     value={cardCVV}
                     onChange={handleCardCVVChange}
@@ -992,8 +1056,39 @@ const OrderForm = ({ onAddToCart }) => {
   return (
     <div className="order-form-container">
       <div className="order-form-content">
-        <div className="order-form-left">
+        <div className="order-form-left" style={{ 
+          marginBottom: (step >= 5 && (selectedProduct || cart.length > 0)) ? '80px' : '0' 
+        }}>
           <h2 className="order-form-title" style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>¡Haz tu pedido!</h2>
+          
+          {!selectedProduct && cart.length === 0 && (
+            <div style={{
+              background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
+              border: '2px solid #0ea5e9',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🍽️</div>
+              <p style={{ 
+                margin: '0', 
+                color: '#0c4a6e', 
+                fontWeight: '600',
+                fontSize: '1rem'
+              }}>
+                Selecciona un producto para comenzar tu pedido
+              </p>
+              <p style={{ 
+                margin: '4px 0 0 0', 
+                color: '#0369a1', 
+                fontSize: '0.9rem',
+                opacity: 0.8
+              }}>
+                El resumen aparecerá cuando confirmes tu pedido
+              </p>
+            </div>
+          )}
           
                      {/* Progress Bar */}
            <div className="progress-bar">
@@ -1008,55 +1103,82 @@ const OrderForm = ({ onAddToCart }) => {
           {renderStep()}
         </div>
 
-                 {/* Resumen del Pedido */}
-         <div className="order-summary">
-           <h3>📋 Resumen:</h3>
-           <div className="summary-content">
-             {cart.length > 0 && step >= 4 ? (
-               <>
-                 <p><strong>Productos en carrito:</strong></p>
-                 {cart.map((item, index) => (
-                   <p key={index} style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                     • {item.name} x{item.quantity || 1} - ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
-                   </p>
-                 ))}
-                 {step >= 6 && (
-                   <>
-                     <p><strong>Entrega:</strong> {deliveryMethod}</p>
-                     {deliveryMethod === 'Domicilio' && address && (
-                       <p><strong>Dirección:</strong> {address}</p>
-                     )}
-                     <p><strong>Pago:</strong> {paymentMethod}</p>
-                   </>
-                 )}
-                 <div className="total-price">
-                   <strong>Total: ${(calculateCartTotal() || 0).toLocaleString()}</strong>
-                 </div>
-               </>
-             ) : (
-               <>
-                 {selectedProduct ? (
-                   <>
-                     <p><strong>Producto:</strong> {selectedProduct.name}</p>
-                     {selectedBeverage && (
-                       <p><strong>Bebida:</strong> {selectedBeverage.name}</p>
-                     )}
-                     {getCurrentCustomizations().length > 0 && (
-                       <p><strong>Con:</strong> {getCurrentCustomizations().map(c => c.name).join(', ')}</p>
-                     )}
-                     <div className="total-price">
-                       <strong>Total: ${(calculateTotal() || 0).toLocaleString()}</strong>
-                     </div>
-                   </>
-                 ) : (
-                   <p style={{ color: 'var(--muted-text, #6b7280)', fontStyle: 'italic' }}>
-                     Selecciona un producto para ver el resumen
-                   </p>
-                 )}
-               </>
-             )}
+                 {/* Resumen del Pedido - Mostrar desde el paso 5 */}
+         {(step >= 5 && (selectedProduct || cart.length > 0)) && (
+           <div className="order-summary">
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+               <h3 style={{ margin: 0 }}>📋 Resumen:</h3>
+               <button 
+                 onClick={() => {
+                   setSelectedProduct(null);
+                   setCart([]);
+                   setSelectedBeverage(null);
+                   setCustomizations({});
+                                       if (step > 5) {
+                      setStep(5);
+                    }
+                 }}
+                 style={{
+                   background: 'rgba(255, 255, 255, 0.2)',
+                   border: 'none',
+                   borderRadius: '50%',
+                   width: '24px',
+                   height: '24px',
+                   color: 'white',
+                   cursor: 'pointer',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   fontSize: '12px'
+                 }}
+                 aria-label="Cerrar resumen"
+               >
+                 ✕
+               </button>
+             </div>
+             <div className="summary-content">
+                               {cart.length > 0 && step >= 5 ? (
+                 <>
+                   <p><strong>Productos en carrito:</strong></p>
+                   {cart.map((item, index) => (
+                     <p key={index} style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                       • {item.name} x{item.quantity || 1} - ${((item.total || 0) * (item.quantity || 1)).toLocaleString()}
+                     </p>
+                   ))}
+                   {step >= 5 && (
+                     <>
+                       <p><strong>Entrega:</strong> {deliveryMethod}</p>
+                       {deliveryMethod === 'Domicilio' && address && (
+                         <p><strong>Dirección:</strong> {address}</p>
+                       )}
+                       <p><strong>Pago:</strong> {paymentMethod}</p>
+                     </>
+                   )}
+                   <div className="total-price">
+                     <strong>Total: ${(calculateCartTotal() || 0).toLocaleString()}</strong>
+                   </div>
+                 </>
+               ) : (
+                 <>
+                   {selectedProduct ? (
+                     <>
+                       <p><strong>Producto:</strong> {selectedProduct.name}</p>
+                       {selectedBeverage && (
+                         <p><strong>Bebida:</strong> {selectedBeverage.name}</p>
+                       )}
+                       {getCurrentCustomizations().length > 0 && (
+                         <p><strong>Con:</strong> {getCurrentCustomizations().map(c => c.name).join(', ')}</p>
+                       )}
+                       <div className="total-price">
+                         <strong>Total: ${(calculateTotal() || 0).toLocaleString()}</strong>
+                       </div>
+                     </>
+                   ) : null}
+                 </>
+               )}
+             </div>
            </div>
-         </div>
+         )}
       </div>
       
       {/* Notificación elegante */}

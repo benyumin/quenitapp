@@ -10,15 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.52.0",
+    "@supabase/supabase-js": "^2.53.0",
+    "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/vite": "^4.1.11",
     "github": "^14.0.0",
     "jspdf": "^3.0.1",
     "qrcode.react": "^4.2.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-icons": "^5.5.0",
-    "swiper": "^11.2.10"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.12.0",
+    "swiper": "^11.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Paleta de colores más rica y menos genérica */
   --bg-primary: #0a0a0a;
@@ -153,4 +157,332 @@ body::before {
     radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
+}
+
+/* ===== ESTILOS RESPONSIVOS ===== */
+
+/* Viewport meta tag para móviles */
+@media screen and (max-width: 768px) {
+  html {
+    font-size: 14px; /* Reducir tamaño base de fuente en móviles */
+  }
+  
+  body {
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    width: 100%;
+  }
+  
+  /* Contenedores principales */
+  .container, .main-container {
+    padding: 0.5rem;
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  /* Headers y navegación */
+  header, .header {
+    padding: 0.75rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  /* Botones */
+  button, .btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    min-height: 44px; /* Tamaño mínimo para touch */
+    border-radius: var(--border-radius-md);
+  }
+  
+  /* Formularios */
+  input, select, textarea {
+    padding: 0.75rem;
+    font-size: 1rem; /* Evitar zoom en iOS */
+    border-radius: var(--border-radius-sm);
+    min-height: 44px;
+  }
+  
+  /* Grids y layouts */
+  .grid, .products-grid, .beverages-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+  
+  /* Cards */
+  .card, .product-card, .order-card {
+    margin: 0.5rem 0;
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+  }
+  
+  /* Imágenes */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Texto */
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
+  p { font-size: 0.95rem; }
+  
+  /* Espaciado */
+  .spacing-sm { margin: 0.5rem 0; }
+  .spacing-md { margin: 1rem 0; }
+  .spacing-lg { margin: 1.5rem 0; }
+}
+
+/* Tablets */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+  
+  .container, .main-container {
+    padding: 1rem;
+    max-width: 95%;
+  }
+  
+  .grid, .products-grid, .beverages-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* Pantallas grandes */
+@media screen and (min-width: 1025px) {
+  .container, .main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .grid, .products-grid, .beverages-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  header, .header {
+    padding: 0.5rem 1rem;
+  }
+  
+  .container, .main-container {
+    padding: 0.25rem;
+  }
+  
+  .grid, .products-grid, .beverages-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+/* Pantallas muy pequeñas */
+@media screen and (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+  
+  .container, .main-container {
+    padding: 0.25rem;
+  }
+  
+  .grid, .products-grid, .beverages-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  button, .btn {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .card, .product-card, .order-card {
+    padding: 0.75rem;
+    margin: 0.25rem 0;
+  }
+}
+
+/* Ajustes específicos para el panel de administración */
+@media screen and (max-width: 768px) {
+  /* Panel de administración */
+  .admin-panel {
+    padding: 0.5rem;
+  }
+  
+  .admin-card {
+    margin: 0.5rem 0;
+    padding: 1rem;
+    min-height: auto;
+  }
+  
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .admin-filters {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .admin-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  /* Tabla responsiva */
+  .admin-table {
+    overflow-x: auto;
+    font-size: 0.8rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem 0.25rem;
+    min-width: 80px;
+  }
+}
+
+/* Ajustes para el formulario de pedidos */
+@media screen and (max-width: 768px) {
+  .step-container {
+    padding: 1rem;
+    margin: 0;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .product-card {
+    padding: 1rem;
+  }
+  
+  .product-image {
+    height: 150px;
+    object-fit: cover;
+  }
+  
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .cart-total {
+    font-size: 1.1rem;
+    padding: 1rem;
+  }
+}
+
+/* Ajustes para el carrito */
+@media screen and (max-width: 768px) {
+  .cart-card {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .cart-header {
+    padding: 0.75rem;
+  }
+  
+  .cart-items {
+    max-height: 60vh;
+  }
+  
+  .cart-footer {
+    padding: 1rem;
+  }
+}
+
+/* Ajustes para modales y popups */
+@media screen and (max-width: 768px) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 0;
+    padding: 1rem;
+  }
+  
+  .notification {
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+  }
+}
+
+/* Ajustes para botones de WhatsApp */
+@media screen and (max-width: 768px) {
+  .whatsapp-button {
+    bottom: 1rem;
+    right: 1rem;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Ajustes para imágenes de productos */
+@media screen and (max-width: 768px) {
+  .product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--border-radius-sm);
+  }
+  
+  .hero-image {
+    height: 200px;
+  }
+}
+
+/* Ajustes para texto y tipografía */
+@media screen and (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Ajustes para espaciado general */
+@media screen and (max-width: 768px) {
+  .section {
+    padding: 2rem 1rem;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .spacing-top { margin-top: 1rem; }
+  .spacing-bottom { margin-bottom: 1rem; }
+  .spacing-left { margin-left: 0.5rem; }
+  .spacing-right { margin-right: 0.5rem; }
 }

@@ -523,9 +523,76 @@ const CocinaPanel = ({ onBack, setRoute }) => {
               🥤 {pedido.bebida} {pedido.tipo_bebida ? `(${pedido.tipo_bebida})` : ''}
             </div>
           )}
+          
+          {/* Mostrar ingredientes */}
+          {pedido.personalizacion && (
+            <div style={{marginTop: '8px'}}>
+              <div style={{
+                fontSize: '0.85em',
+                fontWeight: 600,
+                color: '#059669',
+                marginBottom: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}>
+                🧀 Ingredientes:
+              </div>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: 4}}>
+                {(() => {
+                  try {
+                    const pers = JSON.parse(pedido.personalizacion);
+                    const selected = Object.entries(pers).filter(([,v]) => v).map(([k]) => k);
+                    if (selected.length > 0) {
+                      return selected.map((ing, index) => (
+                        <span key={index} style={{
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: 'white',
+                          borderRadius: 6,
+                          padding: '4px 8px',
+                          fontSize: '0.75em',
+                          fontWeight: 600,
+                          boxShadow: '0 2px 4px rgba(16, 185, 129, 0.3)',
+                          border: '1px solid #047857'
+                        }}>
+                          {ing}
+                        </span>
+                      ));
+                    } else {
+                      return (
+                        <span style={{
+                          background: '#f3f4f6',
+                          color: '#6b7280',
+                          borderRadius: 6,
+                          padding: '4px 8px',
+                          fontSize: '0.75em',
+                          fontStyle: 'italic'
+                        }}>
+                          Sin personalización
+                        </span>
+                      );
+                    }
+                  } catch {
+                    return (
+                      <span style={{
+                        background: '#f3f4f6',
+                        color: '#6b7280',
+                        borderRadius: 6,
+                        padding: '4px 8px',
+                        fontSize: '0.75em',
+                        fontStyle: 'italic'
+                      }}>
+                        Sin personalización
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            </div>
+          )}
         </div>
 
-        
+        {/* Detalles expandidos */}
         {esSeleccionado && (
           <div style={{
             borderTop: '1px solid var(--border-color)',
