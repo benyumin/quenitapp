@@ -1,0 +1,76 @@
+/* Utility Fixes - Fixes y utilidades consolidados */
+
+/* ===== OVERFLOW FIXES ===== */
+/* Permitir scroll horizontal cuando sea necesario */
+html, body, #root, .App, .main-container {
+  overflow-x: auto;
+}
+
+/* Fixes para elementos específicos */
+.container, .wrapper, .content, .section {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.menu-list, .menu-item, .section, .form-group, .main-header, .main-header nav, .main-header .logo, footer, .hero-section, .hero-content {
+  overflow: visible;
+  max-width: 100%;
+}
+
+/* ===== ADMIN OVERFLOW FIXES ===== */
+.admin-panel {
+  overflow: visible;
+  max-width: 100%;
+}
+
+.admin-content {
+  overflow-x: auto;
+}
+
+.admin-table {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* ===== NOTIFICATION FIXES ===== */
+.notification {
+  max-width: 300px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ===== HERO CENTER FIXES ===== */
+.hero-section {
+  text-align: center;
+  overflow: visible;
+}
+
+.hero-content {
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* ===== CALENDAR COMPACT ===== */
+.calendar-view {
+  overflow: visible;
+}
+
+.calendar-grid {
+  overflow-x: auto;
+}
+
+/* ===== RESPONSIVE FIXES ===== */
+@media (max-width: 768px) {
+  .table-container, .data-grid, .orders-list, .stats-container {
+    overflow-x: auto;
+  }
+  
+  .button-group, .control-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .nav-container, .breadcrumb {
+    overflow-x: auto;
+  }
+} 

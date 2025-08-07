@@ -1,0 +1,447 @@
+/* Theme System - Sistema de temas claro y oscuro */
+
+/* Variables CSS para tema claro (por defecto) */
+:root {
+  /* Colores de fondo */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-accent: #fefefe;
+  
+  /* Colores de texto */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-accent: #ff6b35;
+  
+  /* Colores de acento */
+  --accent-primary: #ff6b35;
+  --accent-secondary: #f7931e;
+  --accent-tertiary: #4ecdc4;
+  --accent-quaternary: #45b7d1;
+  
+  /* Bordes */
+  --border-color: #e2e8f0;
+  --border-accent: #ff6b35;
+  --border-light: #f1f5f9;
+  
+  /* Sombras */
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-medium: rgba(0, 0, 0, 0.15);
+  --shadow-dark: rgba(0, 0, 0, 0.25);
+  --shadow-accent: rgba(255, 107, 53, 0.2);
+  
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #ff6b35, #f7931e);
+  --gradient-secondary: linear-gradient(135deg, #4ecdc4, #45b7d1);
+  --gradient-accent: linear-gradient(135deg, #ff6b35, #ffd700);
+  --gradient-bg: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(78, 205, 196, 0.05));
+}
+
+/* Variables CSS para tema oscuro */
+.dark-mode {
+  /* Colores de fondo */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #252525;
+  --bg-accent: #2d2d2d;
+  
+  /* Colores de texto */
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #a0a0a0;
+  --text-accent: #ffd700;
+  
+  /* Colores de acento */
+  --accent-primary: #ff6b35;
+  --accent-secondary: #f7931e;
+  --accent-tertiary: #4ecdc4;
+  --accent-quaternary: #45b7d1;
+  
+  /* Bordes */
+  --border-color: #333333;
+  --border-accent: #ff6b35;
+  --border-light: #404040;
+  
+  /* Sombras */
+  --shadow-light: rgba(0, 0, 0, 0.3);
+  --shadow-medium: rgba(0, 0, 0, 0.4);
+  --shadow-dark: rgba(0, 0, 0, 0.6);
+  --shadow-accent: rgba(255, 107, 53, 0.3);
+  
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #ff6b35, #f7931e);
+  --gradient-secondary: linear-gradient(135deg, #4ecdc4, #45b7d1);
+  --gradient-accent: linear-gradient(135deg, #ff6b35, #ffd700);
+  --gradient-bg: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(78, 205, 196, 0.1));
+}
+
+/* Aplicar colores a elementos base */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Aplicar colores a elementos específicos */
+.card, .product-card, .order-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Aplicar colores a formularios */
+input, select, textarea {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
+}
+
+/* Aplicar colores a botones */
+.btn, button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn:hover, button:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Aplicar colores a headers */
+header, .header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Aplicar colores a navegación */
+nav {
+  background: var(--bg-secondary);
+}
+
+/* Aplicar colores a modales */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Aplicar colores a notificaciones */
+.notification {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Aplicar colores a tablas */
+table {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+th, td {
+  border-color: var(--border-color);
+}
+
+/* Aplicar colores a listas */
+ul, ol {
+  color: var(--text-primary);
+}
+
+/* Aplicar colores a enlaces */
+a {
+  color: var(--accent-primary);
+}
+
+a:hover {
+  color: var(--accent-secondary);
+}
+
+/* Aplicar colores a scrollbars */
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
+}
+
+/* Transiciones suaves para cambios de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Aplicar colores específicos para el carrito */
+.cart-outer-card {
+  background: var(--bg-primary);
+}
+
+.cart-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.cart-header-row {
+  background: var(--bg-tertiary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.cart-header-row h1 {
+  color: var(--text-primary);
+}
+
+.cart-empty-container {
+  background: var(--bg-tertiary);
+}
+
+.cart-empty-title {
+  color: var(--text-primary);
+}
+
+.cart-empty-desc {
+  color: var(--text-secondary);
+}
+
+.cart-item-row {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.cart-item-info h3 {
+  color: var(--text-primary);
+}
+
+.product-count {
+  color: var(--text-secondary);
+}
+
+.cart-summary-block {
+  background: var(--bg-tertiary);
+}
+
+.cart-totals {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.cart-totals-row {
+  color: var(--text-secondary);
+}
+
+.cart-totals-total {
+  color: var(--text-primary);
+}
+
+.cart-actions {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Aplicar colores específicos para el navbar */
+.main-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-buttons-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-toggle, .cart-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dark-toggle:hover, .cart-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Aplicar colores específicos para el hero */
+.hero-section {
+  background: var(--bg-primary);
+}
+
+.hero-title {
+  color: var(--text-primary);
+}
+
+.hero-desc {
+  color: var(--text-secondary);
+}
+
+/* Aplicar colores específicos para el menú */
+.menu-section {
+  background: var(--bg-primary);
+}
+
+.menu-title {
+  color: var(--text-primary);
+}
+
+.menu-desc {
+  color: var(--text-secondary);
+}
+
+/* Aplicar colores específicos para el footer */
+footer {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Aplicar colores específicos para WhatsApp button */
+.whatsapp-button {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.whatsapp-button:hover {
+  background: var(--accent-secondary);
+}
+
+/* Aplicar colores específicos para formularios */
+.form-group label {
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
+}
+
+/* Aplicar colores específicos para notificaciones */
+.notification.success {
+  background: #10b981;
+  color: white;
+}
+
+.notification.error {
+  background: #ef4444;
+  color: white;
+}
+
+.notification.info {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Aplicar colores específicos para admin panels */
+.admin-panel {
+  background: var(--bg-primary);
+}
+
+.admin-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.admin-header {
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-content {
+  background: var(--bg-primary);
+}
+
+/* Aplicar colores específicos para calendario */
+.calendar-view {
+  background: var(--bg-primary);
+}
+
+.calendar-grid {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Aplicar colores específicos para imágenes */
+img {
+  border: 1px solid var(--border-color);
+}
+
+/* Aplicar colores específicos para tooltips */
+.tooltip {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Aplicar colores específicos para popovers */
+.popover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Aplicar colores específicos para dropdowns */
+.dropdown {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.dropdown-item {
+  color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Aplicar colores específicos para badges */
+.badge {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Aplicar colores específicos para alerts */
+.alert {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.alert.success {
+  background: #10b981;
+  color: white;
+}
+
+.alert.error {
+  background: #ef4444;
+  color: white;
+}
+
+.alert.warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.alert.info {
+  background: #3b82f6;
+  color: white;
+} 

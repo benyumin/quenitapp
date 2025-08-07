@@ -1,20 +1,21 @@
 import React, { useEffect, useState, useCallback, Suspense, lazy } from "react";
-import Menu from "./components/Menu";
-import Location from "./components/Location";
-import WhatsAppButton from "./components/WhatsAppButton";
-import OrderForm from "./components/OrderForm";
+import Menu from "./components/Home/Menu";
+import Location from "./components/Home/Location";
+import WhatsAppButton from "./components/Common/WhatsAppButton";
+import OrderForm from "./components/Orders/OrderForm";
 import logoQuenitasHero from "./assets/logoquenitamejorcalidad.jpeg";
-import logoQuenitas from "./assets/logoquenitamejorcalidad.jpeg";
 import "./App.css";
-import { supabase } from './supabaseClient';
+import logoQuenitas from "./assets/logoquenitamejorcalidad.jpeg";
 
-const LazyAdminPanel = lazy(() => import('./components/AdminPanel'));
-const LazyCocinaPanel = lazy(() => import('./components/CocinaPanel'));
-const LazyCajaPanel = lazy(() => import('./components/CajaPanel'));
-const LazyCajeroPanel = lazy(() => import('./components/CajeroPanel'));
-const LazyRepartidorPanel = lazy(() => import('./components/RepartidorPanel'));
-const LazyCalendarView = lazy(() => import('./components/CalendarView'));
-const LazyLogin = lazy(() => import('./components/Login'));
+import { supabase } from './lib/supabaseClient';
+
+const LazyAdminPanel = lazy(() => import('./components/Admin/AdminPanel'));
+const LazyCocinaPanel = lazy(() => import('./components/Cocina/CocinaPanel'));
+const LazyCajaPanel = lazy(() => import('./components/Caja/CajaPanel'));
+const LazyCajeroPanel = lazy(() => import('./components/Caja/CajeroPanel'));
+const LazyRepartidorPanel = lazy(() => import('./components/Repartidor/RepartidorPanel'));
+const LazyCalendarView = lazy(() => import('./components/Orders/CalendarView'));
+const LazyLogin = lazy(() => import('./components/Auth/Login'));
 
 const ADMIN_EMAIL = 'benjaminalvarao12@gmail.com';
 const CART_STORAGE_KEY = 'quenitas-cart';
@@ -41,11 +42,25 @@ const useCart = () => {
   }, [cart]);
 
   const addToCart = useCallback((order) => {
-    console.log('🛒 Agregando orden al carrito:', order);
+    console.log('🛒 Agregando orden al carrito - total:', order.total);
     
     if (order.products && Array.isArray(order.products)) {
       console.log('📦 Orden con múltiples productos detectada');
-      setCart(prev => [...prev, order]);
+      // Asegurar que el total esté correctamente calculado
+      const calculatedTotal = order.products.reduce((sum, product) => {
+        const basePrice = product.price || 0;
+        const beveragePrice = product.beveragePrice || 0;
+        const customizationPrice = product.customizationPrice || 0;
+        return sum + (basePrice + beveragePrice + customizationPrice) * (product.quantity || 1);
+      }, 0);
+      
+      const orderWithCorrectTotal = {
+        ...order,
+        total: calculatedTotal
+      };
+      
+      console.log('🛒 Orden con total corregido:', orderWithCorrectTotal);
+      setCart(prev => [...prev, orderWithCorrectTotal]);
     } else {
       console.log('🍽️ Orden individual detectada');
       setCart(prev => [...prev, { ...order, quantity: order.quantity || 1 }]);
@@ -73,20 +88,47 @@ const useCart = () => {
 
   const updateQuantity = useCallback((idx, delta) => {
     setCart(prev => prev.map((item, i) => 
-      i === idx ? { ...item, price: (item.price/item.quantity)*(item.quantity+delta), quantity: item.quantity+delta } : item
+      i === idx ? { ...item, quantity: item.quantity+delta } : item
     ).filter(item => item.quantity > 0));
   }, []);
 
   const calculateTotals = useCallback(() => {
     const subtotal = cart.reduce((acc, item) => {
+      console.log('🔍 calculateTotals - procesando item:', item);
+      
       if (item.products && Array.isArray(item.products)) {
-        return acc + (item.total || 0);
+        // Para órdenes con múltiples productos
+        if (item.total && item.total > 0) {
+          console.log('🔍 calculateTotals - usando item.total:', item.total);
+          return acc + item.total;
+        } else {
+          // Calcular manualmente basándose en los productos
+          const calculatedTotal = item.products.reduce((sum, product) => {
+            const basePrice = product.price || 0;
+            const beveragePrice = product.beveragePrice || 0;
+            const customizationPrice = product.customizationPrice || 0;
+            const itemTotal = (basePrice + beveragePrice + customizationPrice) * (product.quantity || 1);
+            console.log('🔍 calculateTotals - producto:', product.name, 'precio:', itemTotal);
+            return sum + itemTotal;
+          }, 0);
+          console.log('🔍 calculateTotals - total calculado manualmente:', calculatedTotal);
+          return acc + calculatedTotal;
+        }
+      } else {
+        // Para items individuales
+        const basePrice = item.price || 0;
+        const beveragePrice = item.beveragePrice || 0;
+        const customizationPrice = item.customizationPrice || 0;
+        const itemTotal = (basePrice + beveragePrice + customizationPrice) * (item.quantity || 1);
+        console.log('🔍 calculateTotals - item individual:', item.name, 'precio:', itemTotal);
+        return acc + itemTotal;
       }
-      return acc + (item.price || 0);
     }, 0);
     
     const envio = cart.length > 0 ? DELIVERY_FEE : 0;
     const total = subtotal + envio;
+    
+    console.log('🔍 calculateTotals - resultados finales:', { subtotal, envio, total, cartLength: cart.length });
     
     return { subtotal, envio, total };
   }, [cart]);
@@ -148,7 +190,13 @@ const useTheme = () => {
   });
 
   useEffect(() => {
-    document.body.classList.toggle('dark-mode', darkMode);
+    // Aplicar clase al body para el tema oscuro
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    
     try {
       localStorage.setItem(THEME_STORAGE_KEY, darkMode);
     } catch (error) {
@@ -349,14 +397,7 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
   const isMultiProduct = item.products && Array.isArray(item.products);
   
   const renderProductImage = () => (
-    <div className="cart-item-img" style={{
-      width: '60px',
-      height: '60px',
-      position: 'relative',
-      overflow: 'hidden',
-      borderRadius: '10px',
-      flexShrink: 0
-    }}>
+    <div className="cart-item-img">
       <img 
         src={isMultiProduct ? item.products[0]?.image : item.image} 
         alt={isMultiProduct ? "Pedido múltiple" : (item.product || item.name)} 
@@ -366,27 +407,8 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
           e.target.style.display = 'none';
           e.target.nextSibling.style.display = 'flex';
         }}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          borderRadius: '10px'
-        }}
       />
-      <div style={{
-        display: 'none',
-        width: '100%',
-        height: '100%',
-        background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
-        borderRadius: '10px',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.5rem',
-        color: '#9ca3af',
-        position: 'absolute',
-        top: 0,
-        left: 0
-      }}>
+      <div className="cart-item-fallback">
         🍽️
       </div>
     </div>
@@ -416,20 +438,11 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
         <h3>{item.product || item.name}</h3>
         <div className="product-count">
           {item.beverage && item.beverage !== 'Sin bebida' ? (
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              background: item.beverageColor ? `${item.beverageColor}20` : '#f3f4f6',
-              color: item.beverageColor || '#6b7280',
-              fontSize: '0.85em'
-            }}>
+            <span className="beverage-tag">
               {item.beverageIcon} {item.beverage}
             </span>
           ) : (
-            <span style={{color: '#9ca3af', fontStyle: 'italic'}}>Sin bebida</span>
+            <span className="no-beverage">Sin bebida</span>
           )}
         </div>
         {item.customizations && item.customizations.length > 0 && (
@@ -475,24 +488,25 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
     );
   };
 
-  const renderPrice = () => (
-    <div className="cart-item-price" aria-label={`Precio: ${isMultiProduct ? item.total : item.price} CLP`}>
-      ${isMultiProduct ? item.total?.toLocaleString() : item.price} CLP
-    </div>
-  );
+  const renderPrice = () => {
+    const itemTotal = isMultiProduct ? item.total : ((item.price || 0) * (item.quantity || 1));
+    return (
+      <div className="cart-item-price" aria-label={`Precio: ${itemTotal} CLP`}>
+        ${itemTotal?.toLocaleString()} CLP
+      </div>
+    );
+  };
 
   const renderRemoveButton = () => {
     if (isMultiProduct) {
       return (
-        <div className="cart-item-actions">
-          <button 
-            onClick={() => onRemove(idx, `Pedido de ${item.name}`)}
-            className="remove-btn"
-            aria-label="Eliminar pedido"
-          >
-            🗑️
-          </button>
-        </div>
+        <button 
+          onClick={() => onRemove(idx, `Pedido de ${item.name}`)}
+          className="remove-btn"
+          aria-label="Eliminar pedido"
+        >
+          🗑️
+        </button>
       );
     }
     return null;
@@ -521,7 +535,49 @@ function CartPage({
   setShowOrderConfirmation, 
   onOrderSubmit 
 }) {
-  const { subtotal, envio, total } = useCart().calculateTotals();
+  // Calcular totales directamente usando el cart que se pasa como prop
+  const calculateTotals = () => {
+    const subtotal = cart.reduce((acc, item) => {
+      console.log('🔍 CartPage calculateTotals - procesando item:', item);
+      
+      if (item.products && Array.isArray(item.products)) {
+        // Para órdenes con múltiples productos
+        if (item.total && item.total > 0) {
+          console.log('🔍 CartPage calculateTotals - usando item.total:', item.total);
+          return acc + item.total;
+        } else {
+          // Calcular manualmente basándose en los productos
+          const calculatedTotal = item.products.reduce((sum, product) => {
+            const basePrice = product.price || 0;
+            const beveragePrice = product.beveragePrice || 0;
+            const customizationPrice = product.customizationPrice || 0;
+            const itemTotal = (basePrice + beveragePrice + customizationPrice) * (product.quantity || 1);
+            console.log('🔍 CartPage calculateTotals - producto:', product.name, 'precio:', itemTotal);
+            return sum + itemTotal;
+          }, 0);
+          console.log('🔍 CartPage calculateTotals - total calculado manualmente:', calculatedTotal);
+          return acc + calculatedTotal;
+        }
+      } else {
+        // Para items individuales
+        const basePrice = item.price || 0;
+        const beveragePrice = item.beveragePrice || 0;
+        const customizationPrice = item.customizationPrice || 0;
+        const itemTotal = (basePrice + beveragePrice + customizationPrice) * (item.quantity || 1);
+        console.log('🔍 CartPage calculateTotals - item individual:', item.name, 'precio:', itemTotal);
+        return acc + itemTotal;
+      }
+    }, 0);
+    
+    const envio = cart.length > 0 ? DELIVERY_FEE : 0;
+    const total = subtotal + envio;
+    
+    console.log('🔍 CartPage calculateTotals - resultados finales:', { subtotal, envio, total, cartLength: cart.length });
+    
+    return { subtotal, envio, total };
+  };
+
+  const { subtotal, envio, total } = calculateTotals();
 
   const handleRemove = (idx, itemName) => {
     if (removeFromCart(idx, itemName)) {
@@ -619,7 +675,7 @@ function CartPage({
           telefono: item.phone,
           direccion: item.address || 'Retiro en local',
           producto: item.product,
-          precio_total: item.price,
+          precio_total: (item.price || 0) * (item.quantity || 1),
           estado: 'PENDIENTE',
           tipo_entrega: item.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
           bebida: item.beverage,
@@ -677,15 +733,13 @@ function CartPage({
               <div className="cart-empty-actions">
                 <button 
                   onClick={onBack} 
-                  className="hero-btn" 
-                  style={{background:'#ffb347',color:'#232323',padding:'0.8rem 1.5rem'}}
+                  className="hero-btn"
                 >
                   Ver Menú
                 </button>
                 <button 
                   onClick={() => document.getElementById('menu').scrollIntoView({behavior:'smooth'})} 
-                  className="hero-btn" 
-                  style={{background:'#e67e22',color:'white',padding:'0.8rem 1.5rem'}}
+                  className="hero-btn"
                 >
                   Explorar Productos
                 </button>
@@ -766,16 +820,9 @@ function CartPage({
 function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
   return (
     <header className="main-header" role="banner">
-      <nav role="navigation" aria-label="Navegación principal" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        padding: '0 2vw'
-      }}>
+      <nav role="navigation" aria-label="Navegación principal">
         <span 
           className="logo" 
-          style={{display:'flex',alignItems:'center',gap:'0.6rem',cursor:'pointer'}} 
           onClick={onLogoClick}
           role="button"
           tabIndex={0}
@@ -785,58 +832,17 @@ function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
           <img 
             src={logoQuenitas} 
             alt="Logo Quenita's" 
-            style={{
-              height:'38px',
-              width:'38px',
-              objectFit:'contain',
-              borderRadius:'8px',
-              background:'#fff',
-              padding:'2px',
-              boxShadow:'0 2px 8px rgba(0,0,0,0.10)'
-            }} 
           />
-          <span style={{
-            fontFamily:'Poppins,Montserrat,sans-serif',
-            fontWeight:700,
-            fontSize:'1.45rem',
-            color:'var(--accent-primary)',
-            letterSpacing:'-1px'
-          }}>
+          <span>
             quenita's
           </span>
         </span>
         
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          background: 'var(--bg-secondary)',
-          borderRadius: '12px',
-          padding: '8px 12px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-          border: '1px solid var(--border-color)'
-        }}>
+        <div className="navbar-buttons-container">
           <button
             className="dark-toggle"
             onClick={toggleTheme}
             aria-label={`Cambiar a modo ${darkMode ? 'claro' : 'oscuro'}`}
-            style={{
-              background: 'var(--bg-tertiary)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '18px',
-              minWidth: '36px',
-              height: '36px',
-              color: 'var(--text-primary)'
-            }}
-            onMouseEnter={(e) => e.target.style.background = 'var(--accent-primary)'}
-            onMouseLeave={(e) => e.target.style.background = 'var(--bg-tertiary)'}
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -844,23 +850,6 @@ function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
             className="cart-btn" 
             onClick={onCartClick} 
             aria-label={`Ver carrito (${cart.length} productos)`}
-            style={{
-              background: 'var(--bg-tertiary)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              minWidth: '36px',
-              height: '36px',
-              color: 'var(--text-primary)'
-            }}
-            onMouseEnter={(e) => e.target.style.background = 'var(--accent-primary)'}
-            onMouseLeave={(e) => e.target.style.background = 'var(--bg-tertiary)'}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="9" cy="21" r="1"/>
@@ -868,22 +857,7 @@ function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 1.61-1.61l1.38-7.39H6.5"/>
             </svg>
             {cart.length > 0 && (
-              <span className="cart-count" aria-label={`${cart.length} productos en el carrito`} style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                background: '#ef4444',
-                color: 'white',
-                borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                border: '2px solid var(--bg-secondary)'
-              }}>
+              <span className="cart-count" aria-label={`${cart.length} productos en el carrito`}>
                 {cart.length}
               </span>
             )}
@@ -935,7 +909,7 @@ function App() {
     addToCart(order);
     setShowCart(true);
     
-    // Mensaje mejorado según el tipo de orden
+    
     let message = '';
     if (order.products && Array.isArray(order.products)) {
       const productCount = order.products.length;
@@ -989,33 +963,33 @@ function App() {
 
     if (route === '/cocina') {
       return (
-                 <Suspense fallback={<div className="loading-spinner">Cargando panel de cocina...</div>}>
-           <LazyCocinaPanel onBack={() => goTo('/')} setRoute={goTo} />
-         </Suspense>
+        <Suspense fallback={<div className="loading-spinner">Cargando panel de cocina...</div>}>
+          <LazyCocinaPanel onBack={() => goTo('/')} setRoute={goTo} />
+        </Suspense>
       );
     }
 
     if (route === '/caja') {
       return (
-                 <Suspense fallback={<div className="loading-spinner">Cargando panel de caja...</div>}>
-           <LazyCajaPanel onBack={() => goTo('/')} setRoute={goTo} />
-         </Suspense>
+        <Suspense fallback={<div className="loading-spinner">Cargando panel de caja...</div>}>
+          <LazyCajaPanel onBack={() => goTo('/')} setRoute={goTo} />
+        </Suspense>
       );
     }
 
     if (route === '/cajero') {
       return (
-                 <Suspense fallback={<div className="loading-spinner">Cargando panel de cajero...</div>}>
-           <LazyCajeroPanel onBack={() => goTo('/')} setRoute={goTo} />
-         </Suspense>
+        <Suspense fallback={<div className="loading-spinner">Cargando panel de cajero...</div>}>
+          <LazyCajeroPanel onBack={() => goTo('/')} setRoute={goTo} />
+        </Suspense>
       );
     }
 
     if (route === '/repartidor') {
       return (
-                 <Suspense fallback={<div className="loading-spinner">Cargando panel de repartidor...</div>}>
-           <LazyRepartidorPanel onBack={() => goTo('/')} setRoute={goTo} />
-         </Suspense>
+        <Suspense fallback={<div className="loading-spinner">Cargando panel de repartidor...</div>}>
+          <LazyRepartidorPanel onBack={() => goTo('/')} setRoute={goTo} />
+        </Suspense>
       );
     }
 

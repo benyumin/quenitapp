@@ -1,0 +1,1040 @@
+/* Chef-Friendly Admin Panel - Simple & Visual Design */
+
+/* ===== CHEF-FRIENDLY VARIABLES ===== */
+.admin-layout {
+  /* Kitchen Colors - Bright & Clear */
+  --chef-green: #16a34a;        /* Ready/Success */
+  --chef-orange: #f59e0b;       /* Pending/Warning */
+  --chef-red: #dc2626;          /* Urgent/Error */
+  --chef-blue: #2563eb;         /* Info/Active */
+  --chef-gray: #6b7280;         /* Neutral */
+  
+  /* High Contrast Backgrounds */
+  --chef-bg-main: #f9fafb;      /* Light gray main */
+  --chef-bg-card: #ffffff;      /* Pure white cards */
+  --chef-bg-header: #ffffff;    /* White header */
+  --chef-bg-sidebar: #ffffff;   /* White sidebar */
+  
+  /* Status Background Colors */
+  --chef-bg-success: #f0fdf4;   /* Light green */
+  --chef-bg-warning: #fffbeb;   /* Light orange */
+  --chef-bg-danger: #fef2f2;    /* Light red */
+  --chef-bg-info: #eff6ff;      /* Light blue */
+  
+  /* Large, Clear Text Sizes */
+  --chef-text-xxl: 2.5rem;      /* 40px - Extra large */
+  --chef-text-xl: 2rem;         /* 32px - Very large */
+  --chef-text-lg: 1.5rem;       /* 24px - Large */
+  --chef-text-md: 1.25rem;      /* 20px - Medium */
+  --chef-text-sm: 1rem;         /* 16px - Small */
+  
+  /* Generous Spacing */
+  --chef-space-xs: 0.75rem;     /* 12px */
+  --chef-space-sm: 1rem;        /* 16px */
+  --chef-space-md: 1.5rem;      /* 24px */
+  --chef-space-lg: 2rem;        /* 32px */
+  --chef-space-xl: 3rem;        /* 48px */
+  --chef-space-xxl: 4rem;       /* 64px */
+  
+  /* Large Touch Targets */
+  --chef-touch-sm: 3rem;        /* 48px */
+  --chef-touch-md: 4rem;        /* 64px */
+  --chef-touch-lg: 5rem;        /* 80px */
+  
+  /* Clear Shadows */
+  --chef-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --chef-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --chef-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  
+  /* Rounded Corners */
+  --chef-radius-sm: 0.75rem;    /* 12px */
+  --chef-radius-md: 1rem;       /* 16px */
+  --chef-radius-lg: 1.5rem;     /* 24px */
+  --chef-radius-xl: 2rem;       /* 32px */
+  
+  /* Standard Variables for Compatibility */
+  --color-bg: var(--chef-bg-main);
+  --color-bg-subtle: var(--chef-bg-main);
+  --color-bg-muted: #f3f4f6;
+  --color-text: #111827;
+  --color-text-subtle: #374151;
+  --color-text-muted: #6b7280;
+  --color-border: #d1d5db;
+  --color-border-subtle: #e5e7eb;
+  --color-accent: var(--chef-blue);
+  --color-success: var(--chef-green);
+  --color-warning: var(--chef-orange);
+  --color-error: var(--chef-red);
+  
+  /* Standard Spacing */
+  --spacing-xs: var(--chef-space-xs);
+  --spacing-sm: var(--chef-space-sm);
+  --spacing-md: var(--chef-space-md);
+  --spacing-lg: var(--chef-space-lg);
+  --spacing-xl: var(--chef-space-xl);
+  --spacing-2xl: var(--chef-space-xxl);
+  
+  /* Standard Typography */
+  --font-size-xs: var(--chef-text-sm);
+  --font-size-sm: var(--chef-text-md);
+  --font-size-base: var(--chef-text-md);
+  --font-size-lg: var(--chef-text-lg);
+  --font-size-xl: var(--chef-text-xl);
+  --font-size-2xl: var(--chef-text-xl);
+  
+  /* Standard Shadows */
+  --shadow-sm: var(--chef-shadow-sm);
+  --shadow-md: var(--chef-shadow-md);
+  --shadow-lg: var(--chef-shadow-lg);
+  
+  /* Standard Radius */
+  --radius-sm: var(--chef-radius-sm);
+  --radius-md: var(--chef-radius-md);
+  --radius-lg: var(--chef-radius-lg);
+  --radius-xl: var(--chef-radius-xl);
+}
+
+/* Dark Mode for Chefs */
+.admin-layout.dark {
+  --chef-bg-main: #111827;
+  --chef-bg-card: #1f2937;
+  --chef-bg-header: #1f2937;
+  --chef-bg-sidebar: #1f2937;
+  
+  --chef-bg-success: #064e3b;
+  --chef-bg-warning: #451a03;
+  --chef-bg-danger: #7f1d1d;
+  --chef-bg-info: #1e3a8a;
+  
+  --color-bg: var(--chef-bg-main);
+  --color-bg-subtle: var(--chef-bg-main);
+  --color-bg-muted: #374151;
+  --color-text: #f9fafb;
+  --color-text-subtle: #e5e7eb;
+  --color-text-muted: #9ca3af;
+  --color-border: #374151;
+  --color-border-subtle: #4b5563;
+}
+
+/* ===== BASE LAYOUT ===== */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--chef-bg-main) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-size: var(--chef-text-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.admin-layout * {
+  box-sizing: border-box;
+}
+
+.admin-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--chef-bg-main);
+}
+
+/* ===== CHEF-FRIENDLY HEADER ===== */
+.admin-header {
+  background: var(--chef-bg-header) !important;
+  border-bottom: 3px solid var(--chef-blue) !important;
+  padding: var(--chef-space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--chef-shadow-md);
+  min-height: 5rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--chef-space-lg);
+}
+
+.page-info h1 {
+  font-size: var(--chef-text-xl);
+  font-weight: 800;
+  color: var(--color-text) !important;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-info p {
+  color: var(--color-text-muted) !important;
+  margin: var(--chef-space-xs) 0 0 0;
+  font-size: var(--chef-text-md);
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--chef-space-md);
+}
+
+/* ===== LARGE ACTION BUTTONS FOR CHEFS ===== */
+.chef-action-btn {
+  background: var(--chef-blue);
+  color: white;
+  border: none;
+  border-radius: var(--chef-radius-md);
+  padding: var(--chef-space-md) var(--chef-space-lg);
+  font-size: var(--chef-text-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--chef-shadow-sm);
+  min-height: var(--chef-touch-md);
+  min-width: var(--chef-touch-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--chef-space-sm);
+}
+
+.chef-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--chef-shadow-md);
+}
+
+.chef-action-btn.success {
+  background: var(--chef-green);
+}
+
+.chef-action-btn.warning {
+  background: var(--chef-orange);
+}
+
+.chef-action-btn.danger {
+  background: var(--chef-red);
+}
+
+/* ===== MAIN CONTENT AREA ===== */
+.admin-main {
+  flex: 1;
+  padding: var(--chef-space-xl);
+  overflow-y: auto;
+  background: var(--chef-bg-main);
+}
+
+/* ===== CHEF QUICK ACTIONS ===== */
+.chef-quick-actions {
+  display: flex;
+  gap: var(--chef-space-lg);
+  margin-bottom: var(--chef-space-xxl);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chef-quick-actions .chef-action-btn {
+  min-width: 200px;
+  font-size: var(--chef-text-lg);
+  padding: var(--chef-space-lg) var(--chef-space-xl);
+}
+
+/* ===== LARGE DASHBOARD STATS FOR CHEFS ===== */
+.chef-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--chef-space-lg);
+  margin-bottom: var(--chef-space-xxl);
+}
+
+.chef-stat-card {
+  background: var(--chef-bg-card);
+  border-radius: var(--chef-radius-lg);
+  padding: var(--chef-space-xl);
+  box-shadow: var(--chef-shadow-md);
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  min-height: 8rem;
+  display: flex;
+  align-items: center;
+  gap: var(--chef-space-lg);
+}
+
+.chef-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--chef-shadow-lg);
+}
+
+.chef-stat-card.pending {
+  border-color: var(--chef-orange);
+  background: var(--chef-bg-warning);
+}
+
+.chef-stat-card.ready {
+  border-color: var(--chef-green);
+  background: var(--chef-bg-success);
+}
+
+.chef-stat-card.urgent {
+  border-color: var(--chef-red);
+  background: var(--chef-bg-danger);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.chef-stat-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--chef-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.chef-stat-icon.pending { background: var(--chef-orange); }
+.chef-stat-icon.ready { background: var(--chef-green); }
+.chef-stat-icon.urgent { background: var(--chef-red); }
+.chef-stat-icon.info { background: var(--chef-blue); }
+
+.chef-stat-content h3 {
+  font-size: var(--chef-text-xxl);
+  font-weight: 900;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1;
+}
+
+.chef-stat-content p {
+  color: var(--color-text-subtle);
+  margin: var(--chef-space-xs) 0 0 0;
+  font-size: var(--chef-text-lg);
+  font-weight: 700;
+}
+
+/* ===== LARGE ORDER CARDS FOR CHEFS ===== */
+.chef-orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--chef-space-lg);
+}
+
+.chef-order-card {
+  background: var(--chef-bg-card);
+  border-radius: var(--chef-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--chef-shadow-md);
+  border: 3px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.chef-order-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--chef-shadow-lg);
+}
+
+.chef-order-card.urgent {
+  border-color: var(--chef-red);
+  background: var(--chef-bg-danger);
+}
+
+.chef-order-card.ready {
+  border-color: var(--chef-green);
+}
+
+.chef-order-header {
+  padding: var(--chef-space-lg);
+  border-bottom: 2px solid var(--color-border);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.chef-customer-info {
+  display: flex;
+  align-items: center;
+  gap: var(--chef-space-md);
+  margin-bottom: var(--chef-space-md);
+}
+
+.chef-customer-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--chef-blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--chef-text-lg);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.chef-customer-details h4 {
+  font-size: var(--chef-text-lg);
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.chef-customer-details p {
+  color: var(--color-text-subtle);
+  margin: var(--chef-space-xs) 0 0 0;
+  font-size: var(--chef-text-md);
+  font-weight: 600;
+}
+
+.chef-order-status {
+  display: flex;
+  align-items: center;
+  gap: var(--chef-space-sm);
+}
+
+.chef-status-badge {
+  padding: var(--chef-space-sm) var(--chef-space-md);
+  border-radius: var(--chef-radius-md);
+  font-size: var(--chef-text-md);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chef-status-badge.pending {
+  background: var(--chef-orange);
+  color: white;
+}
+
+.chef-status-badge.ready {
+  background: var(--chef-green);
+  color: white;
+}
+
+.chef-status-badge.urgent {
+  background: var(--chef-red);
+  color: white;
+  animation: pulse 1.5s infinite;
+}
+
+.chef-order-info {
+  padding: var(--chef-space-lg);
+}
+
+.chef-order-items {
+  margin-bottom: var(--chef-space-lg);
+}
+
+.chef-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--chef-space-md) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--chef-text-md);
+}
+
+.chef-order-item:last-child {
+  border-bottom: none;
+}
+
+.chef-item-name {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.chef-item-quantity {
+  background: var(--chef-blue);
+  color: white;
+  padding: var(--chef-space-xs) var(--chef-space-sm);
+  border-radius: var(--chef-radius-sm);
+  font-weight: 800;
+  font-size: var(--chef-text-sm);
+  min-width: 2rem;
+  text-align: center;
+}
+
+.chef-order-actions {
+  display: flex;
+  gap: var(--chef-space-md);
+  margin-top: var(--chef-space-lg);
+}
+
+.chef-order-btn {
+  flex: 1;
+  min-height: var(--chef-touch-md);
+  border: none;
+  border-radius: var(--chef-radius-md);
+  font-size: var(--chef-text-md);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--chef-space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chef-order-btn.prepare {
+  background: var(--chef-orange);
+  color: white;
+}
+
+.chef-order-btn.ready {
+  background: var(--chef-green);
+  color: white;
+}
+
+.chef-order-btn.complete {
+  background: var(--chef-blue);
+  color: white;
+}
+
+.chef-order-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--chef-shadow-md);
+}
+
+/* ===== CHEF-FRIENDLY TIME DISPLAY ===== */
+.chef-time-badge {
+  background: var(--chef-gray);
+  color: white;
+  padding: var(--chef-space-sm) var(--chef-space-md);
+  border-radius: var(--chef-radius-md);
+  font-size: var(--chef-text-sm);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--chef-space-xs);
+}
+
+.chef-time-badge.urgent {
+  background: var(--chef-red);
+  animation: pulse 1s infinite;
+}
+
+/* ===== EMPTY STATE ===== */
+.chef-empty-state {
+  text-align: center;
+  padding: var(--chef-space-xxl);
+  background: var(--chef-bg-card);
+  border-radius: var(--chef-radius-lg);
+  box-shadow: var(--chef-shadow-sm);
+}
+
+.chef-empty-state h3 {
+  font-size: var(--chef-text-xl);
+  font-weight: 800;
+  color: var(--color-text-subtle);
+  margin: 0 0 var(--chef-space-md) 0;
+}
+
+.chef-empty-state p {
+  font-size: var(--chef-text-lg);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ===== RESPONSIVE DESIGN FOR KITCHEN TABLETS ===== */
+@media (max-width: 1024px) {
+  .chef-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .chef-orders-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    padding: var(--chef-space-md);
+  }
+  
+  .admin-main {
+    padding: var(--chef-space-lg);
+  }
+  
+  .chef-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chef-orders-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chef-stat-card {
+    padding: var(--chef-space-lg);
+    min-height: 6rem;
+  }
+  
+  .chef-stat-icon {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+  }
+  
+  .chef-stat-content h3 {
+    font-size: var(--chef-text-xl);
+  }
+  
+  .chef-order-actions {
+    flex-direction: column;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.chef-action-btn:focus,
+.chef-order-btn:focus {
+  outline: 3px solid var(--chef-blue);
+  outline-offset: 2px;
+}
+
+/* ===== CHEF FILTER SECTION ===== */
+.chef-filter-section {
+  margin-bottom: var(--chef-space-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--chef-space-lg);
+  align-items: center;
+}
+
+.chef-filter-buttons {
+  display: flex;
+  gap: var(--chef-space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chef-filter-btn {
+  background: var(--chef-bg-card);
+  border: 3px solid var(--color-border);
+  border-radius: var(--chef-radius-lg);
+  padding: var(--chef-space-lg) var(--chef-space-xl);
+  font-size: var(--chef-text-lg);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: var(--chef-touch-md);
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chef-filter-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--chef-shadow-md);
+  border-color: var(--chef-blue);
+  color: var(--chef-blue);
+}
+
+.chef-filter-btn.active {
+  background: var(--chef-blue);
+  border-color: var(--chef-blue);
+  color: white;
+  box-shadow: var(--chef-shadow-lg);
+}
+
+.chef-search-box {
+  display: flex;
+  align-items: center;
+  background: var(--chef-bg-card);
+  border: 3px solid var(--color-border);
+  border-radius: var(--chef-radius-lg);
+  padding: var(--chef-space-md) var(--chef-space-lg);
+  gap: var(--chef-space-md);
+  min-width: 300px;
+  box-shadow: var(--chef-shadow-sm);
+}
+
+.chef-search-box svg {
+  font-size: var(--chef-text-lg);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.chef-search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: var(--chef-text-md);
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+  min-height: var(--chef-space-lg);
+}
+
+.chef-search-box input::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* ===== CHEF ORDER NOTES ===== */
+.chef-order-notes {
+  background: var(--chef-bg-warning);
+  border: 2px solid var(--chef-orange);
+  border-radius: var(--chef-radius-md);
+  padding: var(--chef-space-md);
+  margin: var(--chef-space-md) 0;
+}
+
+.chef-order-notes strong {
+  color: var(--chef-orange);
+  font-size: var(--chef-text-md);
+  font-weight: 800;
+  display: block;
+  margin-bottom: var(--chef-space-xs);
+}
+
+.chef-order-notes p {
+  color: var(--color-text);
+  font-size: var(--chef-text-md);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ===== CHEF READY INDICATOR ===== */
+.chef-ready-indicator {
+  background: var(--chef-bg-success);
+  border: 3px solid var(--chef-green);
+  border-radius: var(--chef-radius-md);
+  padding: var(--chef-space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--chef-space-md);
+  color: var(--chef-green);
+  font-size: var(--chef-text-lg);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: readyPulse 2s infinite;
+}
+
+@keyframes readyPulse {
+  0%, 100% { 
+    background: var(--chef-bg-success);
+    transform: scale(1); 
+  }
+  50% { 
+    background: var(--chef-green);
+    color: white;
+    transform: scale(1.02); 
+  }
+}
+
+.chef-ready-indicator svg {
+  font-size: var(--chef-text-xl);
+}
+
+/* ===== SPINNING ANIMATION ===== */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* ===== RESPONSIVE DESIGN FOR CHEF PANELS ===== */
+@media (max-width: 1200px) {
+  .chef-filter-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .chef-search-box {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chef-filter-section {
+    align-items: stretch;
+  }
+  
+  .chef-filter-buttons {
+    flex-direction: column;
+  }
+  
+  .chef-filter-btn {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .chef-search-box {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .admin-header {
+    flex-direction: column;
+    gap: var(--chef-space-md);
+    align-items: stretch;
+  }
+  
+  .header-right {
+    justify-content: center;
+  }
+}
+
+/* ===== CHEF DELIVERY ADDRESS ===== */
+.chef-delivery-address {
+  background: var(--chef-bg-info);
+  border: 2px solid var(--chef-blue);
+  border-radius: var(--chef-radius-md);
+  padding: var(--chef-space-md);
+  margin-top: var(--chef-space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--chef-space-sm);
+  color: var(--chef-blue);
+  font-weight: 700;
+  font-size: var(--chef-text-md);
+}
+
+.chef-delivery-address svg {
+  font-size: var(--chef-text-lg);
+  flex-shrink: 0;
+}
+
+/* ===== CHEF CONTACT ACTIONS ===== */
+.chef-contact-actions {
+  display: flex;
+  gap: var(--chef-space-sm);
+  margin-bottom: var(--chef-space-md);
+}
+
+.chef-contact-btn {
+  flex: 1;
+  background: var(--chef-bg-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--chef-radius-md);
+  padding: var(--chef-space-md);
+  font-size: var(--chef-text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--chef-space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-height: var(--chef-touch-sm);
+}
+
+.chef-contact-btn.call {
+  border-color: var(--chef-blue);
+  color: var(--chef-blue);
+}
+
+.chef-contact-btn.call:hover {
+  background: var(--chef-blue);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.chef-contact-btn.whatsapp {
+  border-color: var(--chef-green);
+  color: var(--chef-green);
+}
+
+.chef-contact-btn.whatsapp:hover {
+  background: var(--chef-green);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.chef-contact-btn.maps {
+  border-color: var(--chef-orange);
+  color: var(--chef-orange);
+}
+
+.chef-contact-btn.maps:hover {
+  background: var(--chef-orange);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.chef-contact-btn svg {
+  font-size: var(--chef-text-md);
+}
+
+/* ===== CHEF TIPS SECTION ===== */
+.chef-tips-section {
+  margin-top: var(--chef-space-xxl);
+}
+
+.chef-tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--chef-space-lg);
+}
+
+.chef-tip-card {
+  background: var(--chef-bg-card);
+  border: 2px solid var(--chef-blue);
+  border-radius: var(--chef-radius-lg);
+  padding: var(--chef-space-lg);
+  box-shadow: var(--chef-shadow-sm);
+}
+
+.chef-tip-card h3 {
+  color: var(--chef-blue);
+  font-size: var(--chef-text-lg);
+  font-weight: 800;
+  margin: 0 0 var(--chef-space-md) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chef-tip-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chef-tip-card li {
+  color: var(--color-text);
+  font-size: var(--chef-text-md);
+  font-weight: 600;
+  padding: var(--chef-space-xs) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  line-height: 1.4;
+}
+
+.chef-tip-card li:last-child {
+  border-bottom: none;
+}
+
+/* ===== RESPONSIVE DESIGN FOR CONTACT ACTIONS ===== */
+@media (max-width: 768px) {
+  .chef-contact-actions {
+    flex-direction: column;
+  }
+  
+  .chef-contact-btn {
+    width: 100%;
+  }
+  
+  .chef-tips-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== CHEF NEW ORDER FORM ===== */
+.chef-new-order-form {
+  background: var(--chef-bg-card);
+  border: 3px solid var(--chef-blue);
+  border-radius: var(--chef-radius-lg);
+  padding: var(--chef-space-xl);
+  margin-bottom: var(--chef-space-xxl);
+  box-shadow: var(--chef-shadow-lg);
+}
+
+.chef-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--chef-space-lg);
+}
+
+.chef-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--chef-space-lg);
+}
+
+.chef-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--chef-space-sm);
+}
+
+.chef-form-field label {
+  font-size: var(--chef-text-md);
+  font-weight: 800;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chef-form-input,
+.chef-form-textarea {
+  background: var(--chef-bg-main);
+  border: 3px solid var(--color-border);
+  border-radius: var(--chef-radius-md);
+  padding: var(--chef-space-md) var(--chef-space-lg);
+  font-size: var(--chef-text-md);
+  font-weight: 600;
+  color: var(--color-text);
+  transition: all 0.3s ease;
+  min-height: var(--chef-touch-md);
+}
+
+.chef-form-input:focus,
+.chef-form-textarea:focus {
+  outline: none;
+  border-color: var(--chef-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.chef-form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.chef-form-actions {
+  margin-top: var(--chef-space-lg);
+}
+
+.chef-search-section {
+  margin-bottom: var(--chef-space-xxl);
+  display: flex;
+  justify-content: center;
+}
+
+/* ===== RESPONSIVE DESIGN FOR FORMS ===== */
+@media (max-width: 768px) {
+  .chef-form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .chef-new-order-form {
+    padding: var(--chef-space-lg);
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .admin-header,
+  .chef-order-actions,
+  .chef-filter-section,
+  .chef-contact-actions,
+  .chef-tips-section,
+  .chef-new-order-form,
+  .chef-search-section {
+    display: none;
+  }
+  
+  .chef-order-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 2px solid #000;
+    margin-bottom: var(--chef-space-lg);
+  }
+}

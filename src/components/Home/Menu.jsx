@@ -3,13 +3,13 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation, Pagination } from 'swiper/modules';
-import completoImg from "../assets/completo-italiano.jpg";
-import papasImg from "../assets/papas-fritas.jpg";
-import barrosImg from "../assets/barro-luco.jpg";
-import fajitaImg from "../assets/fajitasdepollo.png";
-import assImg from "../assets/ass.jpg";
-import empanadaImg from "../assets/empanada-de-quesoo.png";
-import churrascoImg from "../assets/churrasco.png";
+import completoImg from "../../assets/completo-italiano.jpg";
+import papasImg from "../../assets/papas-fritas.jpg";
+import barrosImg from "../../assets/barro-luco.jpg";
+import fajitaImg from "../../assets/fajitasdepollo.png";
+import assImg from "../../assets/ass.jpg";
+import empanadaImg from "../../assets/empanada-de-quesoo.png";
+import churrascoImg from "../../assets/churrasco.png";
 import "./Menu.css";
 
 const Menu = () => {

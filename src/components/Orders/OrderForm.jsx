@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import completoImg from "../assets/completo-italiano.jpg";
-import papasImg from "../assets/papas-fritas.jpg";
-import barrosImg from "../assets/barro-luco.jpg";
-import fajitaImg from "../assets/fajitasdepollo.png";
-import assImg from "../assets/ass.jpg";
-import empanadaImg from "../assets/empanada-de-quesoo.png";
-import churrascoImg from "../assets/churrasco.png";
+import completoImg from "../../assets/completo-italiano.jpg";
+import papasImg from "../../assets/papas-fritas.jpg";
+import barrosImg from "../../assets/barro-luco.jpg";
+import fajitaImg from "../../assets/fajitasdepollo.png";
+import assImg from "../../assets/ass.jpg";
+import empanadaImg from "../../assets/empanada-de-quesoo.png";
+import churrascoImg from "../../assets/churrasco.png";
 // Importar imágenes de bebidas (puedes agregar tus propias imágenes aquí)
-import cocaColaImg from "../assets/coca-cola.png";
-import fantaImg from "../assets/fanta.jpg";
-import cafeImg from "../assets/cafe.jpg";
-import teImg from "../assets/te.jpg";
+import cocaColaImg from "../../assets/coca-cola.png";
+import fantaImg from "../../assets/fanta.jpg";
+import cafeImg from "../../assets/cafe.jpg";
+import teImg from "../../assets/te.jpg";
+import spriteImg from "../../assets/sprite.png";
+import limonSodaImg from "../../assets/limon-soda.png";
+import papImg from "../../assets/pap.png";
+import monsterImg from "../../assets/monster.png";
+import scoreImg from "../../assets/score.png";
 import './OrderForm.css';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 
 const products = [
   { name: "Completo Especial", price: 900, image: completoImg, popular: true },
@@ -29,6 +34,11 @@ const products = [
 const beverages = [
   { name: "Coca-Cola", price: 800, image: cocaColaImg },
   { name: "Fanta", price: 800, image: fantaImg },
+  { name: "Sprite", price: 800, image: spriteImg },
+  { name: "Limon Soda", price: 700, image: limonSodaImg },
+  { name: "Pap", price: 600, image: papImg },
+  { name: "Monster Energy", price: 1200, image: monsterImg },
+  { name: "Score Energy", price: 1200, image: scoreImg },
   { name: "Café Americano", price: 400, image: cafeImg },
   { name: "Té Negro", price: 300, image: teImg },
   { name: "Sin bebida", price: 0, image: null }
@@ -145,9 +155,15 @@ const OrderForm = ({ onAddToCart }) => {
 
   const calculateCartTotal = () => {
     const total = cart.reduce((total, item) => {
-      const itemTotal = (item.total || 0) * (item.quantity || 1);
+      // Calcular el precio total del item: precio base + bebida + personalizaciones
+      const basePrice = item.price || 0;
+      const beveragePrice = item.beveragePrice || 0;
+      const customizationPrice = item.customizationPrice || 0;
+      const itemTotal = (basePrice + beveragePrice + customizationPrice) * (item.quantity || 1);
+      
       return total + (isNaN(itemTotal) ? 0 : itemTotal);
     }, 0);
+    
     return isNaN(total) ? 0 : total;
   };
 
@@ -334,15 +350,24 @@ const OrderForm = ({ onAddToCart }) => {
     if (!validateForm()) {
       return;
     }
-
+    
     if (cart.length === 0) {
       alert('Por favor agrega al menos un producto al carrito');
       return;
     }
-
+    
     setIsSubmitting(true);
 
-    // Crear una sola orden con todos los productos del carrito
+    const total = cart.reduce((sum, item) => {
+      const basePrice = item.price || 0;
+      const beveragePrice = item.beveragePrice || 0;
+      const customizationPrice = item.customizationPrice || 0;
+      const itemTotal = (basePrice + beveragePrice + customizationPrice) * (item.quantity || 1);
+      return sum + itemTotal;
+    }, 0);
+
+    console.log('🔍 handleSubmit - total calculado:', total);
+
     const order = {
       name: customerName.trim(),
       phone: phone.trim(),
@@ -357,7 +382,7 @@ const OrderForm = ({ onAddToCart }) => {
         customizationPrice: item.customizationPrice,
         quantity: item.quantity || 1
       })),
-      total: calculateCartTotal(),
+      total, // total calculado correctamente
       deliveryMethod,
       paymentMethod,
       cardHolderName: paymentMethod === 'Tarjeta' ? cardHolderName.trim() : '',
@@ -367,10 +392,11 @@ const OrderForm = ({ onAddToCart }) => {
       cardRut: paymentMethod === 'Tarjeta' ? cardRut.trim() : ''
     };
 
+    console.log('🔍 handleSubmit - order.total:', order.total);
+
     try {
       // Enviar toda la orden al carrito principal
       onAddToCart(order);
-      
       // Reset form y carrito
       setStep(1);
       setCart([]);
@@ -387,7 +413,6 @@ const OrderForm = ({ onAddToCart }) => {
       setCardExpiry('');
       setCardCVV('');
       setCardRut('');
-      
     } catch (error) {
       console.error('Error al crear el pedido:', error);
       alert('Error al crear el pedido. Por favor intenta de nuevo.');
@@ -599,32 +624,107 @@ const OrderForm = ({ onAddToCart }) => {
                Confirma que todo esté correcto antes de continuar
              </p>
              
-             <div style={{ 
-               background: 'rgb(26, 122, 218)', 
-               padding: '20px', 
-               borderRadius: '12px', 
+             <div style={{
+               background: 'white',
+               padding: '24px', 
+               borderRadius: '16px', 
                marginBottom: '20px',
-               border: '1px solid rgb(106, 138, 202)',
-               color: 'white',
-               boxShadow: '0 4px 12px rgba(26, 122, 218, 0.3)'
+               border: '2px solid #e5e7eb',
+               boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+               position: 'relative',
+               overflow: 'hidden'
              }}>
-               <h4 style={{ margin: '0 0 16px 0', color: 'white' }}>📋 Resumen del pedido:</h4>
+               {/* Header con ícono */}
+               <div style={{
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '12px',
+                 marginBottom: '20px',
+                 paddingBottom: '16px',
+                 borderBottom: '2px solid #f3f4f6'
+               }}>
+                 <div style={{
+                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                   width: '40px',
+                   height: '40px',
+                   borderRadius: '50%',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   color: 'white',
+                   fontSize: '18px'
+                 }}>
+                   📋
+                 </div>
+                 <div>
+                   <h4 style={{ margin: 0, color: '#1f2937', fontSize: '1.2rem', fontWeight: '700' }}>
+                     Resumen del Pedido
+                   </h4>
+                   <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                     Revisa que todo esté correcto
+                   </p>
+                 </div>
+               </div>
                
-               <div style={{ marginBottom: '16px' }}>
-                 <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Producto:</strong> {selectedProduct?.name}</p>
-                 <p style={{ color: 'white', marginBottom: '8px' }}><strong style={{ color: '#10b981' }}>Bebida:</strong> {selectedBeverage?.name || 'Sin bebida'}</p>
+               {/* Contenido del resumen */}
+               <div style={{ marginBottom: '20px' }}>
+                 {/* Producto */}
+                 <div style={{
+                   background: '#f8fafc',
+                   padding: '16px',
+                   borderRadius: '12px',
+                   marginBottom: '12px',
+                   border: '1px solid #e5e7eb'
+                 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                     <span style={{ color: '#10b981', fontSize: '16px' }}>🍔</span>
+                     <strong style={{ color: '#374151', fontSize: '1rem' }}>Producto:</strong>
+                   </div>
+                   <p style={{ color: '#1f2937', margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>
+                     {selectedProduct?.name}
+                   </p>
+                 </div>
+
+                 {/* Bebida */}
+                 <div style={{
+                   background: '#f8fafc',
+                   padding: '16px',
+                   borderRadius: '12px',
+                   marginBottom: '12px',
+                   border: '1px solid #e5e7eb'
+                 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                     <span style={{ color: '#10b981', fontSize: '16px' }}>🥤</span>
+                     <strong style={{ color: '#374151', fontSize: '1rem' }}>Bebida:</strong>
+                   </div>
+                   <p style={{ color: '#1f2937', margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>
+                     {selectedBeverage?.name || 'Sin bebida'}
+                   </p>
+                 </div>
+
+                 {/* Ingredientes */}
                  {getCurrentCustomizations().length > 0 && (
-                   <div style={{ color: 'white', marginBottom: '8px' }}>
-                     <strong style={{ color: '#10b981' }}>🧀 Ingredientes:</strong>
-                     <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                   <div style={{
+                     background: '#f8fafc',
+                     padding: '16px',
+                     borderRadius: '12px',
+                     marginBottom: '12px',
+                     border: '1px solid #e5e7eb'
+                   }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                       <span style={{ color: '#10b981', fontSize: '16px' }}>🧀</span>
+                       <strong style={{ color: '#374151', fontSize: '1rem' }}>Ingredientes:</strong>
+                     </div>
+                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                        {getCurrentCustomizations().map(c => (
                          <span key={c.name} style={{
-                           background: 'rgba(16, 185, 129, 0.2)',
-                           color: '#10b981',
-                           padding: '2px 6px',
-                           borderRadius: '4px',
-                           fontSize: '0.8rem',
-                           fontWeight: '600'
+                           background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                           color: 'white',
+                           padding: '6px 12px',
+                           borderRadius: '20px',
+                           fontSize: '0.85rem',
+                           fontWeight: '600',
+                           boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
                          }}>
                            {c.name}
                          </span>
@@ -632,16 +732,19 @@ const OrderForm = ({ onAddToCart }) => {
                      </div>
                    </div>
                  )}
-                 <div style={{ 
-                   borderTop: '1px solid rgba(255, 255, 255, 0.3)', 
-                   paddingTop: '8px', 
-                   marginTop: '8px',
-                   fontWeight: 'bold',
-                   fontSize: '1.1rem'
+
+                 {/* Total */}
+                 <div style={{
+                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                   padding: '20px',
+                   borderRadius: '12px',
+                   marginTop: '16px'
                  }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', color: 'white' }}>
-                     <span>Total:</span>
-                     <span style={{ color: '#10b981' }}>${(calculateTotal() || 0).toLocaleString()}</span>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <span style={{ color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Total:</span>
+                     <span style={{ color: 'white', fontSize: '1.4rem', fontWeight: '800' }}>
+                       ${(calculateTotal() || 0).toLocaleString()}
+                     </span>
                    </div>
                  </div>
                </div>

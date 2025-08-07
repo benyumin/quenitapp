@@ -1,3 +1,5 @@
+/* Base Styles - Estilos base de la aplicación */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -68,13 +70,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gradient-accent);
+  background: var(--gradient-secondary);
 }
 
 /* Selección de texto */
 ::selection {
   background: var(--accent-primary);
-  color: var(--text-primary);
+  color: white;
 }
 
 /* Focus visible */
@@ -83,13 +85,8 @@ body {
   outline-offset: 2px;
 }
 
-/* Animaciones globales */
+/* Animaciones base */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
   from { 
     opacity: 0; 
     transform: translateY(20px); 
@@ -100,12 +97,23 @@ body {
   }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
 
-/* Clases de utilidad */
+/* Utilidades de texto */
 .text-gradient {
   background: var(--gradient-primary);
   -webkit-background-clip: text;
@@ -118,12 +126,11 @@ body {
 }
 
 .border-gradient {
-  border: 2px solid transparent;
-  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
-              var(--gradient-primary) border-box;
+  border: 2px solid;
+  border-image: var(--gradient-primary) 1;
 }
 
-/* Patrón de fondo sutil */
+/* Fondo con patrón sutil */
 body::before {
   content: '';
   position: fixed;
@@ -131,7 +138,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
+  background: 
     radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.03) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.02) 0%, transparent 50%);
@@ -139,131 +146,99 @@ body::before {
   z-index: -1;
 }
 
-/* ===== ESTILOS RESPONSIVOS ===== */
-
-/* Viewport meta tag para móviles */
+/* Responsive base */
 @media screen and (max-width: 768px) {
   html {
-    font-size: 14px; /* Reducir tamaño base de fuente en móviles */
+    font-size: 14px;
   }
   
   body {
-    padding: 0;
-    margin: 0;
-    min-height: 100vh;
-    width: 100%;
+    font-size: 0.9rem;
   }
   
   #root {
-    width: 100%;
+    padding: 0;
   }
   
-  /* Contenedores principales */
   .container, .main-container {
-    padding: 0.5rem;
-    max-width: 100%;
-    margin: 0;
+    padding: 0 1rem;
   }
   
-  /* Headers y navegación */
   header, .header {
-    padding: 0.75rem 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
-    width: 100%;
+    padding: 0.5rem 1rem;
   }
   
-  /* Botones */
   button, .btn {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.25rem;
     font-size: 0.9rem;
-    min-height: 44px; /* Tamaño mínimo para touch */
-    border-radius: var(--border-radius-md);
   }
   
-  /* Formularios */
   input, select, textarea {
     padding: 0.75rem;
-    font-size: 1rem; /* Evitar zoom en iOS */
-    border-radius: var(--border-radius-sm);
-    min-height: 44px;
+    font-size: 0.9rem;
   }
   
-  /* Grids y layouts */
   .grid, .products-grid, .beverages-grid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1rem;
-    padding: 0.5rem;
   }
   
-  /* Cards */
   .card, .product-card, .order-card {
-    margin: 0.5rem 0;
     padding: 1rem;
-    border-radius: var(--border-radius-md);
+    margin-bottom: 1rem;
   }
   
-  /* Imágenes */
   img {
     max-width: 100%;
     height: auto;
   }
   
-  /* Texto */
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.5rem; }
   h3 { font-size: 1.25rem; }
   h4 { font-size: 1.1rem; }
   p { font-size: 0.95rem; }
   
-  /* Espaciado */
   .spacing-sm { margin: 0.5rem 0; }
   .spacing-md { margin: 1rem 0; }
   .spacing-lg { margin: 1.5rem 0; }
 }
 
-/* Tablets */
 @media screen and (min-width: 769px) and (max-width: 1024px) {
   html {
     font-size: 15px;
   }
   
   .container, .main-container {
-    padding: 1rem;
-    max-width: 95%;
-  }
-  
-  .grid, .products-grid, .beverages-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-  }
-}
-
-/* Pantallas grandes */
-@media screen and (min-width: 1025px) {
-  .container, .main-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+    padding: 0 2rem;
   }
   
   .grid, .products-grid, .beverages-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .container, .main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  .grid, .products-grid, .beverages-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
   }
 }
 
-/* Orientación landscape en móviles */
 @media screen and (max-width: 768px) and (orientation: landscape) {
   header, .header {
-    padding: 0.5rem 1rem;
+    padding: 0.25rem 1rem;
   }
   
   .container, .main-container {
-    padding: 0.25rem;
+    padding: 0 1rem;
   }
   
   .grid, .products-grid, .beverages-grid {
@@ -272,14 +247,13 @@ body::before {
   }
 }
 
-/* Pantallas muy pequeñas */
 @media screen and (max-width: 480px) {
   html {
     font-size: 13px;
   }
   
   .container, .main-container {
-    padding: 0.25rem;
+    padding: 0 0.5rem;
   }
   
   .grid, .products-grid, .beverages-grid {
@@ -289,108 +263,90 @@ body::before {
   
   button, .btn {
     padding: 0.875rem 1rem;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
   
   .card, .product-card, .order-card {
     padding: 0.75rem;
-    margin: 0.25rem 0;
+    margin-bottom: 0.75rem;
   }
 }
 
-/* Ajustes específicos para el panel de administración */
+/* Admin responsive */
 @media screen and (max-width: 768px) {
-  /* Panel de administración */
   .admin-panel {
-    padding: 0.5rem;
-    width: 100%;
+    padding: 1rem;
   }
   
   .admin-card {
-    margin: 0.5rem 0;
     padding: 1rem;
-    min-height: auto;
-    width: 100%;
+    margin-bottom: 1rem;
   }
   
   .admin-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-  
-  .admin-filters {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .admin-buttons {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  /* Tabla responsiva */
-  .admin-table {
-    overflow-x: auto;
-    font-size: 0.8rem;
-    width: 100%;
-  }
-  
-  .admin-table th,
-  .admin-table td {
-    padding: 0.5rem 0.25rem;
-    min-width: 80px;
-  }
-}
-
-/* Ajustes para el formulario de pedidos */
-@media screen and (max-width: 768px) {
-  .step-container {
-    padding: 1rem;
-    margin: 0;
-    width: 100%;
-  }
-  
-  .products-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
   
-  .product-card {
-    padding: 1rem;
-    width: 100%;
-  }
-  
-  .product-image {
-    height: 150px;
-    object-fit: cover;
-  }
-  
-  .cart-item {
+  .admin-filters {
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.5rem;
   }
   
+  .admin-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .admin-table {
+    font-size: 0.8rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+}
+
+/* Step container responsive */
+@media screen and (max-width: 768px) {
+  .step-container {
+    padding: 1rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .product-card {
+    padding: 1rem;
+  }
+  
+  .product-image {
+    height: 200px;
+  }
+  
+  .cart-item {
+    padding: 1rem;
+  }
+  
   .cart-total {
-    font-size: 1.1rem;
     padding: 1rem;
   }
 }
 
-/* Ajustes para el carrito */
+/* Cart responsive */
 @media screen and (max-width: 768px) {
   .cart-card {
-    margin: 0.5rem;
-    padding: 1rem;
-    width: 100%;
+    margin: 1rem;
   }
   
   .cart-header {
-    padding: 0.75rem;
+    padding: 1rem;
   }
   
   .cart-items {
-    max-height: 60vh;
+    padding: 0 1rem;
   }
   
   .cart-footer {
@@ -398,71 +354,62 @@ body::before {
   }
 }
 
-/* Ajustes para modales y popups */
+/* Modal responsive */
 @media screen and (max-width: 768px) {
   .modal-overlay {
-    padding: 0.5rem;
-  }
-  
-  .modal-content {
-    width: 95%;
-    max-width: none;
-    margin: 0;
     padding: 1rem;
   }
   
+  .modal-content {
+    padding: 1.5rem;
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+  
   .notification {
-    bottom: 1rem;
-    left: 1rem;
-    right: 1rem;
-    width: auto;
+    margin: 1rem;
+    padding: 1rem;
+    font-size: 0.9rem;
   }
 }
 
-/* Ajustes para botones de WhatsApp */
+/* WhatsApp button responsive */
 @media screen and (max-width: 768px) {
   .whatsapp-button {
-    bottom: 1rem;
+    width: 50px;
+    height: 50px;
     right: 1rem;
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
+    bottom: 1rem;
   }
 }
 
-/* Ajustes para imágenes de productos */
+/* Product image responsive */
 @media screen and (max-width: 768px) {
   .product-image {
-    width: 100%;
     height: 200px;
-    object-fit: cover;
-    border-radius: var(--border-radius-sm);
   }
   
   .hero-image {
-    height: 200px;
+    height: 250px;
   }
 }
 
-/* Ajustes para texto y tipografía */
+/* Typography responsive */
 @media screen and (max-width: 768px) {
   .hero-title {
     font-size: 2rem;
-    line-height: 1.2;
   }
   
   .hero-subtitle {
-    font-size: 1rem;
-    line-height: 1.4;
+    font-size: 1.1rem;
   }
   
   .section-title {
     font-size: 1.5rem;
-    margin-bottom: 1rem;
   }
 }
 
-/* Ajustes para espaciado general */
+/* Layout responsive */
 @media screen and (max-width: 768px) {
   .section {
     padding: 2rem 1rem;
@@ -478,67 +425,14 @@ body::before {
   .spacing-right { margin-right: 0.5rem; }
 }
 
-/* ===== CORRECCIONES ESPECÍFICAS PARA EL PANEL DE ADMINISTRACIÓN ===== */
-
-/* Asegurar que el layout de administración no tenga overflow */
-.admin-layout {
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Corregir el sidebar para que no cause overflow */
-.sidebar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 1000;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* Corregir el contenido principal */
-.admin-main {
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Asegurar que el header no cause problemas */
-.admin-header {
-  width: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  overflow: hidden;
-}
-
-/* Corregir el contenido del admin */
-.admin-content {
-  width: 100%;
-  overflow-x: hidden;
-  position: relative;
-}
-
-.content-wrapper {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-/* Responsive para el panel de administración */
+/* Admin layout responsive */
 @media (max-width: 1024px) {
   .admin-main {
     margin-left: 0;
-    width: 100%;
   }
   
   .sidebar-container {
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
   }
   
   .sidebar-container.mobile-open {
@@ -552,8 +446,8 @@ body::before {
   }
   
   .admin-main {
-    margin-left: 0;
     width: 100%;
+    margin-left: 0;
   }
   
   .admin-header {
@@ -565,84 +459,111 @@ body::before {
   }
   
   .content-wrapper {
-    padding: 0;
+    padding: 1rem;
   }
 }
 
-/* Asegurar que las tarjetas no se desborden */
+/* Component styles */
 .admin-card, .pedido-card, .stat-card {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  word-wrap: break-word;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-light);
 }
 
-/* Corregir grids para que no causen overflow */
 .stats-grid, .pedidos-list {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+  display: grid;
+  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-/* Asegurar que los botones no se desborden */
 .action-btn, .filter-buttons button {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Corregir el calendario para que no cause overflow */
 .calendar-view {
-  width: 100%;
-  overflow-x: hidden;
+  background: var(--bg-primary);
+  padding: var(--spacing-lg);
 }
 
 .calendar-grid {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-sm);
+  background: var(--bg-secondary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
 }
 
-/* Asegurar que las imágenes no causen overflow */
+/* Image styles */
 img {
   max-width: 100%;
   height: auto;
-  object-fit: contain;
+  border-radius: var(--border-radius-sm);
 }
 
-/* Corregir modales para que no causen overflow */
+/* Modal styles */
 .modal-overlay {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
 .modal-content {
-  max-width: 90vw;
-  max-height: 90vh;
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
   overflow-y: auto;
-  overflow-x: hidden;
 }
 
-/* Asegurar que las notificaciones no causen overflow */
+/* Notification styles */
 .notification {
-  max-width: 90vw;
-  overflow: hidden;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-medium);
+  z-index: 1000;
+  max-width: 300px;
 }
 
-/* Corregir el carrito para que no cause overflow */
+/* Cart styles */
 .cart-card {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
 }
 
 .cart-item-row {
-  width: 100%;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
 }
 
-/* Allow content to be visible in forms */
+/* Form styles */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -821,4 +742,4 @@ html, body, #root, .App, .main-container {
   .nav-container, .breadcrumb {
     overflow-x: auto;
   }
-}
+} 

@@ -1,0 +1,406 @@
+/* Products Panel Styles - Estilos para la gestión de productos */
+
+/* ===== PRODUCTS SECTION ===== */
+.products-section {
+  padding: var(--spacing-lg);
+}
+
+/* ===== PRODUCT CARDS (GRID VIEW) ===== */
+.products-container.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.product-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-light);
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.product-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 3rem;
+}
+
+.product-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-card:hover .product-overlay {
+  opacity: 1;
+}
+
+.product-overlay button {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-overlay .edit-btn:hover {
+  background: var(--accent-secondary);
+  transform: scale(1.1);
+}
+
+.product-overlay .delete-btn {
+  background: #ef4444;
+}
+
+.product-overlay .delete-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.product-info {
+  padding: var(--spacing-md);
+}
+
+.product-info h4 {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.product-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: var(--spacing-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.product-price {
+  font-weight: 700;
+  color: var(--accent-primary);
+  font-size: 1.1rem;
+}
+
+.product-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.product-status.available {
+  background: #10b981;
+  color: white;
+}
+
+.product-status.unavailable {
+  background: #ef4444;
+  color: white;
+}
+
+.product-category {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ===== PRODUCT LIST VIEW ===== */
+.products-container.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.product-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  transition: all 0.3s ease;
+}
+
+.product-list-item:hover {
+  box-shadow: var(--shadow-light);
+}
+
+.product-list-image {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-list-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-list-info h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.product-list-info p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-list-meta {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.product-list-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.product-list-actions button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-list-actions .edit-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.product-list-actions .delete-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* ===== VIEW TOGGLE ===== */
+.view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: 0.25rem;
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.view-toggle button.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.view-toggle button:hover:not(.active) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ===== PRODUCT FORM MODAL ===== */
+.product-form-modal {
+  max-width: 600px;
+  width: 90%;
+}
+
+.product-form-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* ===== ADD BUTTON ===== */
+.add-btn {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .products-container.grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .product-list-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .product-list-image {
+    width: 100%;
+    height: 150px;
+  }
+  
+  .product-list-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .view-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-section {
+    padding: var(--spacing-md);
+  }
+  
+  .product-card {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .product-image {
+    height: 150px;
+  }
+} 

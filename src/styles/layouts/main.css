@@ -1,0 +1,96 @@
+/* Main Layout Styles - Estilos de layouts principales */
+
+/* ===== MAIN WEBSITE FIXES ===== */
+.main-container {
+  width: 100%;
+  overflow: visible;
+  max-width: 100%;
+}
+
+.main-content {
+  width: 100%;
+  overflow: visible;
+}
+
+/* ===== HERO LAYOUT ===== */
+.hero-section {
+  width: 100%;
+  overflow: visible;
+  text-align: center;
+}
+
+.hero-content {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.hero-image {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-lg);
+}
+
+/* ===== SECTION LAYOUTS ===== */
+.section {
+  width: 100%;
+  overflow-x: auto;
+  padding: var(--spacing-xl) 0;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.section-content {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* ===== FOOTER LAYOUT ===== */
+footer {
+  width: 100%;
+  overflow: visible;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--spacing-lg) 0;
+}
+
+/* ===== RESPONSIVE LAYOUTS ===== */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .section {
+    padding: var(--spacing-lg) 0;
+  }
+} 
