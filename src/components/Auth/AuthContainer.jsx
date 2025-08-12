@@ -14,8 +14,9 @@ const AuthContainer = ({ onClose }) => {
   };
 
   const handleSignUp = async (userData) => {
-    // El contexto ya maneja el estado del usuario
-    // Solo cerramos el modal
+    // El usuario se registró e inició sesión automáticamente
+    // Cerrar el modal y actualizar el estado de la app
+    console.log('Usuario registrado e iniciado sesión:', userData);
     onClose();
   };
 

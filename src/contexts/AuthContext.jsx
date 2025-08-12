@@ -13,8 +13,49 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [session, setSession] = useState(null)
+
+  // Función para obtener el perfil completo del usuario
+  const fetchUserProfile = async (userId) => {
+    try {
+      if (!userId) {
+        console.log('No hay userId para obtener perfil');
+        return null;
+      }
+      
+      console.log('Buscando perfil para usuario:', userId);
+      
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error obteniendo perfil del usuario:', error);
+        return null;
+      }
+      
+      console.log('Perfil encontrado en BD:', data);
+      return data;
+    } catch (error) {
+      console.error('Error en fetchUserProfile:', error);
+      return null;
+    }
+  };
+
+  // Función para refrescar el perfil del usuario
+  const refreshUserProfile = async () => {
+    if (user?.id) {
+      console.log('Refrescando perfil del usuario...');
+      const userProfile = await fetchUserProfile(user.id);
+      setProfile(userProfile);
+      return userProfile;
+    }
+    return null;
+  };
 
   useEffect(() => {
     // Get initial session
@@ -22,6 +63,15 @@ export const AuthProvider = ({ children }) => {
       const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Si hay usuario, obtener su perfil
+      if (session?.user) {
+        console.log('Usuario encontrado en sesión inicial:', session.user.id);
+        const userProfile = await fetchUserProfile(session.user.id);
+        console.log('Perfil obtenido:', userProfile);
+        setProfile(userProfile);
+      }
+      
       setLoading(false)
     }
 
@@ -30,8 +80,22 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
         setSession(session)
         setUser(session?.user ?? null)
+        
+        // Si hay usuario, obtener su perfil
+        if (session?.user) {
+          console.log('Usuario autenticado, obteniendo perfil...');
+          const userProfile = await fetchUserProfile(session.user.id);
+          console.log('Perfil actualizado:', userProfile);
+          setProfile(userProfile);
+        } else {
+          console.log('Usuario no autenticado, limpiando perfil');
+          setProfile(null);
+        }
+        
         setLoading(false)
       }
     )
@@ -46,9 +110,9 @@ export const AuthProvider = ({ children }) => {
         password
       })
       if (error) throw error
-      return { data, error: null }
+      return { success: true, data, error: null }
     } catch (error) {
-      return { data: null, error }
+      return { success: false, data: null, error: error.message }
     }
   }
 
@@ -62,9 +126,9 @@ export const AuthProvider = ({ children }) => {
         }
       })
       if (error) throw error
-      return { data, error: null }
+      return { success: true, data, error: null }
     } catch (error) {
-      return { data: null, error }
+      return { success: false, data: null, error: error.message }
     }
   }
 
@@ -100,6 +164,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    profile,
     session,
     loading,
     signIn,
@@ -107,6 +172,8 @@ export const AuthProvider = ({ children }) => {
     signOut,
     resetPassword,
     updateProfile,
+    fetchUserProfile,
+    refreshUserProfile,
     isAuthenticated: !!user
   }
 

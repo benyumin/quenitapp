@@ -20,6 +20,7 @@ const LazyRepartidorPanel = lazy(() => import('./components/Repartidor/Repartido
 const LazyCalendarView = lazy(() => import('./components/Orders/CalendarView'));
 const LazyLogin = lazy(() => import('./components/Auth/Login'));
 
+
 const ADMIN_EMAIL = 'benjaminalvarao12@gmail.com';
 const CART_STORAGE_KEY = 'quenitas-cart';
 const THEME_STORAGE_KEY = 'quenitas-dark';
@@ -735,7 +736,6 @@ function CartPage({
 
   const { subtotal, envio, total } = calculateTotals();
 
-  // Enhanced quick add function with animation
   const quickAddToCart = async (suggestion) => {
     setIsAnimating(true);
     
@@ -1150,7 +1150,56 @@ function CartPage({
   );
 } // End of CartPage function
 
-function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick, onUserClick, isLoggedIn, userInfo, onLogout, isLoading }) {
+function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick, onUserClick, isLoggedIn, userInfo, onLogout, isLoading, refreshUserProfile }) {
+  // Debug: Log what we're receiving
+  console.log('🔍 Navbar Debug:', { isLoggedIn, userInfo, isLoading });
+  
+  // Función para generar mensaje de bienvenida personalizado
+  const getWelcomeMessage = (nombre) => {
+    const hora = new Date().getHours();
+    let saludo = '';
+    
+    if (hora >= 5 && hora < 12) {
+      saludo = 'Buenos días';
+    } else if (hora >= 12 && hora < 18) {
+      saludo = 'Buenas tardes';
+    } else {
+      saludo = 'Buenas noches';
+    }
+    
+    if (nombre) {
+      return `${saludo}, ${nombre}`;
+    } else {
+      return saludo;
+    }
+  };
+  
+  // Efecto para refrescar el perfil cuando el usuario esté autenticado
+  useEffect(() => {
+    if (isLoggedIn && userInfo?.id && !userInfo?.nombre && !userInfo?.name && refreshUserProfile) {
+      console.log('Usuario autenticado sin perfil completo, refrescando...');
+      refreshUserProfile();
+    }
+  }, [isLoggedIn, userInfo, refreshUserProfile]);
+
+  // Función para generar color único del avatar basado en la inicial
+  const getAvatarColor = (inicial) => {
+    const colors = [
+      '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe',
+      '#43e97b', '#38f9d7', '#fa709a', '#fee140', '#a8edea', '#fed6e3',
+      '#ffecd2', '#fcb69f', '#ff9a9e', '#fecfef', '#fecfef', '#fad0c4'
+    ];
+    
+    if (!inicial) return colors[0];
+    
+    const charCode = inicial.charCodeAt(0);
+    const colorIndex = charCode % colors.length;
+    return colors[colorIndex];
+  };
+  
+  const userInitial = userInfo?.nombre?.charAt(0)?.toUpperCase() || userInfo?.name?.charAt(0)?.toUpperCase() || 'U';
+  const avatarColor = getAvatarColor(userInitial);
+  
   return (
     <header className="main-header" role="banner">
       <nav role="navigation" aria-label="Navegación principal">
@@ -1206,18 +1255,51 @@ function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick, onUserC
               <>
                 {/* User Info Display */}
                 <div className="user-info-display">
-                  <div className="user-avatar-enhanced">
+                  <div className="user-avatar-enhanced" 
+                       style={{ backgroundColor: avatarColor }}
+                       title={`${userInfo?.nombre || userInfo?.name || 'Usuario'} - ${userInfo?.email || 'Sin email'}`}>
                     <span className="user-initial-enhanced">
-                      {userInfo?.nombre?.charAt(0)?.toUpperCase() || userInfo?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      {userInitial}
                     </span>
+                    <div className="user-status-indicator" title="Usuario activo"></div>
                   </div>
                   <div className="user-details">
                     <span className="user-name">
                       {userInfo?.nombre || userInfo?.name || 'Usuario'}
                     </span>
-                    <span className="user-status">Conectado</span>
+                    <span className="user-welcome">
+                      {getWelcomeMessage(userInfo?.nombre || userInfo?.name)}
+                    </span>
                   </div>
                 </div>
+
+                {/* Debug Button - Solo en desarrollo */}
+                {process.env.NODE_ENV === 'development' && (
+                  <button
+                    onClick={() => {
+                      console.log('=== DEBUG INFO ===');
+                      console.log('isLoggedIn:', isLoggedIn);
+                      console.log('userInfo:', userInfo);
+                      console.log('isLoading:', isLoading);
+                      if (refreshUserProfile) {
+                        refreshUserProfile();
+                      }
+                    }}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '10px',
+                      backgroundColor: '#ff6b35',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      marginLeft: '8px'
+                    }}
+                    title="Debug Info"
+                  >
+                    🐛
+                  </button>
+                )}
                 
                 {/* Enhanced Logout Button */}
                 <button
@@ -1281,7 +1363,7 @@ function AdminLogin({ onLogin, adminError }) {
 }
 
 function AppContent() {
-  const { user, profile, signOut, isAuthenticated, loading: authContextLoading } = useAuth();
+  const { user, profile, signIn, signUp, signOut, isAuthenticated, loading: authContextLoading, refreshUserProfile } = useAuth();
   const { cart, addToCart, removeFromCart, clearCart, updateQuantity, setCart } = useCart();
   const { 
     notification, 
@@ -1384,195 +1466,94 @@ function AppContent() {
   
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
-    setAuthError('');
-    setAuthLoading(true);
     
-    // Timeout de seguridad para evitar que se quede colgado
-    const timeoutId = setTimeout(() => {
-      console.error('⏰ Timeout: La operación tardó más de 30 segundos');
-      setAuthError('La operación tardó demasiado. Por favor intenta de nuevo.');
-      setAuthLoading(false);
-    }, 30000); // 30 segundos
-    
-    try {
-      if (isLoginMode) {
-        // Login logic with Supabase
-        console.log('🔄 Iniciando sesión...');
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: accountData.email,
-          password: accountData.password
-        });
-
-        console.log('📧 Respuesta de login:', { data, error });
-
-        if (error) {
-          console.error('❌ Error en login:', error);
-          
-          // Handle specific email confirmation error
-          if (error.message === 'Email not confirmed') {
-            setAuthError('Tu email no ha sido confirmado. Por favor revisa tu bandeja de entrada y haz clic en el enlace de confirmación antes de iniciar sesión.');
-          } else {
-            setAuthError(error.message);
-          }
-          return;
-        }
-
-        if (data.user) {
-          console.log('✅ Usuario autenticado, ID:', data.user.id);
-          
-          // Fetch user profile from clientes table
-          console.log('🔄 Buscando perfil en tabla clientes...');
-          const { data: profile, error: profileError } = await supabase
-            .from('clientes')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-          if (profileError) {
-            console.warn('⚠️ Warning al buscar perfil:', profileError);
-            // If profile doesn't exist, create it
-            if (profileError.code === 'PGRST116') {
-              console.log('📝 Creating new user profile...');
-              
-              const { data: newProfile, error: createError } = await supabase
-                .from('clientes')
-                .insert([{
-                  id: data.user.id,
-                  nombre: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Usuario',
-                  telefono: data.user.user_metadata?.phone || '',
-                  email: data.user.email,
-                  created_at: new Date().toISOString()
-                }])
-                .select()
-                .single();
-              
-                             if (createError) {
-                 console.error('❌ Error creating profile:', createError);
-               } else {
-                 console.log('✅ New profile created:', newProfile);
-               }
-            }
-          } else {
-            console.log('✅ Perfil encontrado:', profile);
-            setUserProfile(profile);
-          }
-
-          setShowAccountModal(false);
-          setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
-          
-          // Check if there's a last clicked item to add to cart
-          const lastClickedItem = localStorage.getItem('lastClickedItem');
-          if (lastClickedItem) {
-            const item = JSON.parse(lastClickedItem);
-            addToCart(item);
-            localStorage.removeItem('lastClickedItem');
-          }
-          
-          console.log('✅ Login completado exitosamente');
-          showSuccess('¡Inicio de sesión exitoso!');
-        }
-      } else {
-        // Registration logic with Supabase
-        if (accountData.password !== accountData.confirmPassword) {
-          setAuthError('Las contraseñas no coinciden');
-          return;
-        }
-
-        if (accountData.password.length < 6) {
-          setAuthError('La contraseña debe tener al menos 6 caracteres');
-          return;
-        }
-        
-        console.log('🔄 Iniciando registro de usuario...');
-        
-        // Register user with Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: accountData.email,
-          password: accountData.password,
-          options: {
-            data: {
-              full_name: accountData.name,
-              phone: accountData.phone
-            }
-          }
-        });
-
-        console.log('📧 Respuesta de Supabase Auth:', { authData, authError });
-
-        if (authError) {
-          console.error('❌ Error en registro de Auth:', authError);
-          setAuthError(authError.message);
-          return;
-        }
-
-        if (authData.user) {
-          console.log('✅ Usuario creado en Auth, ID:', authData.user.id);
-          
-          try {
-            // Create profile in clientes table
-            console.log('🔄 Creando perfil en tabla clientes...');
-            const { error: profileError } = await supabase
-              .from('clientes')
-              .insert([
-                {
-                  id: authData.user.id,
-                  nombre: accountData.name,
-                  telefono: accountData.phone,
-                  email: accountData.email
-                }
-              ]);
-
-            if (profileError) {
-              console.error('❌ Error creando perfil:', profileError);
-              // Continue anyway, the trigger might handle it
-            } else {
-              console.log('✅ Perfil creado exitosamente en clientes');
-              // Set the user profile in state for immediate use
-              
-            }
-          } catch (profileError) {
-            console.error('❌ Excepción creando perfil:', profileError);
-          }
-
-          console.log('🔄 Configurando estado de usuario...');
-          setShowAccountModal(false);
-          setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
-          
-          // Check if there's a last clicked item to add to cart
-          const lastClickedItem = localStorage.getItem('lastClickedItem');
-          if (lastClickedItem) {
-            const item = JSON.parse(lastClickedItem);
-            addToCart(item);
-            localStorage.removeItem('lastClickedItem');
-          }
-          
-          console.log('✅ Registro completado exitosamente');
-          
-          // Check if email confirmation is required
-          if (authData.user && !authData.user.email_confirmed_at) {
-            showInfo('¡Cuenta creada! Por favor revisa tu email y confirma tu cuenta antes de iniciar sesión.', 6000);
-            // Switch to login mode so user can login after confirming email
-            setIsLoginMode(true);
-            // Clear the form data
-            setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
-          } else {
-            showSuccess('¡Cuenta creada exitosamente! Ya puedes iniciar sesión.');
-            // Switch to login mode
-            setIsLoginMode(true);
-            // Clear the form data
-            setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
-          }
-        } else {
-          console.error('❌ No se recibió usuario de Auth');
-          setAuthError('Error: No se pudo crear el usuario');
-        }
+    if (isLoginMode) {
+      // Login logic
+      if (!accountData.email || !accountData.password) {
+        setAuthError('Por favor completa todos los campos');
+        return;
       }
-    } catch (error) {
-      console.error('Auth error:', error);
-      setAuthError('Error inesperado. Inténtalo de nuevo.');
-    } finally {
-      clearTimeout(timeoutId); // Limpiar timeout
-      setAuthLoading(false);
+      
+      setAuthError('');
+      setAuthLoading(true);
+      
+      try {
+        // Use the useAuth hook for login
+        const result = await signIn(accountData.email, accountData.password);
+        
+        if (result.success) {
+          setShowAccountModal(false);
+          setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+          
+          // Check if there's a last clicked item to add to cart
+          const lastClickedItem = localStorage.getItem('lastClickedItem');
+          if (lastClickedItem) {
+            const item = JSON.parse(lastClickedItem);
+            addToCart(item);
+            localStorage.removeItem('lastClickedItem');
+          }
+          
+          showSuccess('¡Inicio de sesión exitoso!');
+        } else {
+          setAuthError(result.error);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setAuthError('Error inesperado. Inténtalo de nuevo.');
+      } finally {
+        setAuthLoading(false);
+      }
+    } else {
+      // Registration logic
+      if (accountData.password !== accountData.confirmPassword) {
+        setAuthError('Las contraseñas no coinciden');
+        return;
+      }
+
+      if (accountData.password.length < 6) {
+        setAuthError('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+      
+      setAuthError('');
+      setAuthLoading(true);
+      
+      try {
+        console.log('Iniciando registro con datos:', { email: accountData.email, name: accountData.name, phone: accountData.phone });
+        
+        // Use the useAuth hook for registration
+        const result = await signUp(accountData.email, accountData.password, {
+          full_name: accountData.name,
+          phone: accountData.phone
+        });
+        
+        console.log('Resultado del registro:', result);
+        
+        if (result.success) {
+          setShowAccountModal(false);
+          setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+          
+          // Check if there's a last clicked item to add to cart
+          const lastClickedItem = localStorage.getItem('lastClickedItem');
+          if (lastClickedItem) {
+            const item = JSON.parse(lastClickedItem);
+            addToCart(item);
+            localStorage.removeItem('lastClickedItem');
+          }
+          
+          showSuccess('¡Cuenta creada exitosamente! Ya puedes iniciar sesión.');
+          // Switch to login mode
+          setIsLoginMode(true);
+        } else {
+          console.error('Error en el registro:', result.error);
+          setAuthError(result.error);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        setAuthError('Error inesperado. Inténtalo de nuevo.');
+      } finally {
+        setAuthLoading(false);
+      }
     }
   };
   
@@ -1784,6 +1765,7 @@ function AppContent() {
           userInfo={profile || user}
           onLogout={handleLogout}
           isLoading={authContextLoading}
+          refreshUserProfile={refreshUserProfile}
         />
       )}
       
