@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import {
   FiCalendar, FiChevronLeft, FiChevronRight, FiClock, FiUser, FiMapPin,
   FiDollarSign, FiPackage, FiTruck, FiCheckCircle, FiXCircle, FiInfo,
@@ -50,9 +50,10 @@ const generateCalendarDays = (year, month) => {
   
   const days = [];
   
-  // Días del mes anterior
-  for (let i = startingDay - 1; i >= 0; i--) {
-    const prevDate = new Date(year, month, -i);
+  // Días del mes anterior para completar la primera semana
+  const daysFromPrevMonth = startingDay === 0 ? 6 : startingDay - 1;
+  for (let i = daysFromPrevMonth; i > 0; i--) {
+    const prevDate = new Date(year, month, -i + 1);
     days.push({
       date: prevDate,
       isCurrentMonth: false,
@@ -72,7 +73,8 @@ const generateCalendarDays = (year, month) => {
   }
   
   // Días del siguiente mes para completar la última semana
-  const remainingDays = 42 - days.length;
+  const totalDaysInGrid = 42; // 6 semanas * 7 días
+  const remainingDays = totalDaysInGrid - days.length;
   for (let day = 1; day <= remainingDays; day++) {
     const nextDate = new Date(year, month + 1, day);
     days.push({
@@ -113,16 +115,29 @@ const CalendarView = ({ onBack, setRoute }) => {
   }, []);
 
   const fetchPedidos = async () => {
-    setLoading(true);
-    const { data } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false });
-    setPedidos(data || []);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('pedidos')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching pedidos:', error);
+        return;
+      }
+      
+      setPedidos(data || []);
+    } catch (error) {
+      console.error('Error fetching pedidos:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const goToPreviousMonth = () => {
     setCurrentDate(prev => {
       const newDate = new Date(prev.getFullYear(), prev.getMonth() - 1, 1);
-      setSelectedDate(newDate);
       return newDate;
     });
   };
@@ -130,7 +145,6 @@ const CalendarView = ({ onBack, setRoute }) => {
   const goToNextMonth = () => {
     setCurrentDate(prev => {
       const newDate = new Date(prev.getFullYear(), prev.getMonth() + 1, 1);
-      setSelectedDate(newDate);
       return newDate;
     });
   };
@@ -139,6 +153,12 @@ const CalendarView = ({ onBack, setRoute }) => {
     const today = new Date();
     setCurrentDate(today);
     setSelectedDate(today);
+  };
+
+  const handleDateClick = (date) => {
+    if (date.isCurrentMonth) {
+      setSelectedDate(date.date);
+    }
   };
 
   const getPedidosForDate = (date) => {
@@ -160,6 +180,22 @@ const CalendarView = ({ onBack, setRoute }) => {
     // Filtrar solo pedidos que NO están cancelados (ventas reales)
     const ventasReales = pedidosDelDia.filter(p => p.estado !== 'CANCELADO');
     
+    // Calcular estadísticas por hora para insights de negocio
+    const pedidosPorHora = {};
+    ventasReales.forEach(pedido => {
+      const hora = new Date(pedido.created_at).getHours();
+      pedidosPorHora[hora] = (pedidosPorHora[hora] || 0) + 1;
+    });
+    
+    const horaMasOcupada = Object.keys(pedidosPorHora).reduce((a, b) => 
+      pedidosPorHora[a] > pedidosPorHora[b] ? a : b, 0
+    );
+    
+    // Calcular promedio de venta por pedido
+    const promedioVenta = ventasReales.length > 0 
+      ? ventasReales.reduce((sum, p) => sum + (p.precio_total || 0), 0) / ventasReales.length 
+      : 0;
+    
     return {
       total: ventasReales.length, // Solo ventas reales, no canceladas
       pendientes: ventasReales.filter(p => (p.estado || 'PENDIENTE') === 'PENDIENTE').length,
@@ -170,7 +206,10 @@ const CalendarView = ({ onBack, setRoute }) => {
       cancelados: pedidosDelDia.filter(p => p.estado === 'CANCELADO').length, // Solo para mostrar cuántos se cancelaron
       domicilio: ventasReales.filter(p => esPedidoDomicilio(p)).length,
       retiro: ventasReales.filter(p => !esPedidoDomicilio(p)).length,
-      totalVentas: ventasReales.reduce((sum, p) => sum + (p.precio_total || 0), 0) // Solo ventas reales
+      totalVentas: ventasReales.reduce((sum, p) => sum + (p.precio_total || 0), 0), // Solo ventas reales
+      horaMasOcupada: horaMasOcupada,
+      promedioVenta: promedioVenta,
+      pedidosPorHora: pedidosPorHora
     };
   };
 
@@ -214,6 +253,57 @@ const CalendarView = ({ onBack, setRoute }) => {
     return pedidosFiltrados;
   };
 
+  const generarReporteDiario = (fecha) => {
+    const doc = new jsPDF();
+    const fechaFormateada = formatDate(fecha);
+    const stats = getStatsForDate(fecha);
+    const pedidosDelDia = getPedidosForDate(fecha).filter(p => p.estado !== 'CANCELADO');
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text('Reporte Diario - Quenitas', 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${fechaFormateada}`, 20, 35);
+    
+    // Estadísticas principales
+    doc.setFontSize(14);
+    doc.text('Resumen del Día:', 20, 50);
+    doc.setFontSize(10);
+    doc.text(`• Total de pedidos: ${stats.total}`, 25, 65);
+    doc.text(`• Domicilio: ${stats.domicilio}`, 25, 75);
+    doc.text(`• Retiro en local: ${stats.retiro}`, 25, 85);
+    doc.text(`• Ventas totales: $${stats.totalVentas.toLocaleString()}`, 25, 95);
+    doc.text(`• Promedio por pedido: $${Math.round(stats.promedioVenta).toLocaleString()}`, 25, 105);
+    doc.text(`• Hora más ocupada: ${stats.horaMasOcupada}:00 hrs`, 25, 115);
+    
+    // Lista de pedidos
+    if (pedidosDelDia.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text('Detalle de Pedidos:', 20, 20);
+      
+      let y = 35;
+      pedidosDelDia.forEach((pedido, index) => {
+        if (y > 250) {
+          doc.addPage();
+          y = 20;
+        }
+        
+        doc.setFontSize(10);
+        doc.text(`${index + 1}. ${pedido.nombre || 'Cliente'}`, 20, y);
+        doc.text(`   Producto: ${pedido.producto || 'N/A'}`, 25, y + 5);
+        doc.text(`   Estado: ${getEstadoInfo(pedido.estado).label}`, 25, y + 10);
+        doc.text(`   Tipo: ${esPedidoDomicilio(pedido) ? 'Domicilio' : 'Retiro'}`, 25, y + 15);
+        doc.text(`   Total: $${(pedido.precio_total || 0).toLocaleString()}`, 25, y + 20);
+        doc.text(`   Hora: ${new Date(pedido.created_at).toLocaleTimeString('es-CL', {hour: '2-digit', minute: '2-digit'})}`, 25, y + 25);
+        
+        y += 35;
+      });
+    }
+    
+    doc.save(`reporte-quenitas-${fecha.toISOString().split('T')[0]}.pdf`);
+  };
+
   // Función para obtener estadísticas de todos los pedidos (modo lista)
   const getStatsForAllPedidos = () => {
     // Filtrar solo pedidos que NO están cancelados (ventas reales)
@@ -236,6 +326,8 @@ const CalendarView = ({ onBack, setRoute }) => {
   const calendarDays = generateCalendarDays(currentDate.getFullYear(), currentDate.getMonth());
   const selectedDateStats = viewMode === 'calendar' ? getStatsForDate(selectedDate) : getStatsForAllPedidos();
   const filteredPedidos = viewMode === 'calendar' ? getFilteredPedidosForDate(selectedDate) : getFilteredAllPedidos();
+
+
 
   return (
     <div className="calendar-container">
@@ -355,48 +447,98 @@ const CalendarView = ({ onBack, setRoute }) => {
 
             {/* Vista de Calendario Mejorada */}
             {viewMode === 'calendar' && (
-              <div className="calendar-grid">
-                {/* Días de la semana */}
-                <div className="calendar-weekdays">
-                  {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-                    <div key={day} className="calendar-weekday">
-                      {day}
-                    </div>
-                  ))}
+              <div className="calendar-modern-layout">
+                {/* Header del mes */}
+                <div className="calendar-month-header">
+                  <div className="month-info">
+                    <h3 className="month-title">{getMonth(currentDate)}</h3>
+                    <p className="month-subtitle">Selecciona un día para ver los pedidos</p>
+                  </div>
+                  <div className="month-actions">
+                    <button 
+                      onClick={goToPreviousMonth}
+                      className="month-nav-btn"
+                      aria-label="Mes anterior"
+                    >
+                      <FiChevronLeft />
+                    </button>
+                    <button 
+                      onClick={goToToday}
+                      className="today-btn"
+                    >
+                      Hoy
+                    </button>
+                    <button 
+                      onClick={goToNextMonth}
+                      className="month-nav-btn"
+                      aria-label="Mes siguiente"
+                    >
+                      <FiChevronRight />
+                    </button>
+                  </div>
                 </div>
 
-                {/* Días del calendario */}
-                <div className="calendar-days">
+                {/* Días del mes en formato de tarjetas */}
+                <div className="calendar-days-grid">
                   {calendarDays.map((day, index) => {
                     const dayStats = getStatsForDate(day.date);
                     const isSelected = day.date.toDateString() === selectedDate.toDateString();
                     const hasPedidos = dayStats.total > 0;
+                    const isCurrentMonth = day.isCurrentMonth;
                     
                     return (
                       <div
                         key={index}
-                        onClick={() => {
-                          if (day.isCurrentMonth) {
-                            setSelectedDate(day.date);
-                          }
-                        }}
-                        className={`calendar-day ${day.isCurrentMonth ? 'current-month' : ''} ${isSelected ? 'selected' : ''} ${day.isToday ? 'today' : ''} ${hasPedidos ? 'has-orders' : ''}`}
+                        onClick={() => handleDateClick(day)}
+                        className={`calendar-day-card ${isCurrentMonth ? 'current-month' : 'other-month'} ${isSelected ? 'selected' : ''} ${day.isToday ? 'today' : ''} ${hasPedidos ? 'has-orders' : ''}`}
                       >
-                        {/* Número del día */}
-                        <div className="calendar-day-number">
-                          {day.date.getDate()}
+                        <div className="day-card-header">
+                          <div className="day-number">
+                            {day.date.getDate()}
+                          </div>
+                          {day.isToday && (
+                            <div className="today-indicator">Hoy</div>
+                          )}
                         </div>
                         
-                        {/* Badge de pedidos */}
-                        {hasPedidos && (
-                          <div className={`calendar-day-badge ${isSelected ? 'selected' : ''}`}>
-                            {dayStats.total}
+                        {isCurrentMonth && (
+                          <div className="day-card-content">
+                            {hasPedidos ? (
+                              <div className="day-orders-info">
+                                <div className="orders-count">
+                                  <span className="count-number">{dayStats.total}</span>
+                                  <span className="count-label">pedidos</span>
+                                </div>
+                                <div className="orders-breakdown">
+                                  {dayStats.domicilio > 0 && (
+                                    <span className="breakdown-item domicilio">
+                                      🚚 {dayStats.domicilio}
+                                    </span>
+                                  )}
+                                  {dayStats.retiro > 0 && (
+                                    <span className="breakdown-item retiro">
+                                      🏪 {dayStats.retiro}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="day-revenue">
+                                  ${dayStats.totalVentas.toLocaleString()}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="day-empty">
+                                <span className="empty-text">Sin pedidos</span>
+                              </div>
+                            )}
                           </div>
                         )}
                         
-                        {/* Indicador de "Hoy" */}
-                        {day.isToday && (
-                          <div className="calendar-day-today-indicator" />
+                        {!isCurrentMonth && (
+                          <div className="day-card-content other-month">
+                            <span className="other-month-text">
+                              {day.date.getDate()}
+                            </span>
+                          </div>
                         )}
                       </div>
                     );
@@ -411,9 +553,21 @@ const CalendarView = ({ onBack, setRoute }) => {
                 <h2 className="calendar-details-title">
                   {viewMode === 'calendar' ? formatDate(selectedDate) : 'Todos los Pedidos'}
                 </h2>
-                <span className="calendar-pedidos-count">
-                  {filteredPedidos.length} pedidos
-                </span>
+                <div className="calendar-details-actions">
+                  <span className="calendar-pedidos-count">
+                    {filteredPedidos.length} pedidos
+                  </span>
+                  {selectedDateStats.total > 0 && (
+                    <button 
+                      onClick={() => generarReporteDiario(selectedDate)}
+                      className="calendar-report-btn"
+                      title="Generar reporte del día"
+                    >
+                      <FiDownload />
+                      Reporte
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Estadísticas Mejoradas */}
@@ -466,6 +620,62 @@ const CalendarView = ({ onBack, setRoute }) => {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Insights de Negocio */}
+              {selectedDateStats.total > 0 && (
+                <div className="calendar-business-insights">
+                  <h3 className="insights-title">📊 Insights del Día</h3>
+                  <div className="insights-grid">
+                    <div className="insight-card">
+                      <div className="insight-icon">🕐</div>
+                      <div className="insight-content">
+                        <div className="insight-value">
+                          {selectedDateStats.horaMasOcupada}:00 hrs
+                        </div>
+                        <div className="insight-label">
+                          Hora más ocupada
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="insight-card">
+                      <div className="insight-icon">💰</div>
+                      <div className="insight-content">
+                        <div className="insight-value">
+                          ${Math.round(selectedDateStats.promedioVenta).toLocaleString()}
+                        </div>
+                        <div className="insight-label">
+                          Promedio por pedido
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="insight-card">
+                      <div className="insight-icon">📈</div>
+                      <div className="insight-content">
+                        <div className="insight-value">
+                          {selectedDateStats.domicilio > selectedDateStats.retiro ? 'Domicilio' : 'Retiro'}
+                        </div>
+                        <div className="insight-label">
+                          Modo preferido
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="insight-card">
+                      <div className="insight-icon">⚡</div>
+                      <div className="insight-content">
+                        <div className="insight-value">
+                          {selectedDateStats.total > 5 ? 'Excelente' : selectedDateStats.total > 3 ? 'Bueno' : 'Regular'}
+                        </div>
+                        <div className="insight-label">
+                          Rendimiento
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -557,8 +767,14 @@ const CalendarView = ({ onBack, setRoute }) => {
                             <div style={{marginBottom: '8px'}}>
                               <strong>Resumen:</strong> {pedido.resumen || 'Sin observaciones'}
                             </div>
-                            <div>
+                            <div style={{marginBottom: '8px'}}>
                               <strong>Total:</strong> ${pedido.precio_total ? pedido.precio_total.toLocaleString() : '0'} CLP
+                            </div>
+                            <div style={{marginBottom: '8px'}}>
+                              <strong>Teléfono:</strong> {pedido.telefono || 'No proporcionado'}
+                            </div>
+                            <div>
+                              <strong>Estado:</strong> {getEstadoInfo(pedido.estado).label}
                             </div>
                           </div>
                         )}

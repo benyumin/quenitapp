@@ -3,7 +3,8 @@ import {
   FiArrowLeft, FiDollarSign, FiCheckCircle, FiTruck, FiClock, FiUser, 
   FiPhone, FiMapPin, FiRefreshCw, FiSearch, FiCreditCard, FiShoppingBag
 } from 'react-icons/fi';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
+import './CajaPanel.css';
 
 const CajaPanel = ({ onBack, setRoute }) => {
   const [pedidos, setPedidos] = useState([]);
@@ -110,259 +111,215 @@ const CajaPanel = ({ onBack, setRoute }) => {
   const pedidosFiltrados = filtrarPedidos();
 
   return (
-    <div className="admin-layout" style={{backgroundColor: 'var(--chef-bg-main)'}}>
-      {/* Cashier Header */}
-      <div className="admin-header">
-        <div className="header-left">
-          <div className="page-info">
-            <h1>💰 CAJA</h1>
-            <p>Panel de pagos y entregas</p>
-          </div>
+    <div className="caja-container">
+      {/* Cash Register Header */}
+      <div className="caja-header">
+        <div className="caja-title">
+          <h1>💰 Caja</h1>
         </div>
-        <div className="header-right">
-          <button onClick={fetchPedidos} disabled={loading} className="chef-action-btn">
+        <div className="caja-actions">
+          <button onClick={fetchPedidos} disabled={loading} className="caja-btn caja-btn-secondary">
             <FiRefreshCw className={loading ? 'spinning' : ''} />
-            {loading ? 'ACTUALIZANDO...' : 'ACTUALIZAR'}
+            {loading ? 'Actualizando...' : 'Actualizar'}
           </button>
-          <button onClick={onBack} className="chef-action-btn danger">
+          <button onClick={onBack} className="caja-btn caja-btn-ghost">
             <FiArrowLeft />
-            VOLVER
+            Volver
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="admin-main">
-        {/* Cashier Stats */}
-        <div className="chef-stats-grid">
-          <div className={`chef-stat-card ${getPedidosListos() > 0 ? 'ready' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosListos() > 0 ? 'ready' : 'info'}`}>
-              <FiShoppingBag />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosListos()}</h3>
-              <p>LISTOS PARA COBRAR</p>
-            </div>
-          </div>
-          
-          <div className={`chef-stat-card ${getPedidosPagados() > 0 ? 'pending' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosPagados() > 0 ? 'pending' : 'info'}`}>
-              <FiCreditCard />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosPagados()}</h3>
-              <p>PAGADOS</p>
-            </div>
-          </div>
-          
-          <div className={`chef-stat-card ${getPedidosEnEntrega() > 0 ? 'urgent' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosEnEntrega() > 0 ? 'urgent' : 'info'}`}>
-              <FiTruck />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosEnEntrega()}</h3>
-              <p>EN ENTREGA</p>
-            </div>
-          </div>
-          
-          <div className="chef-stat-card info">
-            <div className="chef-stat-icon info">
-              <FiDollarSign />
-            </div>
-            <div className="chef-stat-content">
-              <h3>${getTotalVentasHoy().toLocaleString()}</h3>
-              <p>VENTAS HOY</p>
-            </div>
-          </div>
+      {/* Cash Register Stats */}
+      <div className="caja-stats">
+        <div className={`caja-stat ${getPedidosListos() > 0 ? 'ready' : ''}`}>
+          <div className="caja-stat-value">{getPedidosListos()}</div>
+          <div className="caja-stat-label">Listos para Cobrar</div>
         </div>
-
-        {/* Filter Section */}
-        <div className="chef-filter-section">
-          <div className="chef-filter-buttons">
-            <button
-              className={`chef-filter-btn ${filter === 'activos' ? 'active' : ''}`}
-              onClick={() => setFilter('activos')}
-            >
-              🔥 ACTIVOS
-            </button>
-            <button
-              className={`chef-filter-btn ${filter === 'LISTO' ? 'active' : ''}`}
-              onClick={() => setFilter('LISTO')}
-            >
-              💰 LISTOS PARA COBRAR
-            </button>
-            <button
-              className={`chef-filter-btn ${filter === 'PAGADO' ? 'active' : ''}`}
-              onClick={() => setFilter('PAGADO')}
-            >
-              💳 PAGADOS
-            </button>
-            <button
-              className={`chef-filter-btn ${filter === 'EN_ENTREGA' ? 'active' : ''}`}
-              onClick={() => setFilter('EN_ENTREGA')}
-            >
-              🚚 EN ENTREGA
-            </button>
-          </div>
-          
-          <div className="chef-search-box">
-            <FiSearch />
-            <input
-              type="text"
-              placeholder="Buscar pedido..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        
+        <div className={`caja-stat ${getPedidosPagados() > 0 ? 'paid' : ''}`}>
+          <div className="caja-stat-value">{getPedidosPagados()}</div>
+          <div className="caja-stat-label">Pagados</div>
         </div>
+        
+        <div className={`caja-stat ${getPedidosEnEntrega() > 0 ? 'delivering' : ''}`}>
+          <div className="caja-stat-value">{getPedidosEnEntrega()}</div>
+          <div className="caja-stat-label">En Entrega</div>
+        </div>
+        
+        <div className="caja-stat sales">
+          <div className="caja-stat-value">${getTotalVentasHoy().toLocaleString()}</div>
+          <div className="caja-stat-label">Ventas Hoy</div>
+        </div>
+      </div>
 
-        {/* Orders Section */}
-        <div className="chef-orders-section">
-          <h2 style={{
-            fontSize: 'var(--chef-text-xl)', 
-            fontWeight: '900', 
-            marginBottom: 'var(--chef-space-lg)', 
-            color: 'var(--color-text)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--chef-space-sm)'
-          }}>
-            <FiDollarSign />
-            PEDIDOS DE CAJA ({pedidosFiltrados.length})
-          </h2>
-          
-          {loading ? (
-            <div className="chef-empty-state">
-              <h3>🔄 Cargando...</h3>
-              <p>Actualizando pedidos</p>
-            </div>
-          ) : pedidosFiltrados.length === 0 ? (
-            <div className="chef-empty-state">
-              <h3>📋 No hay pedidos</h3>
-              <p>No se encontraron pedidos para caja</p>
-            </div>
-          ) : (
-            <div className="chef-orders-grid">
-              {pedidosFiltrados.map(pedido => {
-                return (
-                  <div key={pedido.id} className={`chef-order-card ${pedido.estado === 'LISTO' ? 'ready' : ''}`}>
-                    <div className="chef-order-header">
-                      <div className="chef-customer-info">
-                        <div className="chef-customer-avatar">
-                          {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
-                        </div>
-                        <div className="chef-customer-details">
-                          <h4>{pedido.nombre || 'Cliente'}</h4>
-                          <p>
-                            <FiPhone />
-                            {pedido.telefono || 'Sin teléfono'}
-                          </p>
-                        </div>
+      {/* Cash Register Filters */}
+      <div className="caja-filters">
+        <div className="caja-search">
+          <FiSearch className="caja-search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar pedido..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="caja-filter-buttons">
+          <button
+            className={`caja-filter-btn ${filter === 'activos' ? 'active' : ''}`}
+            onClick={() => setFilter('activos')}
+          >
+            🔥 Activos
+          </button>
+          <button
+            className={`caja-filter-btn ${filter === 'LISTO' ? 'active' : ''}`}
+            onClick={() => setFilter('LISTO')}
+          >
+            💰 Listos para Cobrar
+          </button>
+          <button
+            className={`caja-filter-btn ${filter === 'PAGADO' ? 'active' : ''}`}
+            onClick={() => setFilter('PAGADO')}
+          >
+            💳 Pagados
+          </button>
+          <button
+            className={`caja-filter-btn ${filter === 'EN_ENTREGA' ? 'active' : ''}`}
+            onClick={() => setFilter('EN_ENTREGA')}
+          >
+            🚚 En Entrega
+          </button>
+        </div>
+      </div>
+
+      {/* Cash Register Orders */}
+      <div className="caja-orders">
+        {loading ? (
+          <div className="caja-loading">
+            <FiRefreshCw className="caja-loading-icon" />
+            <div>Cargando pedidos...</div>
+          </div>
+        ) : pedidosFiltrados.length === 0 ? (
+          <div className="caja-empty">
+            <FiShoppingBag className="caja-empty-icon" />
+            <h3>No hay pedidos</h3>
+            <p>No se encontraron pedidos para caja</p>
+          </div>
+        ) : (
+          <div className="caja-orders-grid">
+            {pedidosFiltrados.map(pedido => {
+              return (
+                <div key={pedido.id} className={`caja-order-card ${pedido.estado === 'LISTO' ? 'ready' : ''} ${pedido.estado === 'PAGADO' ? 'paid' : ''} ${pedido.estado === 'EN_ENTREGA' ? 'delivering' : ''}`}>
+                  <div className="caja-order-header">
+                    <div className="caja-customer-info">
+                      <div className="caja-customer-avatar">
+                        {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
                       </div>
-                      <div className="chef-order-status">
-                        <span className={`chef-status-badge ${pedido.estado?.toLowerCase()}`}>
-                          {pedido.estado === 'LISTO' && '💰'}
-                          {pedido.estado === 'PAGADO' && '💳'}
-                          {pedido.estado === 'EN_ENTREGA' && '🚚'}
-                          {pedido.estado}
-                        </span>
-                        <span className="chef-time-badge">
-                          <FiClock />
-                          {formatTime(pedido.created_at)}
-                        </span>
+                      <div className="caja-customer-details">
+                        <h4>{pedido.nombre || 'Cliente'}</h4>
+                        <p>
+                          <FiPhone />
+                          {pedido.telefono || 'Sin teléfono'}
+                        </p>
                       </div>
                     </div>
+                    <div className="caja-order-status">
+                      <span className="caja-status-badge">
+                        {pedido.estado === 'LISTO' && '💰'}
+                        {pedido.estado === 'PAGADO' && '💳'}
+                        {pedido.estado === 'EN_ENTREGA' && '🚚'}
+                        {pedido.estado}
+                      </span>
+                      <span className="caja-time-badge">
+                        <FiClock />
+                        {formatTime(pedido.created_at)}
+                      </span>
+                    </div>
+                  </div>
 
-                    <div className="chef-order-info">
-                      <div className="chef-order-items">
-                        <div className="chef-order-item">
-                          <span className="chef-item-name">{pedido.producto || 'Producto'}</span>
-                          <span className="chef-item-quantity">1</span>
-                        </div>
+                  <div className="caja-order-content">
+                    <div className="caja-order-info">
+                      <div className="caja-order-item">
+                        <span className="caja-order-label">Producto</span>
+                        <span className="caja-order-value">{pedido.producto || 'Producto'}</span>
                       </div>
                       
-                      <div style={{
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        marginTop: 'var(--chef-space-md)',
-                        padding: 'var(--chef-space-md)',
-                        background: 'var(--chef-bg-success)',
-                        borderRadius: 'var(--chef-radius-md)',
-                        border: '2px solid var(--chef-green)'
-                      }}>
-                        <span style={{
-                          fontSize: 'var(--chef-text-md)', 
-                          fontWeight: '700', 
-                          color: 'var(--chef-green)'
-                        }}>
+                      <div className="caja-order-item">
+                        <span className="caja-order-label">Tipo</span>
+                        <span className="caja-order-value">
                           {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' ? 
-                            '🚚 DOMICILIO' : '🏪 RETIRO'
+                            '🚚 Domicilio' : '🏪 Retiro'
                           }
                         </span>
-                        <span style={{
-                          fontSize: 'var(--chef-text-xl)', 
-                          fontWeight: '900', 
-                          color: 'var(--chef-green)'
-                        }}>
-                          ${(pedido.precio_total || 0).toLocaleString()}
+                      </div>
+                      
+                      <div className="caja-order-item">
+                        <span className="caja-order-label">Precio</span>
+                        <span className="caja-order-price">${(pedido.precio_total || 0).toLocaleString()}</span>
+                      </div>
+                      
+                      <div className="caja-order-item">
+                        <span className="caja-order-label">Estado</span>
+                        <span className="caja-order-value">
+                          {pedido.estado === 'LISTO' && '💰 Listo para Cobrar'}
+                          {pedido.estado === 'PAGADO' && '💳 Pagado'}
+                          {pedido.estado === 'EN_ENTREGA' && '🚚 En Entrega'}
                         </span>
                       </div>
+                      
+                      {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' && (
+                        <div className="caja-order-item">
+                          <span className="caja-order-label">Dirección</span>
+                          <span className="caja-order-value">{pedido.direccion}</span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="chef-order-actions">
+                    <div className="caja-order-actions">
                       {pedido.estado === 'LISTO' && (
-                        <div style={{display: 'flex', gap: 'var(--chef-space-sm)'}}>
+                        <div style={{display: 'flex', gap: '0.75rem'}}>
                           <button
-                            className="chef-order-btn prepare"
+                            className="caja-action-btn prepare"
                             onClick={() => cambiarEstado(pedido.id, 'PAGADO')}
                             style={{flex: 1}}
                           >
                             <FiDollarSign />
-                            COBRAR
+                            Cobrar
                           </button>
                           <button
-                            className="chef-order-btn complete"
+                            className="caja-action-btn deliver"
                             onClick={() => cambiarEstado(pedido.id, 'EN_ENTREGA')}
                             style={{flex: 1}}
                           >
                             <FiTruck />
-                            ENTREGAR
+                            Entregar
                           </button>
                         </div>
                       )}
                       {pedido.estado === 'PAGADO' && (
                         <button
-                          className="chef-order-btn complete"
+                          className="caja-action-btn deliver"
                           onClick={() => cambiarEstado(pedido.id, 'EN_ENTREGA')}
                         >
                           <FiTruck />
-                          ENVIAR A ENTREGA
+                          Enviar a Entrega
                         </button>
                       )}
                       {pedido.estado === 'EN_ENTREGA' && (
                         <button
-                          className="chef-order-btn ready"
+                          className="caja-action-btn complete"
                           onClick={() => cambiarEstado(pedido.id, 'ENTREGADO')}
                         >
                           <FiCheckCircle />
-                          MARCAR ENTREGADO
+                          Marcar Entregado
                         </button>
                       )}
                     </div>
-
-                    {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' && (
-                      <div className="chef-delivery-address">
-                        <FiMapPin />
-                        <span>{pedido.direccion}</span>
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

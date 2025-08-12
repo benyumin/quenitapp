@@ -17,13 +17,6 @@ const AdminSidebar = ({
 }) => {
   const menuItems = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: <FiBarChart />,
-      description: 'Vista general',
-      color: '#3b82f6'
-    },
-    {
       id: 'orders',
       label: 'Pedidos',
       icon: <FiClipboard />,

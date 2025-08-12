@@ -1,157 +1,71 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Import fonts configuration */
+@import './styles/fonts.css';
 
-:root {
-  /* Variables CSS básicas que no cambian con el tema */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-accent: 'Poppins', 'Inter', sans-serif;
-  --font-display: 'Playfair Display', serif;
-  
-  /* Espaciado más orgánico */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-xxl: 3rem;
-  
-  /* Bordes más naturales */
-  --border-radius-sm: 8px;
-  --border-radius-md: 12px;
-  --border-radius-lg: 16px;
-  --border-radius-xl: 20px;
-  --border-radius-2xl: 24px;
+/* ===== MAIN STYLES ===== */
+
+/* Clases específicas para Cascadia Code */
+.font-cascadia {
+  font-family: var(--font-code);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-html {
-  height: 100%;
-  /* Remove overflow-x: hidden to allow horizontal scrolling */
+/* Clases para diferentes pesos de Cascadia Code */
+.font-cascadia-light {
+  font-family: var(--font-code);
+  font-weight: 300;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-body {
-  font-family: var(--font-primary);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  /* Remove overflow-x: hidden to allow horizontal scrolling */
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-  transition: background-color 0.3s ease, color 0.3s ease;
+.font-cascadia-regular {
+  font-family: var(--font-code);
+  font-weight: 400;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-#root {
-  min-height: 100vh;
-  width: 100%;
-  /* Remove overflow-x: hidden to allow horizontal scrolling */
+.font-cascadia-medium {
+  font-family: var(--font-code);
+  font-weight: 500;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-/* Scrollbar personalizada */
-::-webkit-scrollbar {
-  width: 8px;
+.font-cascadia-semibold {
+  font-family: var(--font-code);
+  font-weight: 600;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+.font-cascadia-bold {
+  font-family: var(--font-code);
+  font-weight: 700;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--gradient-primary);
-  border-radius: 4px;
-}
+/* ===== RESPONSIVE STYLES ===== */
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gradient-accent);
-}
-
-/* Selección de texto */
-::selection {
-  background: var(--accent-primary);
-  color: var(--text-primary);
-}
-
-/* Focus visible */
-:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-/* Animaciones globales */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* Clases de utilidad */
-.text-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.bg-gradient {
-  background: var(--gradient-primary);
-}
-
-.border-gradient {
-  border: 2px solid transparent;
-  background: linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
-              var(--gradient-primary) border-box;
-}
-
-/* Patrón de fondo sutil */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.02) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* ===== ESTILOS RESPONSIVOS ===== */
-
-/* Viewport meta tag para móviles */
+/* Mobile responsive styles - Consolidated */
 @media screen and (max-width: 768px) {
   html {
-    font-size: 14px; /* Reducir tamaño base de fuente en móviles */
+    font-size: 14px;
   }
   
   body {
-    padding: 0;
+    padding: 45px 0 0 0;
     margin: 0;
     min-height: 100vh;
     width: 100%;
+    overflow-x: hidden;
   }
   
   #root {
@@ -180,14 +94,14 @@ body::before {
   button, .btn {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    min-height: 44px; /* Tamaño mínimo para touch */
+    min-height: 44px;
     border-radius: var(--border-radius-md);
   }
   
   /* Formularios */
   input, select, textarea {
     padding: 0.75rem;
-    font-size: 1rem; /* Evitar zoom en iOS */
+    font-size: 1rem;
     border-radius: var(--border-radius-sm);
     min-height: 44px;
   }
@@ -222,7 +136,22 @@ body::before {
   /* Espaciado */
   .spacing-sm { margin: 0.5rem 0; }
   .spacing-md { margin: 1rem 0; }
-  .spacing-lg { margin: 1.5rem 0; }
+  .spacing-lg { margin: 1rem 0; }
+}
+
+/* iPhone 14 Pro Max specific fixes */
+@media screen and (max-width: 430px) and (min-height: 900px) {
+  html {
+    font-size: 15px;
+  }
+  
+  body {
+    padding: 40px 0 0 0;
+    margin: 0;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+  }
 }
 
 /* Tablets */
@@ -298,9 +227,10 @@ body::before {
   }
 }
 
+/* ===== ADMIN PANEL STYLES ===== */
+
 /* Ajustes específicos para el panel de administración */
 @media screen and (max-width: 768px) {
-  /* Panel de administración */
   .admin-panel {
     padding: 0.5rem;
     width: 100%;
@@ -328,7 +258,6 @@ body::before {
     gap: 0.5rem;
   }
   
-  /* Tabla responsiva */
   .admin-table {
     overflow-x: auto;
     font-size: 0.8rem;
@@ -340,193 +269,6 @@ body::before {
     padding: 0.5rem 0.25rem;
     min-width: 80px;
   }
-}
-
-/* Ajustes para el formulario de pedidos */
-@media screen and (max-width: 768px) {
-  .step-container {
-    padding: 1rem;
-    margin: 0;
-    width: 100%;
-  }
-  
-  .products-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .product-card {
-    padding: 1rem;
-    width: 100%;
-  }
-  
-  .product-image {
-    height: 150px;
-    object-fit: cover;
-  }
-  
-  .cart-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .cart-total {
-    font-size: 1.1rem;
-    padding: 1rem;
-  }
-}
-
-/* Ajustes para el carrito */
-@media screen and (max-width: 768px) {
-  .cart-card {
-    margin: 0.5rem;
-    padding: 1rem;
-    width: 100%;
-  }
-  
-  .cart-header {
-    padding: 0.75rem;
-  }
-  
-  .cart-items {
-    max-height: 60vh;
-  }
-  
-  .cart-footer {
-    padding: 1rem;
-  }
-}
-
-/* Ajustes para modales y popups */
-@media screen and (max-width: 768px) {
-  .modal-overlay {
-    padding: 0.5rem;
-  }
-  
-  .modal-content {
-    width: 95%;
-    max-width: none;
-    margin: 0;
-    padding: 1rem;
-  }
-  
-  .notification {
-    bottom: 1rem;
-    left: 1rem;
-    right: 1rem;
-    width: auto;
-  }
-}
-
-/* Ajustes para botones de WhatsApp */
-@media screen and (max-width: 768px) {
-  .whatsapp-button {
-    bottom: 1rem;
-    right: 1rem;
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
-}
-
-/* Ajustes para imágenes de productos */
-@media screen and (max-width: 768px) {
-  .product-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: var(--border-radius-sm);
-  }
-  
-  .hero-image {
-    height: 200px;
-  }
-}
-
-/* Ajustes para texto y tipografía */
-@media screen and (max-width: 768px) {
-  .hero-title {
-    font-size: 2rem;
-    line-height: 1.2;
-  }
-  
-  .hero-subtitle {
-    font-size: 1rem;
-    line-height: 1.4;
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-}
-
-/* Ajustes para espaciado general */
-@media screen and (max-width: 768px) {
-  .section {
-    padding: 2rem 1rem;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-  
-  .spacing-top { margin-top: 1rem; }
-  .spacing-bottom { margin-bottom: 1rem; }
-  .spacing-left { margin-left: 0.5rem; }
-  .spacing-right { margin-right: 0.5rem; }
-}
-
-/* ===== CORRECCIONES ESPECÍFICAS PARA EL PANEL DE ADMINISTRACIÓN ===== */
-
-/* Asegurar que el layout de administración no tenga overflow */
-.admin-layout {
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Corregir el sidebar para que no cause overflow */
-.sidebar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 1000;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* Corregir el contenido principal */
-.admin-main {
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Asegurar que el header no cause problemas */
-.admin-header {
-  width: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  overflow: hidden;
-}
-
-/* Corregir el contenido del admin */
-.admin-content {
-  width: 100%;
-  overflow-x: hidden;
-  position: relative;
-}
-
-.content-wrapper {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 /* Responsive para el panel de administración */
@@ -568,6 +310,8 @@ body::before {
     padding: 0;
   }
 }
+
+/* ===== COMPONENT STYLES ===== */
 
 /* Asegurar que las tarjetas no se desborden */
 .admin-card, .pedido-card, .stat-card {
@@ -641,6 +385,8 @@ img {
   width: 100%;
   overflow: hidden;
 }
+
+/* ===== FORM STYLES ===== */
 
 /* Allow content to be visible in forms */
 .form-group input,
@@ -717,38 +463,16 @@ footer {
   overflow: visible;
 }
 
-/* Asegurar que las animaciones no causen overflow */
-@keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
+/* ===== GLOBAL CSS FIXES ===== */
+
+/* Ensure proper box-sizing for all elements */
+* {
+  box-sizing: border-box;
 }
 
 /* Allow horizontal scrolling when needed */
-html, body {
-  scroll-behavior: smooth;
-}
-
-/* Ensure main containers allow horizontal scrolling when needed */
-.App, #root, .main-container {
-  width: 100%;
-}
-
-/* ===== GLOBAL CSS FIXES - ALLOWS HORIZONTAL SCROLLING ===== */
-
-/* Remove all overflow-x: hidden restrictions */
 html, body, #root, .App, .main-container {
-  /* Allow horizontal scrolling when needed */
-}
-
-/* Fix all overflow restrictions in the file */
-* {
-  box-sizing: border-box;
+  overflow-x: auto;
 }
 
 /* Ensure all containers allow horizontal scrolling */

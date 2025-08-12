@@ -3,6 +3,7 @@ import {
   FiArrowLeft, FiClock, FiCheckCircle, FiAlertCircle, FiUser, FiPhone, 
   FiMapPin, FiRefreshCw, FiFilter, FiSearch, FiCoffee, FiCheck 
 } from 'react-icons/fi';
+import './CocinaPanel.css';
 
 const CocinaPanel = ({ onBack, setRoute, pedidos = [], onRefresh, onCambiarEstado }) => {
   const [loading, setLoading] = useState(false);
@@ -88,246 +89,203 @@ const CocinaPanel = ({ onBack, setRoute, pedidos = [], onRefresh, onCambiarEstad
   const pedidosFiltrados = filtrarPedidos();
 
   return (
-    <div className="admin-layout" style={{backgroundColor: 'var(--chef-bg-main)'}}>
-      {/* Chef-Friendly Header */}
-      <div className="admin-header">
-        <div className="header-left">
-          <div className="page-info">
-            <h1>🍳 COCINA</h1>
-            <p>Panel de preparación de pedidos</p>
-          </div>
+    <div className="cocina-container">
+      {/* Kitchen Header */}
+      <div className="cocina-header">
+        <div className="cocina-title">
+          <h1>🍳 Cocina</h1>
         </div>
-        <div className="header-right">
-          <button onClick={handleRefresh} disabled={loading} className="chef-action-btn">
+        <div className="cocina-actions">
+          <button onClick={handleRefresh} disabled={loading} className="cocina-btn cocina-btn-secondary">
             <FiRefreshCw className={loading ? 'spinning' : ''} />
-            {loading ? 'ACTUALIZANDO...' : 'ACTUALIZAR'}
+            {loading ? 'Actualizando...' : 'Actualizar'}
           </button>
-          <button onClick={onBack} className="chef-action-btn danger">
+          <button onClick={onBack} className="cocina-btn cocina-btn-ghost">
             <FiArrowLeft />
-            VOLVER
+            Volver
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="admin-main">
-        {/* Chef Stats - Large and Clear */}
-        <div className="chef-stats-grid">
-          <div className={`chef-stat-card ${getPedidosUrgentes() > 0 ? 'urgent' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosUrgentes() > 0 ? 'urgent' : 'info'}`}>
-              <FiAlertCircle />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosUrgentes()}</h3>
-              <p>URGENTES</p>
-            </div>
-          </div>
-          
-          <div className={`chef-stat-card ${getPedidosPendientes() > 0 ? 'pending' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosPendientes() > 0 ? 'pending' : 'info'}`}>
-              <FiClock />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosPendientes()}</h3>
-              <p>PENDIENTES</p>
-            </div>
-          </div>
-          
-          <div className={`chef-stat-card ${getPedidosEnPreparacion() > 0 ? 'urgent' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosEnPreparacion() > 0 ? 'urgent' : 'info'}`}>
-              <FiCoffee />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosEnPreparacion()}</h3>
-              <p>PREPARANDO</p>
-            </div>
-          </div>
-          
-          <div className={`chef-stat-card ${getPedidosListos() > 0 ? 'ready' : 'info'}`}>
-            <div className={`chef-stat-icon ${getPedidosListos() > 0 ? 'ready' : 'info'}`}>
-              <FiCheckCircle />
-            </div>
-            <div className="chef-stat-content">
-              <h3>{getPedidosListos()}</h3>
-              <p>LISTOS</p>
-            </div>
-          </div>
+      {/* Kitchen Stats */}
+      <div className="cocina-stats">
+        <div className={`cocina-stat ${getPedidosUrgentes() > 0 ? 'urgent' : ''}`}>
+          <div className="cocina-stat-value">{getPedidosUrgentes()}</div>
+          <div className="cocina-stat-label">Urgentes</div>
         </div>
-
-        {/* Large Filter Buttons */}
-        <div className="chef-filter-section">
-          <div className="chef-filter-buttons">
-            <button
-              className={`chef-filter-btn ${filter === 'activos' ? 'active' : ''}`}
-              onClick={() => setFilter('activos')}
-            >
-              🔥 ACTIVOS
-            </button>
-            <button
-              className={`chef-filter-btn ${filter === 'PENDIENTE' ? 'active' : ''}`}
-              onClick={() => setFilter('PENDIENTE')}
-            >
-              ⏳ PENDIENTES
-            </button>
-            <button
-              className={`chef-filter-btn ${filter === 'EN_PREPARACION' ? 'active' : ''}`}
-              onClick={() => setFilter('EN_PREPARACION')}
-            >
-              👨‍🍳 PREPARANDO
-            </button>
-            <button
-              className={`chef-filter-btn ${filter === 'LISTO' ? 'active' : ''}`}
-              onClick={() => setFilter('LISTO')}
-            >
-              ✅ LISTOS
-            </button>
-          </div>
-          
-          <div className="chef-search-box">
-            <FiSearch />
-            <input
-              type="text"
-              placeholder="Buscar pedido..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        
+        <div className={`cocina-stat ${getPedidosPendientes() > 0 ? 'pending' : ''}`}>
+          <div className="cocina-stat-value">{getPedidosPendientes()}</div>
+          <div className="cocina-stat-label">Pendientes</div>
         </div>
+        
+        <div className={`cocina-stat ${getPedidosEnPreparacion() > 0 ? 'preparing' : ''}`}>
+          <div className="cocina-stat-value">{getPedidosEnPreparacion()}</div>
+          <div className="cocina-stat-label">Preparando</div>
+        </div>
+        
+        <div className={`cocina-stat ${getPedidosListos() > 0 ? 'ready' : ''}`}>
+          <div className="cocina-stat-value">{getPedidosListos()}</div>
+          <div className="cocina-stat-label">Listos</div>
+        </div>
+      </div>
 
-        {/* Chef Orders Grid */}
-        <div className="chef-orders-section">
-          <h2 style={{
-            fontSize: 'var(--chef-text-xl)', 
-            fontWeight: '900', 
-            marginBottom: 'var(--chef-space-lg)', 
-            color: 'var(--color-text)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--chef-space-sm)'
-          }}>
-            <FiCoffee />
-            ÓRDENES DE COCINA ({pedidosFiltrados.length})
-          </h2>
-          
-          {loading ? (
-            <div className="chef-empty-state">
-              <h3>🔄 Cargando...</h3>
-              <p>Actualizando pedidos</p>
-            </div>
-          ) : pedidosFiltrados.length === 0 ? (
-            <div className="chef-empty-state">
-              <h3>🎉 ¡Excelente trabajo!</h3>
-              <p>No hay pedidos para mostrar</p>
-            </div>
-          ) : (
-            <div className="chef-orders-grid">
-              {pedidosFiltrados.map(pedido => {
-                const urgent = isUrgent(pedido.created_at);
-                
-                return (
-                  <div key={pedido.id} className={`chef-order-card ${urgent ? 'urgent' : ''} ${pedido.estado === 'LISTO' ? 'ready' : ''}`}>
-                    <div className="chef-order-header">
-                      <div className="chef-customer-info">
-                        <div className="chef-customer-avatar">
-                          {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
-                        </div>
-                        <div className="chef-customer-details">
-                          <h4>{pedido.nombre || 'Cliente'}</h4>
-                          <p>
-                            <FiPhone />
-                            {pedido.telefono || 'Sin teléfono'}
-                          </p>
-                        </div>
+      {/* Kitchen Filters */}
+      <div className="cocina-filters">
+        <div className="cocina-search">
+          <FiSearch className="cocina-search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar pedido por nombre, producto..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="cocina-filter-buttons">
+          <button
+            className={`cocina-filter-btn ${filter === 'activos' ? 'active' : ''}`}
+            onClick={() => setFilter('activos')}
+          >
+            🔥 Activos
+          </button>
+          <button
+            className={`cocina-filter-btn ${filter === 'PENDIENTE' ? 'active' : ''}`}
+            onClick={() => setFilter('PENDIENTE')}
+          >
+            ⏳ Pendientes
+          </button>
+          <button
+            className={`cocina-filter-btn ${filter === 'EN_PREPARACION' ? 'active' : ''}`}
+            onClick={() => setFilter('EN_PREPARACION')}
+          >
+            👨‍🍳 Preparando
+          </button>
+          <button
+            className={`cocina-filter-btn ${filter === 'LISTO' ? 'active' : ''}`}
+            onClick={() => setFilter('LISTO')}
+          >
+            ✅ Listos
+          </button>
+        </div>
+      </div>
+
+      {/* Kitchen Orders */}
+      <div className="cocina-orders">
+        {loading ? (
+          <div className="cocina-loading">
+            <FiRefreshCw className="cocina-loading-icon" />
+            <div>Cargando pedidos...</div>
+          </div>
+        ) : pedidosFiltrados.length === 0 ? (
+          <div className="cocina-empty">
+            <FiCheckCircle className="cocina-empty-icon" />
+            <h3>¡Excelente trabajo!</h3>
+            <p>No hay pedidos para mostrar</p>
+          </div>
+        ) : (
+          <div className="cocina-orders-grid">
+            {pedidosFiltrados.map(pedido => {
+              const urgent = isUrgent(pedido.created_at);
+              
+              return (
+                <div key={pedido.id} className={`cocina-order-card ${urgent ? 'urgent' : ''} ${pedido.estado === 'LISTO' ? 'ready' : ''}`}>
+                  <div className="cocina-order-header">
+                    <div className="cocina-customer-info">
+                      <div className="cocina-customer-avatar">
+                        {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
                       </div>
-                      <div className="chef-order-status">
-                        {urgent && (
-                          <span className="chef-time-badge urgent">
-                            <FiAlertCircle />
-                            URGENTE
-                          </span>
-                        )}
-                        <span className={`chef-time-badge ${urgent ? 'urgent' : ''}`}>
-                          <FiClock />
-                          {formatTime(pedido.created_at)}
-                        </span>
+                      <div className="cocina-customer-details">
+                        <h4>{pedido.nombre || 'Cliente'}</h4>
+                        <p>
+                          <FiPhone />
+                          {pedido.telefono || 'Sin teléfono'}
+                        </p>
                       </div>
                     </div>
+                    <div className="cocina-order-status">
+                      {urgent && (
+                        <span className="cocina-urgent-badge">
+                          <FiAlertCircle />
+                          Urgente
+                        </span>
+                      )}
+                      <span className="cocina-time-badge">
+                        <FiClock />
+                        {formatTime(pedido.created_at)}
+                      </span>
+                    </div>
+                  </div>
 
-                    <div className="chef-order-info">
-                      <div className="chef-order-items">
-                        <div className="chef-order-item">
-                          <span className="chef-item-name">{pedido.producto || 'Producto'}</span>
-                          <span className="chef-item-quantity">1</span>
-                        </div>
+                  <div className="cocina-order-content">
+                    <div className="cocina-order-info">
+                      <div className="cocina-order-item">
+                        <span className="cocina-order-label">Producto</span>
+                        <span className="cocina-order-value">{pedido.producto || 'Producto'}</span>
+                      </div>
+                      
+                      <div className="cocina-order-item">
+                        <span className="cocina-order-label">Tipo</span>
+                        <span className="cocina-order-value">
+                          {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' ? 
+                            '🚚 Domicilio' : '🏪 Retiro'
+                          }
+                        </span>
+                      </div>
+                      
+                      <div className="cocina-order-item">
+                        <span className="cocina-order-label">Precio</span>
+                        <span className="cocina-order-price">${(pedido.precio_total || 0).toLocaleString()}</span>
+                      </div>
+                      
+                      <div className="cocina-order-item">
+                        <span className="cocina-order-label">Estado</span>
+                        <span className="cocina-order-value">
+                          {pedido.estado === 'PENDIENTE' && '⏳ Pendiente'}
+                          {pedido.estado === 'EN_PREPARACION' && '👨‍🍳 Preparando'}
+                          {pedido.estado === 'LISTO' && '✅ Listo'}
+                        </span>
                       </div>
                       
                       {pedido.observaciones && (
-                        <div className="chef-order-notes">
-                          <strong>📝 NOTAS:</strong>
-                          <p>{pedido.observaciones}</p>
+                        <div className="cocina-order-notes">
+                          <span className="cocina-order-label">Notas Especiales</span>
+                          <span className="cocina-order-value">{pedido.observaciones}</span>
                         </div>
                       )}
-                      
-                      <div style={{
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        marginTop: 'var(--chef-space-md)',
-                        padding: 'var(--chef-space-sm)',
-                        background: 'var(--chef-bg-info)',
-                        borderRadius: 'var(--chef-radius-sm)'
-                      }}>
-                        <span style={{
-                          fontSize: 'var(--chef-text-md)', 
-                          fontWeight: '700', 
-                          color: 'var(--color-text-subtle)'
-                        }}>
-                          {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' ? 
-                            '🚚 DOMICILIO' : '🏪 RETIRO'
-                          }
-                        </span>
-                        <span style={{
-                          fontSize: 'var(--chef-text-lg)', 
-                          fontWeight: '800', 
-                          color: 'var(--chef-blue)'
-                        }}>
-                          ${(pedido.precio_total || 0).toLocaleString()}
-                        </span>
-                      </div>
                     </div>
 
-                    <div className="chef-order-actions">
+                    <div className="cocina-order-actions">
                       {pedido.estado === 'PENDIENTE' && (
                         <button
-                          className="chef-order-btn prepare"
+                          className="cocina-action-btn prepare"
                           onClick={() => cambiarEstado(pedido.id, 'EN_PREPARACION')}
                         >
                           <FiCoffee />
-                          INICIAR PREPARACIÓN
+                          Iniciar Preparación
                         </button>
                       )}
                       {pedido.estado === 'EN_PREPARACION' && (
                         <button
-                          className="chef-order-btn ready"
+                          className="cocina-action-btn ready"
                           onClick={() => cambiarEstado(pedido.id, 'LISTO')}
                         >
                           <FiCheck />
-                          MARCAR LISTO
+                          Marcar Listo
                         </button>
                       )}
                       {pedido.estado === 'LISTO' && (
-                        <div className="chef-ready-indicator">
+                        <div className="cocina-action-btn complete">
                           <FiCheckCircle />
-                          <span>LISTO PARA ENTREGAR</span>
+                          Listo para Entregar
                         </div>
                       )}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

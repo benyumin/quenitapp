@@ -3,7 +3,8 @@ import {
   FiArrowLeft, FiUser, FiPhone, FiMapPin, FiShoppingCart, FiDollarSign, 
   FiCheckCircle, FiRefreshCw, FiPlus, FiSearch, FiX, FiSave 
 } from 'react-icons/fi';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
+import './CajeroPanel.css';
 
 const CajeroPanel = ({ onBack, setRoute }) => {
   const [pedidos, setPedidos] = useState([]);
@@ -127,278 +128,239 @@ const CajeroPanel = ({ onBack, setRoute }) => {
   const pedidosFiltrados = filtrarPedidos();
 
   return (
-    <div className="admin-layout" style={{backgroundColor: 'var(--chef-bg-main)'}}>
+    <div className="cajero-container">
       {/* Cashier Header */}
-      <div className="admin-header">
-        <div className="header-left">
-          <div className="page-info">
-            <h1>👥 CAJERO</h1>
-            <p>Atención al cliente y nuevos pedidos</p>
-          </div>
+      <div className="cajero-header">
+        <div className="cajero-title">
+          <h1>👥 Cajero</h1>
         </div>
-        <div className="header-right">
+        <div className="cajero-actions">
           <button 
             onClick={() => setShowNuevoPedido(!showNuevoPedido)} 
-            className={`chef-action-btn ${showNuevoPedido ? 'danger' : 'success'}`}
+            className={`cajero-btn cajero-btn-lg ${showNuevoPedido ? 'cajero-btn-danger' : 'cajero-btn-success'}`}
           >
             {showNuevoPedido ? <FiX /> : <FiPlus />}
-            {showNuevoPedido ? 'CANCELAR' : 'NUEVO PEDIDO'}
+            {showNuevoPedido ? 'Cancelar' : '+ Nuevo Pedido'}
           </button>
-          <button onClick={fetchPedidos} disabled={loading} className="chef-action-btn">
+          <button onClick={fetchPedidos} disabled={loading} className="cajero-btn cajero-btn-secondary">
             <FiRefreshCw className={loading ? 'spinning' : ''} />
-            {loading ? 'ACTUALIZANDO...' : 'ACTUALIZAR'}
+            {loading ? 'Actualizando...' : 'Actualizar'}
           </button>
-          <button onClick={onBack} className="chef-action-btn danger">
+          <button onClick={onBack} className="cajero-btn cajero-btn-ghost">
             <FiArrowLeft />
-            VOLVER
+            Volver
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="admin-main">
-        {showNuevoPedido && (
-          <div className="chef-new-order-form">
-            <h2 style={{
-              fontSize: 'var(--chef-text-xl)', 
-              fontWeight: '900', 
-              marginBottom: 'var(--chef-space-lg)', 
-              color: 'var(--color-text)',
-              textAlign: 'center'
-            }}>
-              📝 NUEVO PEDIDO
-            </h2>
-            
-            <div className="chef-form-grid">
-              <div className="chef-form-row">
-                <div className="chef-form-field">
-                  <label>👤 NOMBRE DEL CLIENTE *</label>
+      {showNuevoPedido && (
+        <div className="cajero-new-order">
+          <h2>📝 Nuevo Pedido</h2>
+          <p>Crear un nuevo pedido</p>
+          
+          <div className="cajero-form-grid">
+            <div className="cajero-form-card">
+              <div className="cajero-form-info">
+                <div className="cajero-form-item">
+                  <span className="cajero-form-label">👤 Nombre del Cliente *</span>
                   <input
                     type="text"
                     value={clienteNombre}
                     onChange={(e) => setClienteNombre(e.target.value)}
                     placeholder="Nombre completo"
-                    className="chef-form-input"
+                    className="cajero-form-input"
                   />
                 </div>
-                <div className="chef-form-field">
-                  <label>📞 TELÉFONO *</label>
+                
+                <div className="cajero-form-item">
+                  <span className="cajero-form-label">📞 Teléfono *</span>
                   <input
                     type="tel"
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
                     placeholder="+56 9 1234 5678"
-                    className="chef-form-input"
+                    className="cajero-form-input"
                   />
                 </div>
-              </div>
-
-              <div className="chef-form-row">
-                <div className="chef-form-field">
-                  <label>🍔 PRODUCTO *</label>
+                
+                <div className="cajero-form-item">
+                  <span className="cajero-form-label">🍔 Producto *</span>
                   <input
                     type="text"
                     value={producto}
                     onChange={(e) => setProducto(e.target.value)}
                     placeholder="Nombre del producto"
-                    className="chef-form-input"
+                    className="cajero-form-input"
                   />
                 </div>
-                <div className="chef-form-field">
-                  <label>💰 PRECIO *</label>
+                
+                <div className="cajero-form-item">
+                  <span className="cajero-form-label">💰 Precio *</span>
                   <input
                     type="number"
                     value={precio}
                     onChange={(e) => setPrecio(e.target.value)}
                     placeholder="0"
-                    className="chef-form-input"
+                    className="cajero-form-input"
                   />
                 </div>
-              </div>
-
-              <div className="chef-form-row">
-                <div className="chef-form-field">
-                  <label>🚚 TIPO DE ENTREGA</label>
+                
+                <div className="cajero-form-item">
+                  <span className="cajero-form-label">🚚 Tipo de Entrega</span>
                   <select
                     value={tipoEntrega}
                     onChange={(e) => setTipoEntrega(e.target.value)}
-                    className="chef-form-input"
+                    className="cajero-form-select"
                   >
                     <option value="retiro">🏪 Retiro en Local</option>
                     <option value="domicilio">🚚 Domicilio</option>
                   </select>
                 </div>
+                
                 {tipoEntrega === 'domicilio' && (
-                  <div className="chef-form-field">
-                    <label>📍 DIRECCIÓN</label>
+                  <div className="cajero-form-item">
+                    <span className="cajero-form-label">📍 Dirección</span>
                     <input
                       type="text"
                       value={direccion}
                       onChange={(e) => setDireccion(e.target.value)}
                       placeholder="Dirección completa"
-                      className="chef-form-input"
+                      className="cajero-form-input"
                     />
                   </div>
                 )}
+                
+                <div className="cajero-form-item" style={{ gridColumn: '1 / -1' }}>
+                  <span className="cajero-form-label">📝 Observaciones</span>
+                  <textarea
+                    value={observaciones}
+                    onChange={(e) => setObservaciones(e.target.value)}
+                    placeholder="Notas especiales del pedido..."
+                    rows="3"
+                    className="cajero-form-textarea"
+                  />
+                </div>
               </div>
-
-              <div className="chef-form-field">
-                <label>📝 OBSERVACIONES</label>
-                <textarea
-                  value={observaciones}
-                  onChange={(e) => setObservaciones(e.target.value)}
-                  placeholder="Notas especiales del pedido..."
-                  className="chef-form-textarea"
-                  rows="3"
-                />
-              </div>
-
-              <div className="chef-form-actions">
+              
+              <div className="cajero-form-actions">
                 <button
                   onClick={crearNuevoPedido}
-                  className="chef-action-btn success"
-                  style={{width: '100%', fontSize: 'var(--chef-text-lg)', padding: 'var(--chef-space-lg)'}}
+                  className="cajero-form-btn complete"
+                  style={{ width: '100%' }}
                 >
                   <FiSave />
-                  CREAR PEDIDO
+                  Crear Pedido
                 </button>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Search Section */}
-        <div className="chef-search-section">
-          <div className="chef-search-box" style={{maxWidth: '400px', margin: '0 auto'}}>
-            <FiSearch />
-            <input
-              type="text"
-              placeholder="Buscar pedidos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
         </div>
+      )}
 
-        {/* Orders List */}
-        <div className="chef-orders-section">
-          <h2 style={{
-            fontSize: 'var(--chef-text-xl)', 
-            fontWeight: '900', 
-            marginBottom: 'var(--chef-space-lg)', 
-            color: 'var(--color-text)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--chef-space-sm)',
-            justifyContent: 'center'
-          }}>
-            <FiShoppingCart />
-            HISTORIAL DE PEDIDOS ({pedidosFiltrados.length})
-          </h2>
-          
-          {loading ? (
-            <div className="chef-empty-state">
-              <h3>🔄 Cargando...</h3>
-              <p>Obteniendo pedidos</p>
-            </div>
-          ) : pedidosFiltrados.length === 0 ? (
-            <div className="chef-empty-state">
-              <h3>📋 No hay pedidos</h3>
-              <p>No se encontraron pedidos</p>
-            </div>
-          ) : (
-            <div className="chef-orders-grid">
-              {pedidosFiltrados.map(pedido => {
-                const statusColor = getStatusColor(pedido.estado);
-                
-                return (
-                  <div key={pedido.id} className={`chef-order-card ${statusColor}`}>
-                    <div className="chef-order-header">
-                      <div className="chef-customer-info">
-                        <div className="chef-customer-avatar">
-                          {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
-                        </div>
-                        <div className="chef-customer-details">
-                          <h4>{pedido.nombre || 'Cliente'}</h4>
-                          <p>
-                            <FiPhone />
-                            {pedido.telefono || 'Sin teléfono'}
-                          </p>
-                        </div>
+      {/* Cashier Search */}
+      <div className="cajero-search">
+        <div className="cajero-search-box">
+          <FiSearch className="cajero-search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar pedidos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Cashier Orders */}
+      <div className="cajero-orders">
+        {loading ? (
+          <div className="cajero-loading">
+            <FiRefreshCw className="cajero-loading-icon" />
+            <div>Cargando pedidos...</div>
+          </div>
+        ) : pedidosFiltrados.length === 0 ? (
+          <div className="cajero-empty">
+            <FiShoppingCart className="cajero-empty-icon" />
+            <h3>No hay pedidos</h3>
+            <p>No se encontraron pedidos</p>
+          </div>
+        ) : (
+          <div className="cajero-orders-grid">
+            {pedidosFiltrados.map(pedido => {
+              const statusColor = getStatusColor(pedido.estado);
+              
+              return (
+                <div key={pedido.id} className={`cajero-order-card ${statusColor}`}>
+                  <div className="cajero-order-header">
+                    <div className="cajero-customer-info">
+                      <div className="cajero-customer-avatar">
+                        {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
                       </div>
-                      <div className="chef-order-status">
-                        <span className={`chef-status-badge ${pedido.estado?.toLowerCase()}`}>
-                          {pedido.estado === 'PENDIENTE' && '⏳'}
-                          {pedido.estado === 'EN_PREPARACION' && '👨‍🍳'}
-                          {pedido.estado === 'LISTO' && '✅'}
-                          {pedido.estado === 'PAGADO' && '💰'}
-                          {pedido.estado === 'EN_ENTREGA' && '🚚'}
-                          {pedido.estado === 'ENTREGADO' && '🎉'}
-                          {pedido.estado === 'CANCELADO' && '❌'}
-                          {pedido.estado}
-                        </span>
-                        <span className="chef-time-badge">
-                          📅 {formatTime(pedido.created_at)}
-                        </span>
+                      <div className="cajero-customer-details">
+                        <h4>{pedido.nombre || 'Cliente'}</h4>
+                        <p>
+                          <FiPhone />
+                          {pedido.telefono || 'Sin teléfono'}
+                        </p>
                       </div>
                     </div>
+                    <div className="cajero-order-status">
+                      <span className="cajero-status-badge">
+                        {pedido.estado === 'PENDIENTE' && '⏳'}
+                        {pedido.estado === 'EN_PREPARACION' && '👨‍🍳'}
+                        {pedido.estado === 'LISTO' && '✅'}
+                        {pedido.estado === 'PAGADO' && '💰'}
+                        {pedido.estado === 'EN_ENTREGA' && '🚚'}
+                        {pedido.estado === 'ENTREGADO' && '🎉'}
+                        {pedido.estado === 'CANCELADO' && '❌'}
+                        {pedido.estado}
+                      </span>
+                      <span className="cajero-time-badge">
+                        📅 {formatTime(pedido.created_at)}
+                      </span>
+                    </div>
+                  </div>
 
-                    <div className="chef-order-info">
-                      <div className="chef-order-items">
-                        <div className="chef-order-item">
-                          <span className="chef-item-name">{pedido.producto || 'Producto'}</span>
-                          <span className="chef-item-quantity">1</span>
-                        </div>
+                  <div className="cajero-order-content">
+                    <div className="cajero-order-info">
+                      <div className="cajero-order-item">
+                        <span className="cajero-order-label">Producto</span>
+                        <span className="cajero-order-value">{pedido.producto || 'Producto'}</span>
                       </div>
                       
                       {pedido.observaciones && (
-                        <div className="chef-order-notes">
-                          <strong>📝 NOTAS:</strong>
-                          <p>{pedido.observaciones}</p>
+                        <div className="cajero-order-item">
+                          <span className="cajero-order-label">Notas</span>
+                          <span className="cajero-order-value">{pedido.observaciones}</span>
                         </div>
                       )}
                       
-                      <div style={{
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        marginTop: 'var(--chef-space-md)',
-                        padding: 'var(--chef-space-md)',
-                        background: 'var(--chef-bg-success)',
-                        borderRadius: 'var(--chef-radius-md)',
-                        border: '2px solid var(--chef-green)'
-                      }}>
-                        <span style={{
-                          fontSize: 'var(--chef-text-md)', 
-                          fontWeight: '700', 
-                          color: 'var(--chef-green)'
-                        }}>
+                      <div className="cajero-order-item">
+                        <span className="cajero-order-label">Tipo</span>
+                        <span className="cajero-order-value">
                           {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' ? 
-                            '🚚 DOMICILIO' : '🏪 RETIRO'
+                            '🚚 Domicilio' : '🏪 Retiro'
                           }
                         </span>
-                        <span style={{
-                          fontSize: 'var(--chef-text-xl)', 
-                          fontWeight: '900', 
-                          color: 'var(--chef-green)'
-                        }}>
-                          ${(pedido.precio_total || 0).toLocaleString()}
-                        </span>
                       </div>
+                      
+                      <div className="cajero-order-item">
+                        <span className="cajero-order-label">Precio</span>
+                        <span className="cajero-order-price">${(pedido.precio_total || 0).toLocaleString()}</span>
+                      </div>
+                      
+                      {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' && (
+                        <div className="cajero-order-item">
+                          <span className="cajero-order-label">Dirección</span>
+                          <span className="cajero-order-value">{pedido.direccion}</span>
+                        </div>
+                      )}
                     </div>
-
-                    {pedido.direccion && pedido.direccion.toLowerCase() !== 'retiro en local' && (
-                      <div className="chef-delivery-address">
-                        <FiMapPin />
-                        <span>{pedido.direccion}</span>
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

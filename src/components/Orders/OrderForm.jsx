@@ -17,13 +17,14 @@ import papImg from "../../assets/pap.png";
 import monsterImg from "../../assets/monster.png";
 import scoreImg from "../../assets/score.png";
 import './OrderForm.css';
-import { supabase } from '../../lib/supabaseClient';
+import './OrderForm-modern.css';
+import { supabase } from '../lib/supabaseClient';
 
 const products = [
-  { name: "Completo Especial", price: 900, image: completoImg, popular: true },
-  { name: "Completo Italiano", price: 1900, image: completoImg, popular: true },
-  { name: "Completo XL Italiano", price: 2700, image: completoImg, popular: true },
-  { name: "Churrasco Italiano", price: 3700, image: churrascoImg, popular: true },
+  { name: "Completo Especial", price: 900, image: completoImg },
+  { name: "Completo Italiano", price: 1900, image: completoImg },
+  { name: "Completo XL Italiano", price: 2700, image: completoImg },
+  { name: "Churrasco Italiano", price: 3700, image: churrascoImg },
   { name: "ASS Italiano", price: 3700, image: assImg },
   { name: "Papas Fritas Chicas", price: 2000, image: papasImg },
   { name: "Fajita de Pollo", price: 3800, image: fajitaImg },
@@ -108,13 +109,13 @@ const productCustomizations = {
   ]
 };
 
-const OrderForm = ({ onAddToCart }) => {
+const OrderForm = ({ onAddToCart, onClose, isLoggedIn, userInfo }) => {
   const [step, setStep] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedBeverage, setSelectedBeverage] = useState(null);
   const [customizations, setCustomizations] = useState({});
-  const [customerName, setCustomerName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [customerName, setCustomerName] = useState(userInfo?.full_name || userInfo?.nombre || '');
+  const [phone, setPhone] = useState(userInfo?.phone || userInfo?.telefono || '');
   const [address, setAddress] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState('Retiro en local');
   const [paymentMethod, setPaymentMethod] = useState('Efectivo');
@@ -130,6 +131,20 @@ const OrderForm = ({ onAddToCart }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationProduct, setNotificationProduct] = useState(null);
 
+  const handleCloseModal = () => {
+    if (onClose) {
+      // If onClose prop is provided, use it (for modal mode)
+      onClose();
+    } else {
+      // Fallback for standalone mode
+      if (window.location.hash) {
+        window.location.hash = '';
+      } else {
+        window.location.href = '/';
+      }
+    }
+  };
+
   // Limpiar el carrito cuando el componente se monta
   useEffect(() => {
     setCart([]);
@@ -138,6 +153,35 @@ const OrderForm = ({ onAddToCart }) => {
     setSelectedBeverage(null);
     setCustomizations({});
   }, []);
+
+  // Update form fields when userInfo changes
+  useEffect(() => {
+    if (userInfo && (userInfo.full_name || userInfo.nombre || userInfo.phone || userInfo.telefono)) {
+      console.log('🔄 Updating form with user info:', userInfo);
+      setCustomerName(userInfo.full_name || userInfo.nombre || '');
+      setPhone(userInfo.phone || userInfo.telefono || '');
+      
+      // Show notification that user data was loaded
+      if (userInfo.full_name || userInfo.nombre) {
+        console.log('✅ User data loaded:', {
+          name: userInfo.full_name || userInfo.nombre,
+          phone: userInfo.phone || userInfo.telefono
+        });
+      }
+    }
+  }, [userInfo]);
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        handleCloseModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleCloseModal]);
 
   const getCurrentCustomizations = () => {
     if (!selectedProduct || !productCustomizations[selectedProduct.name]) return [];
@@ -355,6 +399,24 @@ const OrderForm = ({ onAddToCart }) => {
       alert('Por favor agrega al menos un producto al carrito');
       return;
     }
+
+    if (!isLoggedIn) {
+      alert('Debes iniciar sesión para realizar el pedido');
+      return;
+    }
+
+    // Verify that user data is properly loaded
+    if (!userInfo || (!userInfo.full_name && !userInfo.nombre)) {
+      alert('Error: No se pudieron cargar tus datos de usuario. Por favor recarga la página e intenta de nuevo.');
+      return;
+    }
+
+    console.log('✅ Submitting order with user data:', {
+      userId: userInfo.id,
+      userName: userInfo.full_name || userInfo.nombre,
+      userPhone: userInfo.phone || userInfo.telefono,
+      userEmail: userInfo.email
+    });
     
     setIsSubmitting(true);
 
@@ -498,7 +560,7 @@ const OrderForm = ({ onAddToCart }) => {
                   <div className="product-info">
                     <h4 style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>{product.name}</h4>
                     <p className="product-price">${product.price.toLocaleString()}</p>
-                    {product.popular && <span className="popular-badge">🔥</span>}
+
                   </div>
                 </div>
               ))}
@@ -763,6 +825,55 @@ const OrderForm = ({ onAddToCart }) => {
          return (
            <div className="step-container">
              <h3>👤 Tu información</h3>
+             
+             {/* User authentication status and data display */}
+             {isLoggedIn && userInfo ? (
+               <div style={{
+                 background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+                 border: '1px solid #10b981',
+                 borderRadius: '12px',
+                 padding: '16px',
+                 marginBottom: '20px',
+                 textAlign: 'center'
+               }}>
+                 <div style={{ fontSize: '24px', marginBottom: '8px' }}>✅</div>
+                 <h4 style={{ margin: '0 0 8px 0', color: '#065f46', fontSize: '1rem' }}>
+                   ¡Datos cargados automáticamente!
+                 </h4>
+                 <p style={{ margin: '0', color: '#047857', fontSize: '0.9rem' }}>
+                   Hola <strong>{userInfo.full_name || userInfo.nombre}</strong>, 
+                   tus datos han sido pre-cargados desde tu cuenta.
+                 </p>
+                 <div style={{ 
+                   marginTop: '12px', 
+                   padding: '8px 12px', 
+                   background: 'rgba(16, 185, 129, 0.1)', 
+                   borderRadius: '8px',
+                   fontSize: '0.85rem',
+                   color: '#065f46'
+                 }}>
+                   📱 Teléfono: {userInfo.phone || userInfo.telefono || 'No registrado'}
+                 </div>
+               </div>
+             ) : !isLoggedIn ? (
+               <div style={{
+                 background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                 border: '1px solid #f59e0b',
+                 borderRadius: '12px',
+                 padding: '16px',
+                 marginBottom: '20px',
+                 textAlign: 'center'
+               }}>
+                 <div style={{ fontSize: '24px', marginBottom: '8px' }}>⚠️</div>
+                 <h4 style={{ margin: '0 0 8px 0', color: '#92400e', fontSize: '1rem' }}>
+                   Inicia sesión para pre-cargar tus datos
+                 </h4>
+                 <p style={{ margin: '0', color: '#b45309', fontSize: '0.9rem' }}>
+                   Al iniciar sesión, tus datos se cargarán automáticamente.
+                 </p>
+               </div>
+             ) : null}
+             
             <div className="customer-inputs">
               <input
                 type="text"
@@ -1156,54 +1267,125 @@ const OrderForm = ({ onAddToCart }) => {
     }
   };
 
-  return (
-    <div className="order-form-container">
-      <div className="order-form-content">
-        <div className="order-form-left" style={{ 
-          marginBottom: (step >= 5 && (selectedProduct || cart.length > 0)) ? '80px' : '0' 
-        }}>
-          <h2 className="order-form-title" style={{ color: 'var(--text-color, inherit)', fontWeight: '600' }}>¡Haz tu pedido!</h2>
+  // Render as modal if onClose prop is provided, otherwise as inline component
+  if (onClose) {
+    return (
+      <div 
+        className="order-form-modal-overlay"
+        onClick={handleCloseModal}
+      >
+        <div 
+          className="order-form-modal-container"
+          onClick={(e) => e.stopPropagation()}
+        >
+        {/* Professional Modal Header */}
+        <div className="order-modal-header">
+          <div className="modal-header-content">
+            <h2 className="modal-title">
+              <span className="modal-icon">🛍️</span>
+              Realizar Pedido
+            </h2>
+            <button 
+              className="modal-close-btn"
+              onClick={handleCloseModal}
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="modal-progress">
+            <div className="progress-steps">
+              <div className={`step ${step >= 1 ? 'active' : ''}`}>
+                <span className="step-number">1</span>
+                <span className="step-label">Producto</span>
+              </div>
+              <div className={`step ${step >= 2 ? 'active' : ''}`}>
+                <span className="step-number">2</span>
+                <span className="step-label">Bebida</span>
+              </div>
+              <div className={`step ${step >= 3 ? 'active' : ''}`}>
+                <span className="step-number">3</span>
+                <span className="step-label">Extras</span>
+              </div>
+              <div className={`step ${step >= 4 ? 'active' : ''}`}>
+                <span className="step-number">4</span>
+                <span className="step-label">Datos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Content */}
+        <div className="order-modal-content">
+          <div className="order-form-main" style={{ 
+            marginBottom: (step >= 5 && (selectedProduct || cart.length > 0)) ? '80px' : '0' 
+          }}>
           
           {!selectedProduct && cart.length === 0 && (
-            <div style={{
-              background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)',
-              border: '2px solid #0ea5e9',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '20px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🍽️</div>
-              <p style={{ 
-                margin: '0', 
-                color: '#0c4a6e', 
-                fontWeight: '600',
-                fontSize: '1rem'
-              }}>
-                Selecciona un producto para comenzar tu pedido
-              </p>
-              <p style={{ 
-                margin: '4px 0 0 0', 
-                color: '#0369a1', 
-                fontSize: '0.9rem',
-                opacity: 0.8
-              }}>
-                El resumen aparecerá cuando confirmes tu pedido
-              </p>
+            <div className="order-welcome-card">
+              <div className="welcome-icon">🍽️</div>
+              <div className="welcome-content">
+                <h3 className="welcome-title">¡Comienza tu pedido!</h3>
+                <p className="welcome-subtitle">
+                  Selecciona un producto para comenzar tu experiencia culinaria
+                </p>
+                <div className="welcome-features">
+                  <div className="feature-item">
+                    <span className="feature-icon">⚡</span>
+                    <span>Rápido y fácil</span>
+                  </div>
+                  <div className="feature-item">
+                    <span className="feature-icon">🎯</span>
+                    <span>100% personalizable</span>
+                  </div>
+                  <div className="feature-item">
+                    <span className="feature-icon">🚚</span>
+                    <span>Entrega a domicilio</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           
-                     {/* Progress Bar */}
-           <div className="progress-bar">
-             <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>
-             <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2</div>
-             <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3</div>
-             <div className={`progress-step ${step >= 4 ? 'active' : ''}`}>4</div>
-             <div className={`progress-step ${step >= 5 ? 'active' : ''}`}>5</div>
-             <div className={`progress-step ${step >= 6 ? 'active' : ''}`}>6</div>
-           </div>
+          {/* Modern Progress Bar */}
+          <div className="progress-bar-modern">
+            <div className="progress-track">
+              <div 
+                className="progress-fill" 
+                style={{width: `${(step / 6) * 100}%`}}
+              ></div>
+            </div>
+            <div className="progress-steps">
+              {[1, 2, 3, 4, 5, 6].map((stepNum) => (
+                <div 
+                  key={stepNum}
+                  className={`progress-step-modern ${step >= stepNum ? 'active' : ''} ${step === stepNum ? 'current' : ''}`}
+                >
+                  <div className="step-circle">
+                    {step > stepNum ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                    ) : (
+                      stepNum
+                    )}
+                  </div>
+                  <div className="step-label">
+                    {stepNum === 1 && "Producto"}
+                    {stepNum === 2 && "Bebida"}
+                    {stepNum === 3 && "Personalizar"}
+                    {stepNum === 4 && "Cantidad"}
+                    {stepNum === 5 && "Entrega"}
+                    {stepNum === 6 && "Pago"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          {renderStep()}
+          <div className="order-step-content">
+            {renderStep()}
+          </div>
         </div>
 
                  {/* Resumen del Pedido - Mostrar desde el paso 5 */}
@@ -1312,6 +1494,124 @@ const OrderForm = ({ onAddToCart }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            fontSize: '14px'
+          }}>
+            ✓
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: '2px' }}>
+              ¡Producto agregado!
+            </div>
+            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+              {notificationProduct?.name} agregado al carrito
+            </div>
+          </div>
+          <button
+            onClick={() => setShowNotification(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '18px',
+              marginLeft: 'auto'
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+        </div>
+      </div>
+    );
+  }
+
+  // Render as inline component for main page
+  return (
+    <div className="order-form-container-modern">
+      <div className="order-form-background-pattern"></div>
+      
+      <div className="order-form-content-modern">
+        <div className="order-form-header-modern">
+          <div className="order-badge">
+            <span className="badge-emoji">🛍️</span>
+            <span className="badge-text">Realizar Pedido</span>
+          </div>
+          
+          <h2 className="order-title-modern">
+            <span className="title-highlight">¡Haz tu pedido</span>
+            <span className="title-main">personalizado!</span>
+          </h2>
+          
+          <p className="order-description-modern">
+            Crea tu pedido paso a paso. Selecciona tus productos favoritos, 
+            personalízalos a tu gusto y recíbelos donde quieras.
+          </p>
+        </div>
+
+        <div className="order-form-main" style={{ 
+          marginBottom: (step >= 5 && (selectedProduct || cart.length > 0)) ? '80px' : '0' 
+        }}>
+          
+          {!selectedProduct && cart.length === 0 && (
+            <div className="order-welcome-card">
+              <div className="welcome-icon">🍽️</div>
+              <div className="welcome-content">
+                <h3 className="welcome-title">¡Comienza tu pedido!</h3>
+                <p className="welcome-subtitle">
+                  Selecciona un producto para comenzar tu experiencia culinaria
+                </p>
+                <div className="welcome-features">
+                  <div className="feature-item">
+                    <span className="feature-icon">⚡</span>
+                    <span>Rápido y fácil</span>
+                  </div>
+                  <div className="feature-item">
+                    <span className="feature-icon">🎯</span>
+                    <span>100% personalizable</span>
+                  </div>
+                  <div className="feature-item">
+                    <span className="feature-icon">🚚</span>
+                    <span>Entrega a domicilio</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {renderStep()}
+        </div>
+      </div>
+      
+      {/* Notificación elegante para inline version */}
+      {showNotification && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            padding: '16px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
+            zIndex: 1000,
+            animation: 'slideInRight 0.3s ease-out',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            maxWidth: '300px'
+          }}
+        >
+          <div style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
             fontSize: '14px'
           }}>
             ✓

@@ -5,6 +5,115 @@
   padding: 3.5rem 0 2.5rem 0;
 }
 
+/* Order Error Styles */
+.order-error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #dc2626;
+  text-align: center;
+}
+
+.order-error p {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Cart Summary Section */
+.cart-summary-section {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  margin: 2rem auto;
+  max-width: 800px;
+  box-shadow: 0 4px 20px var(--shadow-light);
+  overflow: hidden;
+}
+
+.cart-summary-content {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cart-summary-info h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.cart-total {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin: 0;
+}
+
+.cart-summary-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.view-cart-btn {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-accent);
+}
+
+.view-cart-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px var(--shadow-accent);
+}
+
+.clear-cart-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-cart-btn:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .cart-summary-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .cart-summary-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .view-cart-btn,
+  .clear-cart-btn {
+    width: 100%;
+  }
+}
+
 .menu-header {
   text-align: center;
   margin-bottom: 3rem;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import jsPDF from 'jspdf';
 import {
   FiPhone, FiClock, FiFileText, FiChevronRight, FiChevronLeft, FiCheckCircle, FiXCircle, FiInfo, FiUser,
@@ -18,7 +18,6 @@ import logoQuenitas from '../../assets/logoquenitamejorcalidad.jpeg';
 import AdminSidebar from './AdminSidebar';
 import Notifications from './Notifications';
 
-// Importar los componentes de cada sección
 import CocinaPanel from '../Cocina/CocinaPanel';
 import CajaPanel from '../Caja/CajaPanel';
 import CajeroPanel from '../Caja/CajeroPanel';
@@ -35,12 +34,11 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     { key: 'CANCELADO', label: 'Cancelado', color: '#FEF2F2', border: '#FCA5A5', text: '#DC2626', icon: <FiXCircle />, bg: '#FEF2F2' },
   ];
 
-  // Estados principales
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState('TODOS');
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState('orders');
   const [viewMode, setViewMode] = useState('cards');
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -55,7 +53,21 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState('light');
 
-  // Funciones auxiliares
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('admin-theme');
+      if (stored === 'light' || stored === 'dark') {
+        setTheme(stored);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('admin-theme', theme);
+    } catch {}
+  }, [theme]);
+
   const getEstadoInfo = (estado) => {
     return ESTADOS.find(e => e.key === estado) || ESTADOS[0];
   };
@@ -88,7 +100,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     return timeElapsed > 30;
   };
 
-  // Función para mostrar ingredientes personalizados
   const getCustomizationsDisplay = (pedido) => {
     try {
       if (!pedido.personalizacion) return null;
@@ -125,7 +136,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     }
   };
 
-  // Función para obtener estadísticas completas
   const getStats = useMemo(() => {
     const total = pedidos.length;
     const pendientes = pedidos.filter(p => (p.estado || 'PENDIENTE') === 'PENDIENTE').length;
@@ -147,7 +157,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     };
   }, [pedidos]);
 
-  // Función para filtrar pedidos
   const getFilteredPedidos = useMemo(() => {
     let filtered = pedidos;
 
@@ -169,7 +178,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     return filtered;
   }, [pedidos, searchTerm, filterEstado]);
 
-  // Función para cambiar estado de pedido
   const cambiarEstado = async (pedidoId, nuevoEstado) => {
     try {
       const { error } = await supabase
@@ -217,13 +225,11 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     }
   };
 
-  // Función para confirmar cambio de estado
   const confirmarCambioEstado = async (pedidoId, nuevoEstado) => {
     const success = await cambiarEstado(pedidoId, nuevoEstado);
     return success;
   };
 
-  // Función para generar PDF
   const generarPDF = () => {
     const doc = new jsPDF();
     
@@ -255,7 +261,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     addNotification('success', 'Reporte PDF generado exitosamente');
   };
 
-  // Función para agregar notificaciones
   const addNotification = (type, message) => {
     const newNotification = {
       id: Date.now(),
@@ -272,7 +277,6 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     setTimeout(() => setShowNotifications(false), duration);
   };
 
-  // Cargar datos
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -294,8 +298,7 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
       setLastUpdate(new Date());
     }
   }, []);
-
-  // Efecto para cargar datos y suscribirse a cambios en tiempo real
+  
   useEffect(() => {
     fetchData();
     
@@ -325,191 +328,34 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     addNotification('success', 'Datos actualizados');
   };
 
-  // Renderizar Dashboard Chef-Friendly
-  const renderDashboard = () => (
-    <div className="chef-dashboard-container">
-      {/* Estadísticas principales - Grandes y claras para chefs */}
-      <div className="chef-stats-grid">
-        <div className={`chef-stat-card ${getStats.pendientes > 0 ? 'pending' : 'info'}`}>
-          <div className={`chef-stat-icon ${getStats.pendientes > 0 ? 'pending' : 'info'}`}>
-            <FiClock />
-          </div>
-          <div className="chef-stat-content">
-            <h3>{getStats.pendientes}</h3>
-            <p>PEDIDOS PENDIENTES</p>
-          </div>
-        </div>
-        
-        <div className={`chef-stat-card ${getStats.enPreparacion > 0 ? 'urgent' : 'info'}`}>
-          <div className={`chef-stat-icon ${getStats.enPreparacion > 0 ? 'urgent' : 'info'}`}>
-            <FiCoffee />
-          </div>
-          <div className="chef-stat-content">
-            <h3>{getStats.enPreparacion}</h3>
-            <p>EN PREPARACIÓN</p>
-          </div>
-        </div>
-        
-        <div className={`chef-stat-card ${getStats.listos > 0 ? 'ready' : 'info'}`}>
-          <div className={`chef-stat-icon ${getStats.listos > 0 ? 'ready' : 'info'}`}>
-            <FiCheckCircle />
-          </div>
-          <div className="chef-stat-content">
-            <h3>{getStats.listos}</h3>
-            <p>LISTOS PARA ENTREGAR</p>
-          </div>
-        </div>
-        
-        <div className="chef-stat-card info">
-          <div className="chef-stat-icon info">
-            <FiShoppingCart />
-          </div>
-          <div className="chef-stat-content">
-            <h3>{getStats.total}</h3>
-            <p>TOTAL HOY</p>
-          </div>
-        </div>
-      </div>
+  const renderDashboard = () => {
+    if (activeSection === 'dashboard') {
+      setActiveSection('orders');
+      return null;
+    }
+    return renderOrdersSection();
+  };
 
-      {/* Acciones rápidas grandes para chefs */}
-      <div className="chef-quick-actions">
-        <button onClick={() => setActiveSection('cocina')} className="chef-action-btn success">
-          <FiCoffee />
-          COCINA
-        </button>
-        <button onClick={() => setActiveSection('orders')} className="chef-action-btn">
-          <FiShoppingCart />
-          VER PEDIDOS
-        </button>
-        <button onClick={handleRefresh} disabled={isRefreshing} className="chef-action-btn warning">
-          <FiRefreshCw className={isRefreshing ? 'spinning' : ''} />
-          {isRefreshing ? 'ACTUALIZANDO...' : 'ACTUALIZAR'}
-        </button>
-      </div>
-
-      {/* Pedidos urgentes y pendientes */}
-      <div className="chef-orders-section">
-        <h2 style={{fontSize: 'var(--chef-text-xl)', fontWeight: '900', marginBottom: 'var(--chef-space-lg)', color: 'var(--color-text)'}}>
-          PEDIDOS ACTIVOS
-        </h2>
-        
-        <div className="chef-orders-grid">
-          {pedidos.filter(p => p.estado !== 'ENTREGADO' && p.estado !== 'CANCELADO').length === 0 ? (
-            <div className="chef-empty-state">
-              <h3>🎉 ¡Excelente trabajo!</h3>
-              <p>No hay pedidos pendientes en este momento</p>
-            </div>
-          ) : (
-            pedidos.filter(p => p.estado !== 'ENTREGADO' && p.estado !== 'CANCELADO').slice(0, 6).map(pedido => {
-            const estadoInfo = getEstadoInfo(pedido.estado);
-            const urgent = isUrgent(pedido.created_at);
-
-            return (
-              <div key={pedido.id} className={`chef-order-card ${urgent ? 'urgent' : ''} ${pedido.estado === 'LISTO' ? 'ready' : ''}`}>
-                <div className="chef-order-header">
-                  <div className="chef-customer-info">
-                    <div className="chef-customer-avatar">
-                      {pedido.nombre ? pedido.nombre.charAt(0).toUpperCase() : '?'}
-                    </div>
-                    <div className="chef-customer-details">
-                      <h4>{pedido.nombre || 'Cliente'}</h4>
-                      <p>{pedido.telefono || 'Sin teléfono'}</p>
-                    </div>
-                  </div>
-                  <div className="chef-order-status">
-                    <span className={`chef-status-badge ${pedido.estado?.toLowerCase()}`}>
-                      {estadoInfo.icon}
-                      {estadoInfo.label}
-                    </span>
-                    {urgent && (
-                      <span className="chef-time-badge urgent">
-                        <FiAlertCircle />
-                        URGENTE
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="chef-order-info">
-                  <div className="chef-order-items">
-                    <div className="chef-order-item">
-                      <span className="chef-item-name">{pedido.producto || 'Producto'}</span>
-                      <span className="chef-item-quantity">1</span>
-                    </div>
-                  </div>
-                  
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--chef-space-md)'}}>
-                    <span style={{fontSize: 'var(--chef-text-md)', fontWeight: '700', color: 'var(--color-text-subtle)'}}>
-                      {esPedidoDomicilio(pedido) ? '🚚 DOMICILIO' : '🏪 RETIRO'}
-                    </span>
-                    <span className={`chef-time-badge ${urgent ? 'urgent' : ''}`}>
-                      <FiClock />
-                      {formatElapsedTime(pedido.created_at)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="chef-order-actions">
-                  {pedido.estado === 'PENDIENTE' && (
-                    <button
-                      className="chef-order-btn prepare"
-                      onClick={() => confirmarCambioEstado(pedido.id, 'EN_PREPARACION')}
-                    >
-                      <FiClock />
-                      PREPARAR
-                    </button>
-                  )}
-                  {pedido.estado === 'EN_PREPARACION' && (
-                    <button
-                      className="chef-order-btn ready"
-                      onClick={() => confirmarCambioEstado(pedido.id, 'LISTO')}
-                    >
-                      <FiCheck />
-                      LISTO
-                    </button>
-                  )}
-                  {pedido.estado === 'LISTO' && (
-                    <button
-                      className="chef-order-btn complete"
-                      onClick={() => confirmarCambioEstado(pedido.id, 'EN_ENTREGA')}
-                    >
-                      <FiTruck />
-                      ENTREGAR
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  // Renderizar sección de pedidos
   const renderOrdersSection = () => (
-    <div className="orders-container">
-      <div className="section-header">
-        <div className="header-content">
-          <div className="header-left">
-            <h1>Gestión de Pedidos</h1>
-            <p>Administra todos los pedidos del negocio</p>
-          </div>
-          <div className="header-actions">
-            <button onClick={handleRefresh} disabled={isRefreshing} className="action-btn refresh">
-              <FiRefreshCw className={isRefreshing ? 'spinning' : ''} />
-              {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-            </button>
-            <button onClick={generarPDF} className="action-btn export">
-              <FiDownload />
-              Exportar PDF
-            </button>
-          </div>
-        </div>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">Gestión de Pedidos</h1>
+        <p className="dashboard-subtitle">Administra todos los pedidos del negocio</p>
       </div>
 
       <div className="filters-section">
+        <div className="filters-header">
+          <h3 className="filters-title">Filtros</h3>
+          <div className="search-box">
+            <FiSearch />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, producto, teléfono..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
         <div className="filter-buttons">
           <button
             className={`filter-btn ${filterEstado === 'TODOS' ? 'active' : ''}`}
@@ -527,138 +373,156 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
             </button>
           ))}
         </div>
-        <div className="search-box">
-          <FiSearch />
-          <input
-            type="text"
-            placeholder="Buscar por nombre, producto, teléfono..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
       </div>
 
-      <div className="orders-grid">
-        {getFilteredPedidos.length === 0 ? (
-          <div className="empty-state">
-            <FiShoppingCart />
-            <h3>No hay pedidos</h3>
-            <p>No se encontraron pedidos con los filtros actuales.</p>
+      <div className="orders-section">
+        <div className="orders-header">
+          <div>
+            <h2 className="orders-title">Lista de Pedidos</h2>
+            <p className="orders-subtitle">Total: {getFilteredPedidos.length} pedidos</p>
           </div>
-        ) : (
-          getFilteredPedidos.map(pedido => {
-            const estadoInfo = getEstadoInfo(pedido.estado);
-            const customizations = getCustomizationsDisplay(pedido);
-            const urgent = isUrgent(pedido.created_at);
+          <div className="quick-actions">
+            <button onClick={handleRefresh} disabled={isRefreshing} className="btn btn-secondary">
+              <FiRefreshCw className={isRefreshing ? 'spinning' : ''} />
+              {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+            </button>
+            <button onClick={generarPDF} className="btn btn-primary">
+              <FiDownload />
+              Exportar PDF
+            </button>
+          </div>
+        </div>
 
-            return (
-              <div key={pedido.id} className={`order-card ${urgent ? 'urgent' : ''}`}>
-                <div className="order-header">
-                  <div className="customer-info">
-                    <div className="customer-avatar">
-                      {pedido.nombre ? pedido.nombre.charAt(0).toUpperCase() : '?'}
+        <div className="orders-grid">
+          {getFilteredPedidos.length === 0 ? (
+            <div className="empty-state">
+              <FiShoppingCart />
+              <h3>No hay pedidos</h3>
+              <p>No se encontraron pedidos con los filtros actuales.</p>
+            </div>
+          ) : (
+            getFilteredPedidos.map(pedido => {
+              const estadoInfo = getEstadoInfo(pedido.estado);
+              const customizations = getCustomizationsDisplay(pedido);
+              const urgent = isUrgent(pedido.created_at);
+
+              return (
+                <div key={pedido.id} className={`order-card ${urgent ? 'urgent' : ''}`}>
+                  <div className="order-header">
+                    <div className="customer-info">
+                      <div className="customer-avatar">
+                        {pedido.nombre ? pedido.nombre.charAt(0).toUpperCase() : '?'}
+                      </div>
+                      <div className="customer-details">
+                        <h4>{pedido.nombre || 'Cliente'}</h4>
+                        <p>{pedido.telefono || 'Sin teléfono'}</p>
+                      </div>
                     </div>
-                    <div className="customer-details">
-                      <h4>{pedido.nombre || 'Cliente'}</h4>
-                      <p>{pedido.telefono || 'Sin teléfono'}</p>
-                    </div>
-                  </div>
-                  <div className="order-status">
-                    <span className={`status-badge ${pedido.estado?.toLowerCase()}`}>
-                      {estadoInfo.icon}
-                      {estadoInfo.label}
-                    </span>
-                    {urgent && (
-                      <span className="urgent-badge">
-                        <FiAlertCircle />
-                        Urgente
+                    <div className="order-status">
+                      <span className={`status-badge ${pedido.estado?.toLowerCase()}`}>
+                        {estadoInfo.icon}
+                        {estadoInfo.label}
                       </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="order-info">
-                  <div className="order-product">
-                    <strong>Producto:</strong> {pedido.producto || 'N/A'}
-                  </div>
-                  {customizations && (
-                    <div>
-                      <strong>Personalizaciones:</strong> {customizations}
+                      {urgent && (
+                        <span className="urgent-badge">
+                          <FiAlertCircle />
+                          Urgente
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <div>
-                    <strong>Precio:</strong> <span className="order-price">${(pedido.precio_total || 0).toLocaleString()}</span>
                   </div>
-                  <div>
-                    <strong>Tipo:</strong> {esPedidoDomicilio(pedido) ? 'Domicilio' : 'Retiro en local'}
-                  </div>
-                  {pedido.direccion && (
-                    <div>
-                      <strong>Dirección:</strong> {pedido.direccion}
+                  
+                  <div className="order-content">
+                    <div className="order-info">
+                      <div className="order-item">
+                        <span className="order-item-label">Producto:</span>
+                        <span className="order-item-value">{pedido.producto || 'N/A'}</span>
+                      </div>
+                      {customizations && (
+                        <div className="order-item">
+                          <span className="order-item-label">Personalizaciones:</span>
+                          <span className="order-item-value">{customizations}</span>
+                        </div>
+                      )}
+                      <div className="order-item">
+                        <span className="order-item-label">Precio:</span>
+                        <span className="order-price">${(pedido.precio_total || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="order-item">
+                        <span className="order-item-label">Tipo:</span>
+                        <span className="order-item-value">
+                          {esPedidoDomicilio(pedido) ? '🚚 Domicilio' : '🏪 Retiro en local'}
+                        </span>
+                      </div>
+                      {pedido.direccion && (
+                        <div className="order-item">
+                          <span className="order-item-label">Dirección:</span>
+                          <span className="order-item-value">{pedido.direccion}</span>
+                        </div>
+                      )}
+                      <div className="order-time">
+                        <FiClock />
+                        {formatElapsedTime(pedido.created_at)}
+                      </div>
                     </div>
-                  )}
-                  <div className="time">
-                    <FiClock />
-                    {formatElapsedTime(pedido.created_at)}
+                    
+                    <div className="order-actions">
+                      {pedido.estado === 'PENDIENTE' && (
+                        <button
+                          className={`order-btn prepare ${successButtonId === `${pedido.id}-EN_PREPARACION` ? 'success-feedback' : ''}`}
+                          onClick={() => confirmarCambioEstado(pedido.id, 'EN_PREPARACION')}
+                        >
+                          <FiClock />
+                          Preparar
+                        </button>
+                      )}
+                      {pedido.estado === 'EN_PREPARACION' && (
+                        <button
+                          className={`order-btn ready ${successButtonId === `${pedido.id}-LISTO` ? 'success-feedback' : ''}`}
+                          onClick={() => confirmarCambioEstado(pedido.id, 'LISTO')}
+                        >
+                          <FiCheck />
+                          Listo
+                        </button>
+                      )}
+                      {pedido.estado === 'LISTO' && (
+                        <button
+                          className={`order-btn deliver ${successButtonId === `${pedido.id}-EN_ENTREGA` ? 'success-feedback' : ''}`}
+                          onClick={() => confirmarCambioEstado(pedido.id, 'EN_ENTREGA')}
+                        >
+                          <FiTruck />
+                          Entregar
+                        </button>
+                      )}
+                      {pedido.estado === 'EN_ENTREGA' && (
+                        <button
+                          className={`order-btn complete ${successButtonId === `${pedido.id}-ENTREGADO` ? 'success-feedback' : ''}`}
+                          onClick={() => confirmarCambioEstado(pedido.id, 'ENTREGADO')}
+                        >
+                          <FiCheckCircle />
+                          Completar
+                        </button>
+                      )}
+                      {pedido.estado !== 'ENTREGADO' && pedido.estado !== 'CANCELADO' && (
+                        <button
+                          className={`order-btn cancel ${successButtonId === `${pedido.id}-CANCELADO` ? 'success-feedback' : ''}`}
+                          onClick={() => confirmarCambioEstado(pedido.id, 'CANCELADO')}
+                        >
+                          <FiX />
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                
-                <div className="order-actions">
-                  {pedido.estado === 'PENDIENTE' && (
-                    <button
-                      className={`action-btn prepare ${successButtonId === `${pedido.id}-EN_PREPARACION` ? 'success-feedback' : ''}`}
-                      onClick={() => confirmarCambioEstado(pedido.id, 'EN_PREPARACION')}
-                    >
-                      <FiClock />
-                      Preparar
-                    </button>
-                  )}
-                  {pedido.estado === 'EN_PREPARACION' && (
-                    <button
-                      className={`action-btn ready ${successButtonId === `${pedido.id}-LISTO` ? 'success-feedback' : ''}`}
-                      onClick={() => confirmarCambioEstado(pedido.id, 'LISTO')}
-                    >
-                      <FiCheck />
-                      Listo
-                    </button>
-                  )}
-                  {pedido.estado === 'LISTO' && (
-                    <button
-                      className={`action-btn deliver ${successButtonId === `${pedido.id}-EN_ENTREGA` ? 'success-feedback' : ''}`}
-                      onClick={() => confirmarCambioEstado(pedido.id, 'EN_ENTREGA')}
-                    >
-                      <FiTruck />
-                      Entregar
-                    </button>
-                  )}
-                  {pedido.estado === 'EN_ENTREGA' && (
-                    <button
-                      className={`action-btn complete ${successButtonId === `${pedido.id}-ENTREGADO` ? 'success-feedback' : ''}`}
-                      onClick={() => confirmarCambioEstado(pedido.id, 'ENTREGADO')}
-                    >
-                      <FiCheckCircle />
-                      Completar
-                    </button>
-                  )}
-                  {pedido.estado !== 'ENTREGADO' && pedido.estado !== 'CANCELADO' && (
-                    <button
-                      className={`action-btn cancel ${successButtonId === `${pedido.id}-CANCELADO` ? 'success-feedback' : ''}`}
-                      onClick={() => confirmarCambioEstado(pedido.id, 'CANCELADO')}
-                    >
-                      <FiX />
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
 
-  // Renderizar otras secciones
   const renderCocinaSection = () => (
     <CocinaPanel 
       pedidos={pedidos}
@@ -687,10 +551,191 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
     <CalendarView />
   );
 
+  const renderHistorialSection = () => {
+    const historialPedidos = pedidos.filter(p => 
+      p.estado === 'ENTREGADO' || p.estado === 'CANCELADO'
+    );
+
+    const getStatsHistorial = () => {
+      const entregados = historialPedidos.filter(p => p.estado === 'ENTREGADO').length;
+      const cancelados = historialPedidos.filter(p => p.estado === 'CANCELADO').length;
+      const totalVentas = historialPedidos
+        .filter(p => p.estado === 'ENTREGADO')
+        .reduce((sum, p) => sum + (p.precio_total || 0), 0);
+      
+      return { entregados, cancelados, totalVentas };
+    };
+
+    const stats = getStatsHistorial();
+
+    return (
+      <div className="historial-container">
+        <div className="historial-header">
+          <h1 className="historial-title">Historial de Pedidos</h1>
+          <p className="historial-subtitle">Maneja el historial de pedidos entregados y cancelados</p>
+        </div>
+
+        <div className="historial-stats">
+          <div className="historial-stat-card">
+            <div className="historial-stat-icon">
+              <FiCheckCircle />
+            </div>
+            <div className="historial-stat-content">
+              <div className="historial-stat-value">{stats.entregados}</div>
+              <div className="historial-stat-label">Entregados</div>
+            </div>
+          </div>
+          
+          <div className="historial-stat-card">
+            <div className="historial-stat-icon">
+              <FiXCircle />
+            </div>
+            <div className="historial-stat-content">
+              <div className="historial-stat-value">{stats.cancelados}</div>
+              <div className="historial-stat-label">Cancelados</div>
+            </div>
+          </div>
+          
+          <div className="historial-stat-card">
+            <div className="historial-stat-icon">
+              <FiDollarSign />
+            </div>
+            <div className="historial-stat-content">
+              <div className="historial-stat-value">${stats.totalVentas.toLocaleString()}</div>
+              <div className="historial-stat-label">Total Ventas</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="historial-filters">
+          <div className="historial-search">
+            <FiSearch />
+            <input
+              type="text"
+              placeholder="Buscar en historial..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="historial-filter-buttons">
+            <button
+              className={`historial-filter-btn ${filterEstado === 'TODOS' ? 'active' : ''}`}
+              onClick={() => setFilterEstado('TODOS')}
+            >
+              Todos
+            </button>
+            <button
+              className={`historial-filter-btn ${filterEstado === 'ENTREGADO' ? 'active' : ''}`}
+              onClick={() => setFilterEstado('ENTREGADO')}
+            >
+              Entregados
+            </button>
+            <button
+              className={`historial-filter-btn ${filterEstado === 'CANCELADO' ? 'active' : ''}`}
+              onClick={() => setFilterEstado('CANCELADO')}
+            >
+              Cancelados
+            </button>
+          </div>
+        </div>
+
+        {/* Lista de pedidos históricos */}
+        <div className="historial-orders">
+          <div className="historial-orders-header">
+            <h2>Pedidos Históricos</h2>
+            <p>Total: {historialPedidos.length} pedidos</p>
+          </div>
+          
+          <div className="historial-orders-grid">
+            {historialPedidos.length === 0 ? (
+              <div className="historial-empty">
+                <FiFileText />
+                <h3>No hay pedidos históricos</h3>
+                <p>No se encontraron pedidos entregados o cancelados.</p>
+              </div>
+            ) : (
+              historialPedidos.map(pedido => {
+                const estadoInfo = getEstadoInfo(pedido.estado);
+                const customizations = getCustomizationsDisplay(pedido);
+
+                return (
+                  <div key={pedido.id} className={`historial-order-card ${pedido.estado.toLowerCase()}`}>
+                    <div className="historial-order-header">
+                      <div className="historial-customer-info">
+                        <div className="historial-customer-avatar">
+                          {pedido.nombre?.charAt(0).toUpperCase() || 'C'}
+                        </div>
+                        <div className="historial-customer-details">
+                          <h4>{pedido.nombre || 'Cliente'}</h4>
+                          <p>{pedido.telefono || 'Sin teléfono'}</p>
+                        </div>
+                      </div>
+                      <div className="historial-order-status">
+                        <span className={`historial-status-badge ${pedido.estado?.toLowerCase()}`}>
+                          {estadoInfo.icon}
+                          {estadoInfo.label}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="historial-order-content">
+                      <div className="historial-order-info">
+                        <div className="historial-order-item">
+                          <span className="historial-order-label">Producto:</span>
+                          <span className="historial-order-value">{pedido.producto || 'N/A'}</span>
+                        </div>
+                        {customizations && (
+                          <div className="historial-order-item">
+                            <span className="historial-order-label">Personalizaciones:</span>
+                            <span className="historial-order-value">{customizations}</span>
+                          </div>
+                        )}
+                        <div className="historial-order-item">
+                          <span className="historial-order-label">Precio:</span>
+                          <span className="historial-order-price">${(pedido.precio_total || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="historial-order-item">
+                          <span className="historial-order-label">Tipo:</span>
+                          <span className="historial-order-value">
+                            {esPedidoDomicilio(pedido) ? '🚚 Domicilio' : '🏪 Retiro en local'}
+                          </span>
+                        </div>
+                        {pedido.direccion && (
+                          <div className="historial-order-item">
+                            <span className="historial-order-label">Dirección:</span>
+                            <span className="historial-order-value">{pedido.direccion}</span>
+                          </div>
+                        )}
+                        <div className="historial-order-time">
+                          <FiClock />
+                          {formatElapsedTime(pedido.created_at)}
+                        </div>
+                      </div>
+                      
+                      <div className="historial-order-actions">
+                        <button className="historial-action-btn">
+                          <FiDownload />
+                          Generar Boleta
+                        </button>
+                        <button className="historial-action-btn">
+                          <FiEye />
+                          Ver Detalles
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Helper para obtener título de sección
   const getSectionTitle = (section) => {
     switch (section) {
-      case 'dashboard': return 'Dashboard';
       case 'orders': return 'Gestión de Pedidos';
       case 'cocina': return 'Gestión de Cocina';
       case 'caja': return 'Gestión de Caja';
@@ -698,14 +743,12 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
       case 'repartidor': return 'Gestión de Repartidor';
       case 'calendario': return 'Calendario de Pedidos';
       case 'historial': return 'Historial de Pedidos';
-      default: return 'Panel de Administración';
+      default: return 'Gestión de Pedidos';
     }
   };
 
-  // Helper para obtener descripción de sección
   const getSectionDescription = (section) => {
     switch (section) {
-      case 'dashboard': return 'Vista general del negocio y estadísticas principales.';
       case 'orders': return 'Administra todos los pedidos del negocio, incluyendo búsqueda, filtrado y gestión de estados.';
       case 'cocina': return 'Supervisa y gestiona el proceso de preparación de pedidos en la cocina.';
       case 'caja': return 'Registra y gestiona todas las transacciones financieras del negocio.';
@@ -713,15 +756,13 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
       case 'repartidor': return 'Gestiona la distribución y entrega de pedidos a los clientes.';
       case 'calendario': return 'Visualiza el calendario de pedidos y sus estados en el tiempo.';
       case 'historial': return 'Maneja el historial de pedidos entregados y cancelados, incluyendo la generación de boletas y comprobantes.';
-      default: return 'Panel de Administración';
+      default: return 'Administra todos los pedidos del negocio, incluyendo búsqueda, filtrado y gestión de estados.';
     }
   };
 
   // Renderizar contenido de sección
   const renderSectionContent = () => {
     switch (activeSection) {
-      case 'dashboard':
-        return renderDashboard();
       case 'orders':
         return renderOrdersSection();
       case 'cocina':
@@ -734,8 +775,10 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
         return renderRepartidorSection();
       case 'calendario':
         return renderCalendarioSection();
+      case 'historial':
+        return renderHistorialSection();
       default:
-        return renderDashboard();
+        return renderOrdersSection();
     }
   };
 
@@ -758,7 +801,7 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
         <div className="admin-header">
           <div className="header-left">
             <button 
-              className="sidebar-toggle"
+              className="btn btn-ghost"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             >
               <FiMenu />
@@ -770,12 +813,14 @@ const AdminPanel = ({ onLogout, onBack, setRoute }) => {
           </div>
           <div className="header-right">
             <button 
-              className="theme-toggle"
+              className="btn btn-ghost"
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              title={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'}
+              aria-label={theme === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'}
             >
               {theme === 'light' ? <FiMoon /> : <FiSun />}
             </button>
-            <button className="notifications-btn">
+            <button className="btn btn-ghost">
               <FiBell />
               {notifications.length > 0 && (
                 <span className="notification-badge">{notifications.length}</span>

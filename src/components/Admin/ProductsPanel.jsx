@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import {
   FiPlus, FiEdit3, FiTrash2, FiEye, FiSearch, FiFilter, FiRefreshCw,
   FiPackage, FiDollarSign, FiTag, FiImage, FiCheck, FiX, FiAlertCircle,
@@ -7,7 +7,6 @@ import {
 } from 'react-icons/fi';
 
 const ProductsPanel = () => {
-  // Estados
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,7 +17,6 @@ const ProductsPanel = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Formulario de producto
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
@@ -29,7 +27,6 @@ const ProductsPanel = () => {
     customizations: []
   });
 
-  // Categorías disponibles
   const categories = [
     'Completos',
     'Fajitas',
@@ -39,7 +36,6 @@ const ProductsPanel = () => {
     'Postres'
   ];
 
-  // Cargar productos
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -57,19 +53,16 @@ const ProductsPanel = () => {
     }
   }, []);
 
-  // Efecto para cargar productos
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Función para refrescar
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await fetchProducts();
     setIsRefreshing(false);
   };
 
-  // Función para filtrar productos
   const getFilteredProducts = () => {
     let filtered = products;
 
@@ -88,7 +81,6 @@ const ProductsPanel = () => {
     return filtered;
   };
 
-  // Función para agregar producto
   const handleAddProduct = async () => {
     try {
       const { error } = await supabase
@@ -113,7 +105,6 @@ const ProductsPanel = () => {
     }
   };
 
-  // Función para editar producto
   const handleEditProduct = async () => {
     try {
       const { error } = await supabase
@@ -140,7 +131,6 @@ const ProductsPanel = () => {
     }
   };
 
-  // Función para eliminar producto
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
 
@@ -157,7 +147,6 @@ const ProductsPanel = () => {
     }
   };
 
-  // Función para abrir modal de edición
   const openEditModal = (product) => {
     setSelectedProduct(product);
     setProductForm({
@@ -172,7 +161,6 @@ const ProductsPanel = () => {
     setShowEditModal(true);
   };
 
-  // Función para abrir modal de agregar
   const openAddModal = () => {
     setProductForm({
       name: '',
@@ -186,7 +174,6 @@ const ProductsPanel = () => {
     setShowAddModal(true);
   };
 
-  // Renderizar formulario de producto
   const renderProductForm = (isEdit = false) => (
     <div className="modal-overlay">
       <div className="modal-content product-form-modal">
@@ -285,7 +272,6 @@ const ProductsPanel = () => {
     </div>
   );
 
-  // Renderizar producto en modo grid
   const renderProductGrid = (product) => (
     <div key={product.id} className="product-card">
       <div className="product-image">
@@ -328,7 +314,6 @@ const ProductsPanel = () => {
     </div>
   );
 
-  // Renderizar producto en modo lista
   const renderProductList = (product) => (
     <div key={product.id} className="product-list-item">
       <div className="product-list-image">
@@ -395,7 +380,6 @@ const ProductsPanel = () => {
         </div>
       </div>
 
-      {/* Filtros */}
       <div className="filters-section">
         <div className="search-box">
           <FiSearch />
@@ -432,7 +416,6 @@ const ProductsPanel = () => {
         </div>
       </div>
 
-      {/* Estadísticas */}
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">
@@ -472,7 +455,6 @@ const ProductsPanel = () => {
         </div>
       </div>
 
-      {/* Lista de productos */}
       <div className={`products-container ${viewMode}`}>
         {filteredProducts.length === 0 ? (
           <div className="empty-state">
@@ -486,12 +468,12 @@ const ProductsPanel = () => {
           </div>
         ) : (
           filteredProducts.map(product => 
-            viewMode === 'grid' ? renderProductGrid(product) : renderProductList(product)
+            viewMode === 'grid' ? renderProductGrid(product) : renderProductList(product) 
           )
         )}
+        
       </div>
 
-      {/* Modales */}
       {showAddModal && renderProductForm(false)}
       {showEditModal && renderProductForm(true)}
     </div>

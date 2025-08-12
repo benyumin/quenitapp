@@ -1,0 +1,176 @@
+/* ===== CASCADIA CODE FONT CONFIGURATION ===== */
+
+/* Import Cascadia Code from CDN */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/cascadia-code@4.2.1/index.css');
+
+/* Import Cascadia Code from Google Fonts as fallback */
+@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:wght@300;400;500;600;700&display=swap');
+
+/* CSS Variables for Cascadia Code */
+:root {
+  --font-cascadia: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+/* Cascadia Code Classes */
+.font-cascadia {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+/* Cascadia Code Weight Classes */
+.font-cascadia-light {
+  font-family: var(--font-cascadia);
+  font-weight: 300;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+.font-cascadia-regular {
+  font-family: var(--font-cascadia);
+  font-weight: 400;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+.font-cascadia-medium {
+  font-family: var(--font-cascadia);
+  font-weight: 500;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+.font-cascadia-semibold {
+  font-family: var(--font-cascadia);
+  font-weight: 600;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+.font-cascadia-bold {
+  font-family: var(--font-cascadia);
+  font-weight: 700;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+/* Cascadia Code for specific elements */
+.code-block {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  line-height: 1.6;
+}
+
+.terminal-text {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.monospace-text {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+}
+
+/* Cascadia Code for admin panels */
+.admin-code {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  font-size: 0.875rem;
+}
+
+/* Cascadia Code for status badges */
+.status-code {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+/* Cascadia Code for timestamps */
+.time-code {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Cascadia Code for prices */
+.price-code {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Cascadia Code for order numbers */
+.order-code {
+  font-family: var(--font-cascadia);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  font-variant-ligatures: contextual;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Responsive Cascadia Code */
+@media (max-width: 768px) {
+  .font-cascadia,
+  .font-mono,
+  .code-block,
+  .terminal-text,
+  .monospace-text,
+  .admin-code,
+  .status-code,
+  .time-code,
+  .price-code,
+  .order-code {
+    font-size: 0.875rem;
+  }
+}
+
+/* Dark mode optimizations for Cascadia Code */
+@media (prefers-color-scheme: dark) {
+  .font-cascadia,
+  .font-mono,
+  .code-block,
+  .terminal-text,
+  .monospace-text,
+  .admin-code,
+  .status-code,
+  .time-code,
+  .price-code,
+  .order-code {
+    color: #e0e0e0;
+  }
+}
+
+/* Light mode optimizations for Cascadia Code */
+@media (prefers-color-scheme: light) {
+  .font-cascadia,
+  .font-mono,
+  .code-block,
+  .terminal-text,
+  .monospace-text,
+  .admin-code,
+  .status-code,
+  .time-code,
+  .price-code,
+  .order-code {
+    color: #2a2a2a;
+  }
+}

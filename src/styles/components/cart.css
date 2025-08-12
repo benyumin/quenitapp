@@ -1,5 +1,372 @@
 /* Cart Component Styles - Estilos consolidados del carrito */
 
+/* ===== MCDONALD'S-STYLE CART IMPROVEMENTS ===== */
+
+/* McDonald's-style Upselling Section */
+.upselling-section-mcdonalds {
+  margin: 1.5rem 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+  border-radius: 16px;
+  border: 2px solid #fb923c;
+}
+
+.upselling-header h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ea580c;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.suggestion-icon {
+  font-size: 1.2em;
+}
+
+.upselling-subtitle {
+  color: #9a3412;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+}
+
+.suggestions-grid-mcdonalds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.suggestion-card-mcdonalds {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #fed7aa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.suggestion-card-mcdonalds:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(251, 146, 60, 0.3);
+  border-color: #fb923c;
+}
+
+.suggestion-image {
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.suggestion-emoji {
+  font-size: 2.5rem;
+  display: block;
+}
+
+.suggestion-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.25rem 0;
+}
+
+.suggestion-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 0.75rem 0;
+}
+
+.suggestion-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.suggestion-price {
+  font-weight: 600;
+  color: #ea580c;
+  font-size: 0.9rem;
+}
+
+.add-suggestion-btn-mcdonalds {
+  background: #ea580c;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.add-suggestion-btn-mcdonalds:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+/* McDonald's-style Cart Items */
+.cart-item-row-mcdonalds {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: white;
+  transition: background-color 0.3s ease;
+}
+
+.cart-item-row-mcdonalds:hover {
+  background: #fafafa;
+}
+
+.cart-item-img-mcdonalds {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border: 2px solid #f1f5f9;
+}
+
+.cart-item-img-mcdonalds img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.cart-item-img-mcdonalds:hover img {
+  transform: scale(1.1);
+}
+
+.cart-item-fallback-mcdonalds {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  font-size: 2rem;
+}
+
+.cart-item-content-mcdonalds {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.item-main-info-mcdonalds {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.item-controls-mcdonalds {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cart-item-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.cart-item-qty button {
+  background: #ea580c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cart-item-qty button:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.cart-item-qty button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cart-item-qty span {
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.cart-remove-btn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  align-self: flex-end;
+}
+
+.cart-remove-btn:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
+/* Product Line Styling for Multi-Product Orders */
+.product-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.beverage-info {
+  font-size: 0.85rem;
+  color: #059669;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.extras-info {
+  font-size: 0.8rem;
+  color: #7c3aed;
+  font-style: italic;
+}
+
+.customizations-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.customization-tag {
+  font-size: 0.75rem;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  font-weight: 500;
+}
+
+/* McDonald's-style Mobile Responsive */
+@media (max-width: 768px) {
+  .upselling-section-mcdonalds {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .suggestions-grid-mcdonalds {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .suggestion-card-mcdonalds {
+    padding: 0.75rem;
+  }
+
+  .suggestion-emoji {
+    font-size: 2rem;
+  }
+
+  .cart-item-row-mcdonalds {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .cart-item-img-mcdonalds {
+    width: 60px;
+    height: 60px;
+  }
+
+  .item-main-info-mcdonalds {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-controls-mcdonalds {
+    justify-content: space-between;
+  }
+
+  .upselling-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .add-suggestion-btn-mcdonalds {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .product-line {
+    gap: 0.15rem;
+    margin-bottom: 0.4rem;
+  }
+  
+  .beverage-info,
+  .extras-info {
+    font-size: 0.75rem;
+  }
+  
+  .customizations-list {
+    gap: 0.2rem;
+  }
+  
+  .customization-tag {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .suggestions-grid-mcdonalds {
+    gap: 0.5rem;
+  }
+
+  .suggestion-card-mcdonalds {
+    padding: 0.5rem;
+  }
+
+  .cart-item-img-mcdonalds {
+    width: 50px;
+    height: 50px;
+  }
+
+  .cart-item-qty button {
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
+  }
+}
+
 /* ===== CART DESIGN IMPROVEMENTS ===== */
 /* Contenedor principal del carrito */
 .cart-outer-card {

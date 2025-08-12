@@ -171,4 +171,230 @@ body {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-} 
+}
+
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+  padding: 3rem 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.section-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+  animation: dividerFloat 15s ease-in-out infinite;
+}
+
+@keyframes dividerFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(20px, -10px); }
+}
+
+.divider-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #667eea 50%, transparent 100%);
+  border-radius: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.divider-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.divider-icon {
+  background: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: iconFloat 4s ease-in-out infinite;
+  border: 3px solid #667eea;
+}
+
+.divider-icon span {
+  font-size: 1.5rem;
+  animation: iconRotate 8s linear infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes iconRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Dark mode support for divider */
+.dark-mode .section-divider {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.dark-mode .divider-icon {
+  background: rgba(255,255,255,0.1);
+  border-color: #667eea;
+  color: white;
+}
+
+.dark-mode .divider-line {
+  background: linear-gradient(90deg, transparent 0%, rgba(102, 126, 234, 0.6) 50%, transparent 100%);
+}
+
+/* ===== MODERN APP ENHANCEMENTS ===== */
+.App {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Smooth scrolling for the entire app */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure body starts at top */
+body {
+  scroll-padding-top: 0;
+}
+
+/* Fix any potential scroll issues */
+.App {
+  scroll-snap-type: y proximity;
+}
+
+.hero-section-modern,
+.menu-section-modern,
+.order-form-container-modern,
+.location-section-modern {
+  scroll-snap-align: start;
+}
+
+/* Enhanced loading states */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  min-height: 400px;
+}
+
+.loading-spinner::before {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+/* Enhanced focus states for accessibility */
+*:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced hover states */
+.btn, .hero-btn-primary, .hero-btn-secondary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before, 
+.hero-btn-primary::before, 
+.hero-btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before, 
+.hero-btn-primary:hover::before, 
+.hero-btn-secondary:hover::before {
+  left: 100%;
+}
+
+/* Enhanced responsiveness */
+@media (max-width: 768px) {
+  .section-divider {
+    padding: 2rem 0;
+  }
+  
+  .divider-content {
+    padding: 0 1rem;
+  }
+  
+  .divider-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .divider-icon span {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-divider {
+    padding: 1.5rem 0;
+  }
+  
+  .divider-content {
+    gap: 0.5rem;
+  }
+  
+  .divider-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .divider-icon span {
+    font-size: 1rem;
+  }
+}

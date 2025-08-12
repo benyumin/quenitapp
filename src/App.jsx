@@ -5,9 +5,12 @@ import WhatsAppButton from "./components/Common/WhatsAppButton";
 import OrderForm from "./components/Orders/OrderForm";
 import logoQuenitasHero from "./assets/logoquenitamejorcalidad.jpeg";
 import "./App.css";
+import "./styles/components/cart-modern.css";
 import logoQuenitas from "./assets/logoquenitamejorcalidad.jpeg";
 
-import { supabase } from './lib/supabaseClient';
+import { supabase } from './components/lib/supabaseClient';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AuthContainer from './components/Auth/AuthContainer';
 
 const LazyAdminPanel = lazy(() => import('./components/Admin/AdminPanel'));
 const LazyCocinaPanel = lazy(() => import('./components/Cocina/CocinaPanel'));
@@ -42,10 +45,7 @@ const useCart = () => {
   }, [cart]);
 
   const addToCart = useCallback((order) => {
-    console.log('🛒 Agregando orden al carrito - total:', order.total);
-    
     if (order.products && Array.isArray(order.products)) {
-      console.log('📦 Orden con múltiples productos detectada');
       // Asegurar que el total esté correctamente calculado
       const calculatedTotal = order.products.reduce((sum, product) => {
         const basePrice = product.price || 0;
@@ -59,10 +59,8 @@ const useCart = () => {
         total: calculatedTotal
       };
       
-      console.log('🛒 Orden con total corregido:', orderWithCorrectTotal);
       setCart(prev => [...prev, orderWithCorrectTotal]);
     } else {
-      console.log('🍽️ Orden individual detectada');
       setCart(prev => [...prev, { ...order, quantity: order.quantity || 1 }]);
     }
   }, []);
@@ -94,12 +92,9 @@ const useCart = () => {
 
   const calculateTotals = useCallback(() => {
     const subtotal = cart.reduce((acc, item) => {
-      console.log('🔍 calculateTotals - procesando item:', item);
-      
       if (item.products && Array.isArray(item.products)) {
         // Para órdenes con múltiples productos
         if (item.total && item.total > 0) {
-          console.log('🔍 calculateTotals - usando item.total:', item.total);
           return acc + item.total;
         } else {
           // Calcular manualmente basándose en los productos
@@ -108,10 +103,8 @@ const useCart = () => {
             const beveragePrice = product.beveragePrice || 0;
             const customizationPrice = product.customizationPrice || 0;
             const itemTotal = (basePrice + beveragePrice + customizationPrice) * (product.quantity || 1);
-            console.log('🔍 calculateTotals - producto:', product.name, 'precio:', itemTotal);
             return sum + itemTotal;
           }, 0);
-          console.log('🔍 calculateTotals - total calculado manualmente:', calculatedTotal);
           return acc + calculatedTotal;
         }
       } else {
@@ -120,15 +113,12 @@ const useCart = () => {
         const beveragePrice = item.beveragePrice || 0;
         const customizationPrice = item.customizationPrice || 0;
         const itemTotal = (basePrice + beveragePrice + customizationPrice) * (item.quantity || 1);
-        console.log('🔍 calculateTotals - item individual:', item.name, 'precio:', itemTotal);
         return acc + itemTotal;
       }
     }, 0);
     
     const envio = cart.length > 0 ? DELIVERY_FEE : 0;
     const total = subtotal + envio;
-    
-    console.log('🔍 calculateTotals - resultados finales:', { subtotal, envio, total, cartLength: cart.length });
     
     return { subtotal, envio, total };
   }, [cart]);
@@ -151,7 +141,7 @@ const useNotifications = () => {
     isVisible: false
   });
 
-  const showNotification = useCallback((message, type = 'success') => {
+  const showNotification = useCallback((message, type = 'success', duration = 4000) => {
     // Ocultar notificación anterior si existe
     setNotification(prev => ({ ...prev, isVisible: false }));
     
@@ -164,19 +154,46 @@ const useNotifications = () => {
       });
     }, 100);
     
-    // Auto-ocultar después de 4 segundos
-    const timer = setTimeout(() => {
-      setNotification(prev => ({ ...prev, isVisible: false }));
-    }, 4000);
+    // Auto-ocultar después del tiempo especificado
+    if (duration > 0) {
+      const timer = setTimeout(() => {
+        setNotification(prev => ({ ...prev, isVisible: false }));
+      }, duration);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const hideNotification = useCallback(() => {
     setNotification(prev => ({ ...prev, isVisible: false }));
   }, []);
 
-  return { notification, showNotification, hideNotification };
+  // Helper functions for common notification types
+  const showSuccess = useCallback((message, duration) => {
+    showNotification(message, 'success', duration);
+  }, [showNotification]);
+
+  const showError = useCallback((message, duration) => {
+    showNotification(message, 'error', duration);
+  }, [showNotification]);
+
+  const showInfo = useCallback((message, duration) => {
+    showNotification(message, 'info', duration);
+  }, [showNotification]);
+
+  const showWarning = useCallback((message, duration) => {
+    showNotification(message, 'warning', duration);
+  }, [showNotification]);
+
+  return { 
+    notification, 
+    showNotification, 
+    hideNotification,
+    showSuccess,
+    showError,
+    showInfo,
+    showWarning
+  };
 };
 
 const useTheme = () => {
@@ -228,30 +245,60 @@ const useNavigation = () => {
   return { route, goTo };
 };
 
-function Hero() {
+function SectionDivider() {
   return (
-    <section className="hero-section" role="banner" aria-label="Bienvenidos a Quenitas Foodtruck">
-      <div className="hero-content">
-        <img 
-          src={logoQuenitasHero} 
-          alt="Logo Quenita's - El sabor chileno sobre ruedas" 
-          className="hero-img"
-          loading="eager"
-          decoding="async"
-        />
-        <div>
-          <h1 className="hero-title">¡El sabor chileno sobre ruedas!</h1>
-          <p className="hero-desc">
-            Disfruta completos, papas fritas y más en Quenitas Foodtruck. 
-            Sabor, calidad y buena onda en cada bocado.
-          </p>
-          <a 
-            href="#menu" 
-            className="hero-btn"
-            aria-label="Ver nuestro menú completo"
-          >
-            Ver Menú
-          </a>
+    <div className="section-divider">
+      <div className="divider-content">
+        <div className="divider-line"></div>
+        <div className="divider-icon">
+          <span>🌟</span>
+        </div>
+        <div className="divider-line"></div>
+      </div>
+    </div>
+  );
+}
+
+function Hero({ onShowNotificationDemo }) {
+  return (
+    <section className="hero-section-modern" role="banner" aria-label="Bienvenidos a Quenitas Foodtruck">
+      <div className="hero-background-pattern"></div>
+      <div className="hero-container-modern">
+        <div className="hero-content-grid">
+          <div className="hero-text-content">
+            <h1 className="hero-title-modern">
+              <span className="title-highlight">¡El sabor chileno</span>
+              <span className="title-main">sobre ruedas!</span>
+            </h1>
+            
+            <p className="hero-description-modern">
+              Disfruta de auténticos <strong>completos</strong>, <strong>papas fritas</strong> crujientes 
+              y mucho más en nuestro foodtruck. Sabor tradicional, calidad premium y la mejor onda chilena en cada bocado.
+            </p>
+
+            {/* Demo button for notifications */}
+            <button 
+              onClick={onShowNotificationDemo}
+              className="notification-demo-btn"
+              aria-label="Ver demostración de notificaciones"
+            >
+              🎯 Ver Notificaciones
+            </button>
+          </div>
+          
+          <div className="hero-visual-content">
+            <div className="hero-image-container">
+              <div className="image-decoration"></div>
+              <img 
+                src={logoQuenitasHero} 
+                alt="Logo Quenita's - El sabor chileno sobre ruedas" 
+                className="hero-logo-modern"
+                loading="eager"
+                decoding="async"
+              />
+
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -262,9 +309,17 @@ function Notification({ message, type, isVisible, onClose }) {
   if (!isVisible) return null;
 
   const icons = {
-    success: '🎉',
-    error: '⚠️',
-    info: '💡'
+    success: '✅',
+    error: '❌',
+    info: '💡',
+    warning: '⚠️'
+  };
+
+  const titles = {
+    success: '¡Éxito!',
+    error: 'Error',
+    info: 'Información',
+    warning: 'Advertencia'
   };
 
   const getMessage = (msg) => {
@@ -286,23 +341,29 @@ function Notification({ message, type, isVisible, onClose }) {
 
   return (
     <div 
-      className={`notification ${type}`}
+      className={`notification notification-${type} ${isVisible ? 'show' : 'hide'}`}
       role="alert"
       aria-live="polite"
       aria-label={`Notificación ${type}`}
     >
       <div className="notification-content">
-        <span className="notification-icon" aria-hidden="true">
-          {icons[type] || '💡'}
-        </span>
-        <span className="notification-message">{getMessage(message)}</span>
-        <button 
-          className="notification-close" 
-          onClick={onClose}
-          aria-label="Cerrar notificación"
-        >
-          ×
-        </button>
+        <div className="notification-header">
+          <span className="notification-icon" aria-hidden="true">
+            {icons[type] || '💡'}
+          </span>
+          <span className="notification-title">{titles[type]}</span>
+          <button 
+            className="notification-close" 
+            onClick={onClose}
+            aria-label="Cerrar notificación"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div className="notification-message">{getMessage(message)}</div>
+        <div className="notification-progress"></div>
       </div>
     </div>
   );
@@ -397,7 +458,7 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
   const isMultiProduct = item.products && Array.isArray(item.products);
   
   const renderProductImage = () => (
-    <div className="cart-item-img">
+    <div className="cart-item-img-mcdonalds">
       <img 
         src={isMultiProduct ? item.products[0]?.image : item.image} 
         alt={isMultiProduct ? "Pedido múltiple" : (item.product || item.name)} 
@@ -405,10 +466,10 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
         decoding="async"
         onError={(e) => {
           e.target.style.display = 'none';
-          e.target.nextSibling.style.display = 'flex';
+          e.target.nextElementSibling.style.display = 'flex';
         }}
       />
-      <div className="cart-item-fallback">
+      <div className="cart-item-fallback-mcdonalds">
         🍽️
       </div>
     </div>
@@ -418,15 +479,39 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
     if (isMultiProduct) {
       return (
         <div className="cart-item-info">
-          <h3>Pedido de {item.name}</h3>
-          <div className="product-count">
-            {item.products.length} producto{item.products.length > 1 ? 's' : ''}
+          <div className="item-header">
+            <h3 className="item-title">Pedido de {item.name}</h3>
+            <div className="item-badge">
+              <span className="badge-icon">📦</span>
+              <span className="badge-text">{item.products.length} producto{item.products.length > 1 ? 's' : ''}</span>
+            </div>
           </div>
           <div className="product-details">
             {item.products.map((product, pIdx) => (
-              <span key={pIdx}>
-                {product.name} x{product.quantity || 1}
-              </span>
+              <div key={pIdx} className="product-line">
+                <div className="product-main">
+                  <span className="product-name">
+                    {product.name} x{product.quantity || 1}
+                  </span>
+                  {product.beverage && product.beverage !== 'Sin bebida' && (
+                    <span className="beverage-info">
+                      🥤 {product.beverage}
+                    </span>
+                  )}
+                </div>
+                {product.customizations && Object.keys(product.customizations).length > 0 && (
+                  <div className="customizations-list">
+                    {Object.entries(product.customizations)
+                      .filter(([key, value]) => value === true)
+                      .filter(([key]) => key !== 'undefined' && key !== 'null')
+                      .map(([customizationName], index) => (
+                        <span key={index} className="customization-tag">
+                          + {customizationName}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -435,32 +520,39 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
 
     return (
       <div className="cart-item-info">
-        <h3>{item.product || item.name}</h3>
-        <div className="product-count">
-          {item.beverage && item.beverage !== 'Sin bebida' ? (
-            <span className="beverage-tag">
-              {item.beverageIcon} {item.beverage}
-            </span>
-          ) : (
-            <span className="no-beverage">Sin bebida</span>
-          )}
-        </div>
-        {item.customizations && item.customizations.length > 0 && (
-          <div className="product-details">
-            {item.customizations.map((custom, i) => (
-              <span key={i}>
-                {custom.name}
+        <div className="item-header">
+          <h3 className="item-title">{item.product || item.name}</h3>
+          <div className="item-badge">
+            {item.beverage && item.beverage !== 'Sin bebida' ? (
+              <span className="beverage-tag">
+                🥤 {item.beverage}
               </span>
-            ))}
+            ) : (
+              <span className="no-beverage">Sin bebida</span>
+            )}
+          </div>
+        </div>
+        {item.customizations && (
+          <div className="customizations-list">
+            {Array.isArray(item.customizations) ? (
+              // Handle array format (legacy)
+              item.customizations.map((custom, i) => (
+                <span key={i} className="customization-tag">
+                  + {custom.name || custom}
+                </span>
+              ))
+            ) : (
+              // Handle object format (current)
+              Object.entries(item.customizations)
+                .filter(([key, value]) => value === true)
+                .map(([customizationName], index) => (
+                  <span key={index} className="customization-tag">
+                    + {customizationName}
+                  </span>
+                ))
+            )}
           </div>
         )}
-        <button 
-          onClick={() => onRemoveItem(idx, item.name)} 
-          className="cart-remove-btn"
-          aria-label={`Eliminar ${item.name} del carrito`}
-        >
-          <span role="img" aria-label="Eliminar">🗑️</span> Eliminar
-        </button>
       </div>
     );
   };
@@ -472,17 +564,26 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
       <div className="cart-item-qty">
         <button 
           onClick={() => onQuantityChange(idx, -1)}
+          className="qty-btn qty-minus"
           aria-label="Reducir cantidad"
           disabled={item.quantity <= 1}
         >
-          -
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
         </button>
-        <span aria-label={`Cantidad: ${item.quantity}`}>{item.quantity}</span>
+        <span className="qty-display" aria-label={`Cantidad: ${item.quantity}`}>
+          {item.quantity}
+        </span>
         <button 
           onClick={() => onQuantityChange(idx, 1)}
+          className="qty-btn qty-plus"
           aria-label="Aumentar cantidad"
         >
-          +
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
         </button>
       </div>
     );
@@ -492,7 +593,9 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
     const itemTotal = isMultiProduct ? item.total : ((item.price || 0) * (item.quantity || 1));
     return (
       <div className="cart-item-price" aria-label={`Precio: ${itemTotal} CLP`}>
-        ${itemTotal?.toLocaleString()} CLP
+        <span className="price-currency">$</span>
+        <span className="price-amount">{itemTotal?.toLocaleString()}</span>
+        <span className="price-unit"> CLP</span>
       </div>
     );
   };
@@ -502,10 +605,15 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
       return (
         <button 
           onClick={() => onRemove(idx, `Pedido de ${item.name}`)}
-          className="remove-btn"
+          className="remove-btn-multi"
           aria-label="Eliminar pedido"
         >
-          🗑️
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="3,6 5,6 21,6"></polyline>
+            <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
         </button>
       );
     }
@@ -513,15 +621,45 @@ function CartItem({ item, idx, onRemove, onQuantityChange, onRemoveItem }) {
   };
 
   return (
-    <div className="cart-item-row" role="listitem">
+    <div className="cart-item-row-mcdonalds" role="listitem">
       {renderProductImage()}
-      {renderProductInfo()}
-      {renderQuantityControls()}
-      {renderPrice()}
-      {renderRemoveButton()}
+      <div className="cart-item-content-mcdonalds">
+        <div className="item-main-info-mcdonalds">
+          {renderProductInfo()}
+          <div className="item-controls-mcdonalds">
+            {renderQuantityControls()}
+            {renderPrice()}
+          </div>
+        </div>
+        {renderRemoveButton()}
+      </div>
+      
+      {/* Enhanced Remove Button for Single Items */}
+      {!isMultiProduct && (
+        <button 
+          onClick={() => onRemoveItem(idx, item.name)} 
+          className="cart-remove-btn-enhanced"
+          aria-label={`Eliminar ${item.name} del carrito`}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="3,6 5,6 21,6"></polyline>
+            <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+          <span className="remove-text">Eliminar</span>
+        </button>
+      )}
     </div>
   );
 }
+
+// McDonald's-style upselling suggestions
+const upsellingSuggestions = [
+  { name: "Papas Fritas Chicas", price: 2000, image: "/src/assets/papas-fritas.jpg", emoji: "🍟", description: "Perfectas para acompañar" },
+  { name: "Coca-Cola", price: 1200, image: "/src/assets/coca-cola.png", emoji: "🥤", description: "Refresca tu comida" },
+  { name: "Empanada de Queso", price: 1500, image: "/src/assets/empanada-de-quesoo.png", emoji: "🥟", description: "Para picar algo más" }
+];
 
 function CartPage({ 
   cart, 
@@ -533,38 +671,58 @@ function CartPage({
   updateQuantity, 
   showOrderConfirmation, 
   setShowOrderConfirmation, 
-  onOrderSubmit 
+  onOrderSubmit,
+  user,
+  goTo
 }) {
-  // Calcular totales directamente usando el cart que se pasa como prop
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Enhanced upselling suggestions
+  const upsellingSuggestions = [
+    {
+      name: 'Papas Fritas Chicas',
+      description: 'Perfectas para acompañar',
+      price: 2000,
+      emoji: '🍟',
+      image: 'papas-fritas.jpg'
+    },
+    {
+      name: 'Coca-Cola',
+      description: 'Refresca tu comida',
+      price: 1200,
+      emoji: '🥤',
+      image: 'coca-cola.jpg'
+    },
+    {
+      name: 'Empanada de Queso',
+      description: 'Para picar algo más',
+      price: 1500,
+      emoji: '🥟',
+      image: 'empanada.jpg'
+    }
+  ];
   const calculateTotals = () => {
     const subtotal = cart.reduce((acc, item) => {
-      console.log('🔍 CartPage calculateTotals - procesando item:', item);
-      
       if (item.products && Array.isArray(item.products)) {
-        // Para órdenes con múltiples productos
         if (item.total && item.total > 0) {
-          console.log('🔍 CartPage calculateTotals - usando item.total:', item.total);
           return acc + item.total;
         } else {
-          // Calcular manualmente basándose en los productos
           const calculatedTotal = item.products.reduce((sum, product) => {
             const basePrice = product.price || 0;
             const beveragePrice = product.beveragePrice || 0;
             const customizationPrice = product.customizationPrice || 0;
             const itemTotal = (basePrice + beveragePrice + customizationPrice) * (product.quantity || 1);
-            console.log('🔍 CartPage calculateTotals - producto:', product.name, 'precio:', itemTotal);
             return sum + itemTotal;
           }, 0);
-          console.log('🔍 CartPage calculateTotals - total calculado manualmente:', calculatedTotal);
           return acc + calculatedTotal;
         }
       } else {
-        // Para items individuales
         const basePrice = item.price || 0;
         const beveragePrice = item.beveragePrice || 0;
         const customizationPrice = item.customizationPrice || 0;
         const itemTotal = (basePrice + beveragePrice + customizationPrice) * (item.quantity || 1);
-        console.log('🔍 CartPage calculateTotals - item individual:', item.name, 'precio:', itemTotal);
         return acc + itemTotal;
       }
     }, 0);
@@ -572,12 +730,33 @@ function CartPage({
     const envio = cart.length > 0 ? DELIVERY_FEE : 0;
     const total = subtotal + envio;
     
-    console.log('🔍 CartPage calculateTotals - resultados finales:', { subtotal, envio, total, cartLength: cart.length });
-    
     return { subtotal, envio, total };
   };
 
   const { subtotal, envio, total } = calculateTotals();
+
+  // Enhanced quick add function with animation
+  const quickAddToCart = async (suggestion) => {
+    setIsAnimating(true);
+    
+    const newItem = {
+      name: suggestion.name,
+      product: suggestion.name,
+      price: suggestion.price,
+      quantity: 1,
+      image: suggestion.image,
+      beverage: 'Sin bebida',
+      customizations: []
+    };
+    
+    setCart(prev => [...prev, newItem]);
+    
+    // Animated success feedback
+    showNotification(`¡${suggestion.name} añadido al carrito! 🎉`, 'success');
+    
+    // Add animation delay
+    setTimeout(() => setIsAnimating(false), 500);
+  };
 
   const handleRemove = (idx, itemName) => {
     if (removeFromCart(idx, itemName)) {
@@ -595,213 +774,367 @@ function CartPage({
     updateQuantity(idx, delta);
   };
 
-  const handleConfirmationClose = async () => {
+  // Enhanced order submission with loading state
+  const handleOrderSubmission = async () => {
+    setIsProcessing(true);
     try {
-      console.log('🛒 Iniciando guardado de pedidos del carrito:', cart.length, 'items');
-      
-      const isMultiProductOrder = cart.length > 0 && cart[0].products;
-      
-      if (isMultiProductOrder) {
-        await saveMultiProductOrders(cart);
-      } else {
-        await saveIndividualOrders(cart);
-      }
-
-      console.log('✅ Todos los pedidos guardados exitosamente en la base de datos');
-      
-      setShowOrderConfirmation(false);
-      setCart([]);
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Error al guardar pedidos:', error);
-      alert('Error al guardar los pedidos. Por favor intenta de nuevo.');
+      await onOrderSubmit();
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const saveMultiProductOrders = async (orders) => {
-    for (const order of orders) {
-      console.log('📝 Guardando orden con múltiples productos:', order);
+  const handleConfirmationClose = async () => {
+      console.log('🚀 Iniciando guardado de pedidos...');
+      console.log('🛒 Carrito:', cart);
+      console.log('📦 Es orden múltiple?', cart.length > 0 && cart[0].products);
       
-      const productsSummary = order.products.map(product => 
-        `${product.name} x${product.quantity}`
-      ).join(', ');
-      
-      const customizationsForDB = order.products.map(p => p.customizations);
-      
-      const { data, error } = await supabase
-        .from('pedidos')
-        .insert([{
-          nombre: order.name,
-          telefono: order.phone,
-          direccion: order.address || 'Retiro en local',
-          producto: productsSummary,
-          precio_total: order.total,
-          estado: 'PENDIENTE',
-          tipo_entrega: order.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
-          bebida: order.products.map(p => p.beverage).filter(b => b !== 'Sin bebida').join(', '),
-          personalizacion: JSON.stringify(customizationsForDB),
-          resumen: productsSummary,
-          cantidad: order.products.reduce((total, p) => total + (p.quantity || 1), 0),
-          metodo_pago: order.paymentMethod ? order.paymentMethod.toLowerCase() : 'efectivo',
-          rut_titular: order.cardRut || '',
-          numero_tarjeta: order.cardNumber || '',
-          fecha_vencimiento: order.cardExpiry || '',
-          cvv: order.cardCVV || ''
-        }]);
+      try {
+        const isMultiProductOrder = cart.length > 0 && cart[0].products;
+        
+        if (isMultiProductOrder) {
+          console.log('📦 Guardando orden múltiple...');
+          await saveMultiProductOrders(cart);
+        } else {
+          console.log('🍔 Guardando pedidos individuales...');
+          await saveIndividualOrders(cart);
+        }
+        
+        console.log('✅ Todos los pedidos guardados exitosamente');
+        setShowOrderConfirmation(false);
+        setCart([]);
+        showNotification('¡Pedido enviado exitosamente! Te contactaremos pronto.', 'success');
+        goTo('/');
+      } catch (error) {
+        console.error('❌ Error al guardar pedidos:', error);
+        showNotification('Error al guardar los pedidos. Por favor intenta de nuevo.', 'error');
+      }
+    };
 
-      if (error) {
-        console.error('Error guardando orden con múltiples productos:', error);
+  const saveMultiProductOrders = async (orders) => {
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    for (const order of orders) {
+      try {
+        // Crear pedido en tabla 'pedidos' (el cliente ya debe existir)
+        const productsSummary = order.products.map(product => 
+          `${product.name} x${product.quantity}`
+        ).join(', ');
+        
+        const customizationsForDB = order.products.map(p => p.customizations);
+        
+        const { data: pedidoData, error: pedidoError } = await supabase
+          .from('pedidos')
+          .insert([{
+            user_id: user.id, // Link order to authenticated user
+            nombre: order.name,
+            telefono: order.phone,
+            direccion: order.address || 'Retiro en local',
+            producto: productsSummary,
+            precio_total: order.total,
+            estado: 'PENDIENTE',
+            tipo_entrega: order.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
+            bebida: order.products.map(p => p.beverage).filter(b => b !== 'Sin bebida').join(', '),
+            personalizacion: JSON.stringify(customizationsForDB),
+            resumen: productsSummary,
+            cantidad: order.products.reduce((total, p) => total + (p.quantity || 1), 0),
+            metodo_pago: order.paymentMethod ? order.paymentMethod.toLowerCase() : 'efectivo',
+            rut_titular: order.cardRut || '',
+            numero_tarjeta: order.cardNumber || '',
+            fecha_vencimiento: order.cardExpiry || '',
+            cvv: order.cardCVV || ''
+          }])
+          .select()
+          .single();
+
+        if (pedidoError) {
+          console.error('Error guardando pedido:', pedidoError);
+          throw pedidoError;
+        }
+
+        console.log('✅ Pedido guardado:', pedidoData);
+
+      } catch (error) {
+        console.error('Error en saveMultiProductOrders:', error);
         throw error;
       }
-
-      console.log('✅ Orden con múltiples productos guardada exitosamente:', {
-        id: data?.[0]?.id,
-        nombre: data?.[0]?.nombre,
-        producto: data?.[0]?.producto,
-        estado: data?.[0]?.estado,
-        created_at: data?.[0]?.created_at
-      });
     }
   };
 
   const saveIndividualOrders = async (items) => {
-    for (const item of items) {
-      console.log('📝 Guardando item individual:', item);
-      
-      const { data, error } = await supabase
-        .from('pedidos')
-        .insert([{
-          nombre: item.name,
-          telefono: item.phone,
-          direccion: item.address || 'Retiro en local',
-          producto: item.product,
-          precio_total: (item.price || 0) * (item.quantity || 1),
-          estado: 'PENDIENTE',
-          tipo_entrega: item.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
-          bebida: item.beverage,
-          personalizacion: JSON.stringify(item.customizations),
-          resumen: `${item.product}${item.customizations && Object.keys(item.customizations).length > 0 ? ` con ${Object.entries(item.customizations).filter(([,v]) => v).map(([k]) => k).join(', ')}` : ''}`,
-          cantidad: item.quantity || 1,
-          metodo_pago: item.paymentMethod ? item.paymentMethod.toLowerCase() : 'efectivo',
-          rut_titular: item.cardRut || '',
-          numero_tarjeta: item.cardNumber || '',
-          fecha_vencimiento: item.cardExpiry || '',
-          cvv: item.cardCVV || ''
-        }]);
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
 
-      if (error) {
-        console.error('Error guardando pedido individual:', error);
+    for (const item of items) {
+      try {
+        // Crear pedido en tabla 'pedidos' (el cliente ya debe existir)
+        const { data: pedidoData, error: pedidoError } = await supabase
+          .from('pedidos')
+          .insert([{
+            user_id: user.id, // Link order to authenticated user
+            nombre: item.name,
+            telefono: item.phone,
+            direccion: item.address || 'Retiro en local',
+            producto: item.product,
+            precio_total: (item.price || 0) * (item.quantity || 1),
+            estado: 'PENDIENTE',
+            tipo_entrega: item.deliveryMethod === 'Retiro en local' ? 'Retiro en local' : 'Domicilio',
+            bebida: item.beverage,
+            personalizacion: JSON.stringify(item.customizations),
+            resumen: `${item.product}${item.customizations && Object.keys(item.customizations).length > 0 ? ` con ${Object.entries(item.customizations).filter(([,v]) => v).map(([k]) => k).join(', ')}` : ''}`,
+            cantidad: item.quantity || 1,
+            metodo_pago: item.paymentMethod ? item.paymentMethod.toLowerCase() : 'efectivo',
+            rut_titular: item.cardRut || '',
+            numero_tarjeta: item.cardNumber || '',
+            fecha_vencimiento: item.cardExpiry || '',
+            cvv: item.cardCVV || ''
+          }])
+          .select()
+          .single();
+
+        if (pedidoError) {
+          console.error('Error guardando pedido:', pedidoError);
+          throw pedidoError;
+        }
+
+        console.log('✅ Pedido guardado:', pedidoData);
+
+      } catch (error) {
+        console.error('Error en saveIndividualOrders:', error);
         throw error;
       }
-
-      console.log('✅ Pedido individual guardado exitosamente:', {
-        id: data?.[0]?.id,
-        nombre: data?.[0]?.nombre,
-        producto: data?.[0]?.producto,
-        estado: data?.[0]?.estado,
-        created_at: data?.[0]?.created_at
-      });
     }
   };
 
   return (
-    <div className="cart-outer-card">
-      <div className="cart-card">
-        <div className="cart-header-row">
-          <h1>Mi pedido</h1>
-          {cart.length > 0 && (
-            <button 
-              className="cart-clear-btn" 
-              onClick={handleClear}
-              aria-label="Vaciar carrito completo"
-            >
-              <span role="img" aria-label="Limpiar">🧹</span> Limpiar
-            </button>
-          )}
-        </div>
-        
-        <div className="cart-products-list">
-          <h2 className="cart-products-title">Productos</h2>
-          
-          {cart.length === 0 ? (
-            <div className="cart-empty-container">
-              <div className="cart-empty-icon" aria-hidden="true">🛒</div>
-              <h3 className="cart-empty-title">¡Tu carrito está vacío!</h3>
-              <p className="cart-empty-desc">
-                ¿Qué te apetece hoy? Tenemos completos, papas fritas y mucho más.
-              </p>
-              <div className="cart-empty-actions">
+    <div className="cart-outer-card-modern">
+        <div className="cart-card-modern">
+          {/* Enhanced Header with Gradient Background */}
+          <div className="cart-header-modern">
+            <div className="header-background">
+              <div className="header-pattern"></div>
+            </div>
+            <div className="header-content">
+              <div className="header-left">
                 <button 
                   onClick={onBack} 
-                  className="hero-btn"
+                  className="back-btn-modern"
+                  aria-label="Volver al menú"
                 >
-                  Ver Menú
-                </button>
-                <button 
-                  onClick={() => document.getElementById('menu').scrollIntoView({behavior:'smooth'})} 
-                  className="hero-btn"
-                >
-                  Explorar Productos
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  </svg>
+                  Volver
                 </button>
               </div>
-              <div className="cart-empty-tip">
-                <h4>💡 ¿Sabías que?</h4>
-                <p>
-                  Nuestros completos son 100% caseros y las papas fritas se preparan al momento. 
-                  ¡Sabor auténtico chileno en cada bocado!
-                </p>
+              <div className="header-center">
+                <h1 className="cart-title-modern">
+                  <span className="title-icon">🛒</span>
+                  Mi Pedido
+                </h1>
+                <p className="cart-subtitle">Revisa y confirma tu pedido</p>
+              </div>
+              <div className="header-right">
+                {cart.length > 0 && (
+                  <button 
+                    onClick={handleClear} 
+                    className="cart-clear-btn-modern"
+                    aria-label="Vaciar carrito completo"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                    </svg>
+                    Limpiar
+                  </button>
+                )}
               </div>
             </div>
-          ) : (
-            <div role="list" aria-label="Productos en el carrito">
-              {cart.map((item, idx) => (
-                <CartItem
-                  key={idx}
-                  item={item}
-                  idx={idx}
-                  onRemove={handleRemove}
-                  onQuantityChange={handleQuantityChange}
-                  onRemoveItem={handleRemove}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          </div>
         
-        <div className="cart-summary-block">
-          <div className="cart-totals">
-            <div className="cart-totals-row">
-              <span>Subtotal</span>
-              <span>${subtotal} CLP</span>
+                  {/* Enhanced Products Section */}
+          <div className="cart-products-section-modern">
+            <div className="section-header">
+              <h2 className="section-title-modern">
+                <span className="title-icon">🍽️</span>
+                Productos ({cart.length})
+              </h2>
+              <div className="section-decoration"></div>
             </div>
-            <div className="cart-totals-row">
-              <span>Envío</span>
-              <span>${envio} CLP</span>
+            
+            {cart.length === 0 ? (
+              <div className="cart-empty-container-modern">
+                <div className="empty-animation">
+                  <div className="empty-icon-modern">🛒</div>
+                  <div className="empty-pulse"></div>
+                </div>
+                <h3 className="empty-title-modern">¡Tu carrito está vacío!</h3>
+                <p className="empty-desc-modern">
+                  ¿Qué te apetece hoy? Tenemos completos, papas fritas y mucho más.
+                </p>
+                <div className="empty-actions-modern">
+                  <button 
+                    onClick={onBack} 
+                    className="empty-btn-primary"
+                  >
+                    <span className="btn-icon">🍽️</span>
+                    Ver Menú
+                  </button>
+                  <button 
+                    onClick={() => document.getElementById('menu').scrollIntoView({behavior:'smooth'})} 
+                    className="empty-btn-secondary"
+                  >
+                    <span className="btn-icon">🔍</span>
+                    Explorar Productos
+                  </button>
+                </div>
+                <div className="empty-tip-modern">
+                  <div className="tip-icon">💡</div>
+                  <div className="tip-content">
+                    <h4>¿Sabías que?</h4>
+                    <p>
+                      Nuestros completos son 100% caseros y las papas fritas se preparan al momento. 
+                      ¡Sabor auténtico chileno en cada bocado!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="products-grid-modern" role="list" aria-label="Productos en el carrito">
+                {cart.map((item, idx) => (
+                  <div key={idx} className="product-card-modern">
+                    <CartItem
+                      item={item}
+                      idx={idx}
+                      onRemove={handleRemove}
+                      onQuantityChange={handleQuantityChange}
+                      onRemoveItem={handleRemove}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        
+        {/* Enhanced Recommendations Section */}
+        {cart.length > 0 && (
+          <div className="recommendations-section-modern">
+            <div className="section-header">
+              <h3 className="section-title-modern">
+                <span className="title-icon">💡</span>
+                ¿Te gustaría agregar algo más?
+              </h3>
+              <p className="section-subtitle">Completa tu pedido con estas recomendaciones</p>
+              <div className="section-decoration"></div>
             </div>
-            <div className="cart-totals-row cart-totals-total">
-              <strong>Total</strong>
-              <strong>${total} CLP</strong>
+            
+            <div className="recommendations-grid-modern">
+              {upsellingSuggestions
+                .filter(suggestion => !cart.some(item => 
+                  (item.name || item.product) === suggestion.name
+                ))
+                .slice(0, 3)
+                .map((suggestion, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`recommendation-card-modern ${isAnimating ? 'adding' : ''}`}
+                    style={{ animationDelay: `${idx * 0.1}s` }}
+                  >
+                    <div className="card-image-modern">
+                      <span className="card-emoji">{suggestion.emoji}</span>
+                      <div className="image-glow"></div>
+                    </div>
+                    <div className="card-content-modern">
+                      <h4 className="card-title">{suggestion.name}</h4>
+                      <p className="card-description">{suggestion.description}</p>
+                      <div className="card-footer-modern">
+                        <span className="card-price">${suggestion.price.toLocaleString()} CLP</span>
+                        <button 
+                          onClick={() => quickAddToCart(suggestion)}
+                          className="add-btn-modern"
+                          disabled={isAnimating}
+                        >
+                          <span className="btn-icon">+</span>
+                          <span className="btn-text">Agregar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Enhanced Order Summary Section */}
+        <div className="order-summary-modern">
+          <div className="summary-header">
+            <h3 className="summary-title">
+              <span className="title-icon">📋</span>
+              Resumen del Pedido
+            </h3>
+            <div className="summary-decoration"></div>
+          </div>
+          
+          <div className="summary-content-modern">
+            <div className="summary-row">
+              <span className="row-label">Subtotal</span>
+              <span className="row-value">${subtotal.toLocaleString()} CLP</span>
+            </div>
+            <div className="summary-row">
+              <span className="row-label">Envío</span>
+              <span className="row-value">${envio.toLocaleString()} CLP</span>
+            </div>
+            <div className="summary-divider"></div>
+            <div className="summary-row total-row">
+              <span className="row-label">Total</span>
+              <span className="row-value">${total.toLocaleString()} CLP</span>
             </div>
           </div>
         </div>
         
+        {/* Enhanced Action Buttons */}
         {cart.length > 0 && (
-          <div className="cart-actions">
-            <button 
-              onClick={onOrderSubmit} 
-              className="cart-wa-btn"
-              aria-label="Realizar pedido"
-            >
-              <span role="img" aria-label="Realizar pedido">📱</span> 
-              Realizar Pedido
-            </button>
-            <button 
-              onClick={onBack} 
-              className="cart-back-btn"
-              aria-label="Volver al menú"
-            >
-              Volver al menú
-            </button>
+          <div className="cart-actions-modern">
+            <div className="actions-container">
+              <button 
+                onClick={handleOrderSubmission} 
+                className="order-btn-modern"
+                disabled={isProcessing}
+                aria-label="Realizar pedido"
+              >
+                <div className="btn-content">
+                  {isProcessing ? (
+                    <>
+                      <div className="loading-spinner"></div>
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="btn-icon">🚀</span>
+                      <span className="btn-text">Realizar Pedido</span>
+                      <span className="btn-arrow">→</span>
+                    </>
+                  )}
+                </div>
+                <div className="btn-glow"></div>
+              </button>
+              
+              <button 
+                onClick={onBack} 
+                className="back-btn-modern-secondary"
+                aria-label="Volver al menú"
+              >
+                <span className="btn-icon">←</span>
+                <span className="btn-text">Volver al Menú</span>
+              </button>
+            </div>
+            
+            <div className="order-note">
+              <div className="note-icon">💡</div>
+              <p>Tu pedido será procesado inmediatamente y te contactaremos pronto</p>
+            </div>
           </div>
         )}
       </div>
@@ -815,9 +1148,9 @@ function CartPage({
       )}
     </div>
   );
-}
+} // End of CartPage function
 
-function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
+function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick, onUserClick, isLoggedIn, userInfo, onLogout, isLoading }) {
   return (
     <header className="main-header" role="banner">
       <nav role="navigation" aria-label="Navegación principal">
@@ -846,9 +1179,11 @@ function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
+          
+          {/* Cart Button */}
           <button 
-            className="cart-btn" 
             onClick={onCartClick} 
+            className="cart-btn" 
             aria-label={`Ver carrito (${cart.length} productos)`}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -862,6 +1197,58 @@ function Navbar({ cart, darkMode, toggleTheme, onCartClick, onLogoClick }) {
               </span>
             )}
           </button>
+          
+          {/* Enhanced User Section */}
+          <div className="user-section">
+            {isLoading ? (
+              <div className="loading-spinner-small"></div>
+            ) : isLoggedIn ? (
+              <>
+                {/* User Info Display */}
+                <div className="user-info-display">
+                  <div className="user-avatar-enhanced">
+                    <span className="user-initial-enhanced">
+                      {userInfo?.nombre?.charAt(0)?.toUpperCase() || userInfo?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <div className="user-details">
+                    <span className="user-name">
+                      {userInfo?.nombre || userInfo?.name || 'Usuario'}
+                    </span>
+                    <span className="user-status">Conectado</span>
+                  </div>
+                </div>
+                
+                {/* Enhanced Logout Button */}
+                <button
+                  onClick={onLogout}
+                  className="logout-btn-enhanced"
+                  aria-label="Cerrar sesión"
+                  title="Cerrar sesión"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16,17 21,12 16,7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  <span className="logout-text">Salir</span>
+                </button>
+              </>
+            ) : (
+              /* Login Button for non-authenticated users */
+              <button 
+                onClick={onUserClick}
+                className="login-btn"
+                aria-label="Iniciar sesión"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span className="login-text">Iniciar Sesión</span>
+              </button>
+            )}
+          </div>
         </div>
       </nav>
     </header>
@@ -893,17 +1280,49 @@ function AdminLogin({ onLogin, adminError }) {
   );
 }
 
-function App() {
+function AppContent() {
+  const { user, profile, signOut, isAuthenticated, loading: authContextLoading } = useAuth();
   const { cart, addToCart, removeFromCart, clearCart, updateQuantity, setCart } = useCart();
-  const { notification, showNotification, hideNotification } = useNotifications();
+  const { 
+    notification, 
+    showNotification, 
+    hideNotification,
+    showSuccess,
+    showError,
+    showInfo,
+    showWarning
+  } = useNotifications();
   const { darkMode, toggleTheme } = useTheme();
   const { route, goTo } = useNavigation();
+
+  // Ensure page starts at top on load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+
+
+
   
   const [showCart, setShowCart] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
+
   const [adminUser, setAdminUser] = useState(null);
   const [adminError, setAdminError] = useState('');
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
+  
+  // Account-related state
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [accountData, setAccountData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    phone: ''
+  });
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const handleAddToCart = useCallback((order) => {
     addToCart(order);
@@ -922,6 +1341,11 @@ function App() {
   }, [addToCart, showNotification]);
 
   const handleOrderSubmit = () => {
+    if (!isAuthenticated) {
+      setShowAccountModal(true);
+      showNotification('Debes iniciar sesión para realizar el pedido', 'error');
+      return;
+    }
     setShowOrderConfirmation(true);
   };
 
@@ -943,6 +1367,283 @@ function App() {
   const handleCartClick = useCallback(() => {
     setShowCart(true);
   }, []);
+  
+  const handleUserClick = useCallback(() => {
+    if (isAuthenticated) {
+      setShowAccountModal(true);
+    } else {
+      setShowAccountModal(true);
+    }
+  }, [isAuthenticated]);
+
+
+
+  const handleShowLoginSection = useCallback(() => {
+    setShowAccountModal(true);
+  }, []);
+  
+  const handleAccountSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+    
+    // Timeout de seguridad para evitar que se quede colgado
+    const timeoutId = setTimeout(() => {
+      console.error('⏰ Timeout: La operación tardó más de 30 segundos');
+      setAuthError('La operación tardó demasiado. Por favor intenta de nuevo.');
+      setAuthLoading(false);
+    }, 30000); // 30 segundos
+    
+    try {
+      if (isLoginMode) {
+        // Login logic with Supabase
+        console.log('🔄 Iniciando sesión...');
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: accountData.email,
+          password: accountData.password
+        });
+
+        console.log('📧 Respuesta de login:', { data, error });
+
+        if (error) {
+          console.error('❌ Error en login:', error);
+          
+          // Handle specific email confirmation error
+          if (error.message === 'Email not confirmed') {
+            setAuthError('Tu email no ha sido confirmado. Por favor revisa tu bandeja de entrada y haz clic en el enlace de confirmación antes de iniciar sesión.');
+          } else {
+            setAuthError(error.message);
+          }
+          return;
+        }
+
+        if (data.user) {
+          console.log('✅ Usuario autenticado, ID:', data.user.id);
+          
+          // Fetch user profile from clientes table
+          console.log('🔄 Buscando perfil en tabla clientes...');
+          const { data: profile, error: profileError } = await supabase
+            .from('clientes')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          if (profileError) {
+            console.warn('⚠️ Warning al buscar perfil:', profileError);
+            // If profile doesn't exist, create it
+            if (profileError.code === 'PGRST116') {
+              console.log('📝 Creating new user profile...');
+              
+              const { data: newProfile, error: createError } = await supabase
+                .from('clientes')
+                .insert([{
+                  id: data.user.id,
+                  nombre: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Usuario',
+                  telefono: data.user.user_metadata?.phone || '',
+                  email: data.user.email,
+                  created_at: new Date().toISOString()
+                }])
+                .select()
+                .single();
+              
+                             if (createError) {
+                 console.error('❌ Error creating profile:', createError);
+               } else {
+                 console.log('✅ New profile created:', newProfile);
+               }
+            }
+          } else {
+            console.log('✅ Perfil encontrado:', profile);
+            setUserProfile(profile);
+          }
+
+          setShowAccountModal(false);
+          setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+          
+          // Check if there's a last clicked item to add to cart
+          const lastClickedItem = localStorage.getItem('lastClickedItem');
+          if (lastClickedItem) {
+            const item = JSON.parse(lastClickedItem);
+            addToCart(item);
+            localStorage.removeItem('lastClickedItem');
+          }
+          
+          console.log('✅ Login completado exitosamente');
+          showSuccess('¡Inicio de sesión exitoso!');
+        }
+      } else {
+        // Registration logic with Supabase
+        if (accountData.password !== accountData.confirmPassword) {
+          setAuthError('Las contraseñas no coinciden');
+          return;
+        }
+
+        if (accountData.password.length < 6) {
+          setAuthError('La contraseña debe tener al menos 6 caracteres');
+          return;
+        }
+        
+        console.log('🔄 Iniciando registro de usuario...');
+        
+        // Register user with Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: accountData.email,
+          password: accountData.password,
+          options: {
+            data: {
+              full_name: accountData.name,
+              phone: accountData.phone
+            }
+          }
+        });
+
+        console.log('📧 Respuesta de Supabase Auth:', { authData, authError });
+
+        if (authError) {
+          console.error('❌ Error en registro de Auth:', authError);
+          setAuthError(authError.message);
+          return;
+        }
+
+        if (authData.user) {
+          console.log('✅ Usuario creado en Auth, ID:', authData.user.id);
+          
+          try {
+            // Create profile in clientes table
+            console.log('🔄 Creando perfil en tabla clientes...');
+            const { error: profileError } = await supabase
+              .from('clientes')
+              .insert([
+                {
+                  id: authData.user.id,
+                  nombre: accountData.name,
+                  telefono: accountData.phone,
+                  email: accountData.email
+                }
+              ]);
+
+            if (profileError) {
+              console.error('❌ Error creando perfil:', profileError);
+              // Continue anyway, the trigger might handle it
+            } else {
+              console.log('✅ Perfil creado exitosamente en clientes');
+              // Set the user profile in state for immediate use
+              
+            }
+          } catch (profileError) {
+            console.error('❌ Excepción creando perfil:', profileError);
+          }
+
+          console.log('🔄 Configurando estado de usuario...');
+          setShowAccountModal(false);
+          setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+          
+          // Check if there's a last clicked item to add to cart
+          const lastClickedItem = localStorage.getItem('lastClickedItem');
+          if (lastClickedItem) {
+            const item = JSON.parse(lastClickedItem);
+            addToCart(item);
+            localStorage.removeItem('lastClickedItem');
+          }
+          
+          console.log('✅ Registro completado exitosamente');
+          
+          // Check if email confirmation is required
+          if (authData.user && !authData.user.email_confirmed_at) {
+            showInfo('¡Cuenta creada! Por favor revisa tu email y confirma tu cuenta antes de iniciar sesión.', 6000);
+            // Switch to login mode so user can login after confirming email
+            setIsLoginMode(true);
+            // Clear the form data
+            setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+          } else {
+            showSuccess('¡Cuenta creada exitosamente! Ya puedes iniciar sesión.');
+            // Switch to login mode
+            setIsLoginMode(true);
+            // Clear the form data
+            setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+          }
+        } else {
+          console.error('❌ No se recibió usuario de Auth');
+          setAuthError('Error: No se pudo crear el usuario');
+        }
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      setAuthError('Error inesperado. Inténtalo de nuevo.');
+    } finally {
+      clearTimeout(timeoutId); // Limpiar timeout
+      setAuthLoading(false);
+    }
+  };
+  
+  const handleAccountSkip = () => {
+    setShowAccountModal(false);
+    localStorage.removeItem('lastClickedItem');
+  };
+  
+  const handleResendConfirmation = async () => {
+    if (!accountData.email) {
+      setAuthError('Por favor ingresa tu email para reenviar la confirmación.');
+      return;
+    }
+    
+    setAuthLoading(true);
+    setAuthError('');
+    
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: accountData.email,
+      });
+      
+              if (error) {
+          setAuthError('Error al reenviar el email: ' + error.message);
+        } else {
+          showSuccess('Email de confirmación reenviado. Revisa tu bandeja de entrada.');
+        }
+    } catch (error) {
+      setAuthError('Error inesperado al reenviar el email.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+  
+  const handleLogout = async () => {
+    try {
+      // Sign out from Supabase
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error('Logout error:', error);
+        showError('Error al cerrar sesión');
+        return;
+      }
+
+      // Clear cart and close modals
+      setCart([]);
+      setShowAccountModal(false);
+      showSuccess('Sesión cerrada exitosamente');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      showNotification('Error al cerrar sesión', 'error');
+    }
+  };
+  
+  const handleToggleAuthMode = () => {
+    setIsLoginMode(!isLoginMode);
+    setAuthError('');
+    setAccountData({ email: '', password: '', confirmPassword: '', name: '', phone: '' });
+  };
+
+  // Demo function to showcase different notification types
+  const showNotificationDemo = () => {
+    showSuccess('¡Esta es una notificación de éxito!');
+    setTimeout(() => showInfo('Esta es una notificación informativa'), 1000);
+    setTimeout(() => showWarning('Esta es una notificación de advertencia'), 2000);
+    setTimeout(() => showError('Esta es una notificación de error'), 3000);
+  };
+
+
 
   const renderContent = () => {
     if (route === '/admin-quenita') {
@@ -1003,10 +1704,15 @@ function App() {
 
     if (showOrderForm) {
       return (
-        <OrderForm onAddToCart={order => {
-          handleAddToCart(order);
-          setShowOrderForm(false);
-        }} />
+        <OrderForm 
+          onAddToCart={order => {
+            handleAddToCart(order);
+            setShowOrderForm(false);
+          }}
+                      onClose={() => setShowOrderForm(false)}
+            isLoggedIn={isAuthenticated}
+            userInfo={profile || user}
+          />
       );
     }
 
@@ -1023,19 +1729,33 @@ function App() {
           showOrderConfirmation={showOrderConfirmation}
           setShowOrderConfirmation={setShowOrderConfirmation}
           onOrderSubmit={handleOrderSubmit}
+          user={user}
+          goTo={goTo}
         />
       );
     }
 
     return (
       <>
-        <Hero />
+        <Hero onShowNotificationDemo={showNotificationDemo} />
+        <SectionDivider />
         <div id="menu" role="region" aria-label="Menú de productos">
-          <Menu />
+          <Menu 
+            cart={cart}
+            setCart={setCart}
+            isLoggedIn={isAuthenticated}
+            userInfo={profile || user}
+          />
         </div>
+        <SectionDivider />
         <div id="order-form" role="region" aria-label="Formulario de pedido">
-          <OrderForm onAddToCart={handleAddToCart} />
+                     <OrderForm 
+             onAddToCart={handleAddToCart} 
+             isLoggedIn={isAuthenticated}
+             userInfo={profile || user}
+           />
         </div>
+        <SectionDivider />
         <div id="location" role="region" aria-label="Información de ubicación">
           <Location />
         </div>
@@ -1053,12 +1773,17 @@ function App() {
       />
       
       {route !== '/admin-quenita' && (
-        <Navbar
-          cart={cart}
-          darkMode={darkMode}
-          toggleTheme={toggleTheme}
-          onCartClick={handleCartClick}
+        <Navbar 
+          cart={cart} 
+          darkMode={darkMode} 
+          toggleTheme={toggleTheme} 
+          onCartClick={handleCartClick} 
           onLogoClick={handleLogoClick}
+          onUserClick={handleUserClick}
+          isLoggedIn={isAuthenticated}
+          userInfo={profile || user}
+          onLogout={handleLogout}
+          isLoading={authContextLoading}
         />
       )}
       
@@ -1070,7 +1795,180 @@ function App() {
       <footer role="contentinfo">
         <p>&copy; {new Date().getFullYear()} Quenitas - El sabor chileno sobre ruedas</p>
       </footer>
+      
+      {/* Account Modal */}
+      {showAccountModal && (
+        <div className="account-modal-overlay" onClick={handleAccountSkip}>
+          <div className="account-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="account-header">
+              <h2>{isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'}</h2>
+              <p>{isLoginMode ? 'Accede a tu cuenta para continuar' : 'Crea tu cuenta para hacer pedidos'}</p>
+            </div>
+            
+            <form onSubmit={handleAccountSubmit} className="account-form">
+              <div className="form-section">
+                <h3>Información de la cuenta</h3>
+                
+                {!isLoginMode && (
+                  <div className="form-row">
+                    <div className="form-field">
+                      <label htmlFor="name" className="form-label">
+                        Nombre completo <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        value={accountData.name}
+                        onChange={(e) => setAccountData(prev => ({ ...prev, name: e.target.value }))}
+                        className="form-input"
+                        placeholder="Tu nombre completo"
+                        required={!isLoginMode}
+                      />
+                    </div>
+                    
+                    <div className="form-field">
+                      <label htmlFor="phone" className="form-label">
+                        Teléfono <span className="required">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        value={accountData.phone}
+                        onChange={(e) => setAccountData(prev => ({ ...prev, phone: e.target.value }))}
+                        className="form-input"
+                        placeholder="+56 9 1234 5678"
+                        required={!isLoginMode}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                <div className="form-row">
+                  <div className="form-field">
+                    <label htmlFor="email" className="form-label">
+                      Email <span className="required">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={accountData.email}
+                      onChange={(e) => setAccountData(prev => ({ ...prev, email: e.target.value }))}
+                      className="form-input"
+                      placeholder="tu@email.com"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-field">
+                    <label htmlFor="password" className="form-label">
+                      Contraseña <span className="required">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      value={accountData.password}
+                      onChange={(e) => setAccountData(prev => ({ ...prev, password: e.target.value }))}
+                      className="form-input"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                {!isLoginMode && (
+                  <div className="form-row">
+                    <div className="form-field">
+                      <label htmlFor="confirmPassword" className="form-label">
+                        Confirmar contraseña <span className="required">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        value={accountData.confirmPassword}
+                        onChange={(e) => setAccountData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        className="form-input"
+                        placeholder="••••••••"
+                        required={!isLoginMode}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {authError && (
+                  <div className="auth-error">
+                    <span>⚠️</span>
+                    <span>{authError}</span>
+                  </div>
+                )}
+                
+                {!isLoginMode && (
+                  <div className="email-note">
+                    <p>📧 <strong>Importante:</strong> Después de crear tu cuenta, recibirás un email de confirmación. Debes hacer clic en el enlace del email antes de poder iniciar sesión.</p>
+                  </div>
+                )}
+                
+                {isLoginMode && (
+                  <div className="login-help">
+                    <p>💡 <strong>¿Problemas para iniciar sesión?</strong> Asegúrate de haber confirmado tu email después de crear la cuenta.</p>
+                    <button
+                      type="button"
+                      className="resend-btn"
+                      onClick={handleResendConfirmation}
+                      disabled={authLoading || !accountData.email}
+                    >
+                      📧 Reenviar email de confirmación
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="form-actions">
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={authLoading}
+                >
+                  {authLoading ? 'Procesando...' : (isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta')}
+                </button>
+                
+                <button
+                  type="button"
+                  className="skip-btn"
+                  onClick={handleAccountSkip}
+                  disabled={authLoading}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+            
+            <div className="auth-toggle">
+              <p>
+                {isLoginMode ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
+                <button
+                  type="button"
+                  className="toggle-btn"
+                  onClick={handleToggleAuthMode}
+                  disabled={authLoading}
+                >
+                  {isLoginMode ? 'Crear cuenta' : 'Iniciar sesión'}
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

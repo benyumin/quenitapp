@@ -1,21 +1,15 @@
-/* Main Styles Index - Archivo principal de estilos */
 
-/* Base styles */
 @import './base/index.css';
-@import './base/theme-system.css';
-
-/* Component styles */
-@import './components/navbar.css';
+@import './components/admin.css';
 @import './components/cart.css';
-/* @import './components/admin.css'; */ /* Temporarily disabled - using new AdminPanel.css */
-@import './components/products.css';
 @import './components/dashboard.css';
+@import './components/navbar.css';
 @import './components/notifications.css';
-
-/* Layout styles */
+@import './components/products.css';
+@import './components/auth.css';
+@import './fonts.css';
 @import './layouts/main.css';
 @import './layouts/hero.css';
-
-/* Utility styles */
-@import './utilities/fixes.css';
-@import './utilities/responsive.css'; 
+@import './layouts/hero-modern.css';
+@import './utilities/responsive.css';
+@import './utilities/fixes.css'; 

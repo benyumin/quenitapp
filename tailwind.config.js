@@ -6,6 +6,14 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'primary': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        'accent': ['Poppins', 'Inter', 'sans-serif'],
+        'display': ['Playfair Display', 'serif'],
+        'code': ['Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace'],
+        'cascadia': ['Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace'],
+        'mono': ['Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'monospace'],
+      },
       colors: {
         'bg-primary': '#0a0a0a',
         'bg-secondary': '#1a1a1a',
@@ -23,11 +31,6 @@ export default {
         'border-accent': '#ff6b35',
         'border-light': '#404040',
       },
-      fontFamily: {
-        'primary': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        'accent': ['Poppins', 'Inter', 'sans-serif'],
-        'display': ['Playfair Display', 'serif'],
-      },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(135deg, #ff6b35, #f7931e)',
         'gradient-secondary': 'linear-gradient(135deg, #4ecdc4, #45b7d1)',
@@ -39,6 +42,11 @@ export default {
         'lg': '16px',
         'xl': '20px',
         '2xl': '24px',
+      },
+      fontFeatureSettings: {
+        'liga': 'liga 1',
+        'calt': 'calt 1',
+        'contextual': 'liga 1, calt 1',
       },
     },
   },

@@ -28,10 +28,10 @@ const TailwindExample = () => {
               Puedes usar todas las clases utilitarias de Tailwind CSS como:
             </p>
             <ul className="space-y-2 text-sm text-text-muted">
-              <li>• <code className="bg-bg-tertiary px-2 py-1 rounded">bg-bg-secondary</code></li>
-              <li>• <code className="bg-bg-tertiary px-2 py-1 rounded">text-accent-primary</code></li>
-              <li>• <code className="bg-bg-tertiary px-2 py-1 rounded">border-border-color</code></li>
-              <li>• <code className="bg-bg-tertiary px-2 py-1 rounded">hover:border-accent-primary</code></li>
+              <li>• <code className="font-code bg-bg-tertiary px-2 py-1 rounded">bg-bg-secondary</code></li>
+              <li>• <code className="font-code bg-bg-tertiary px-2 py-1 rounded">text-accent-primary</code></li>
+              <li>• <code className="font-code bg-bg-tertiary px-2 py-1 rounded">border-border-color</code></li>
+              <li>• <code className="font-code bg-bg-tertiary px-2 py-1 rounded">hover:border-accent-primary</code></li>
             </ul>
           </div>
 

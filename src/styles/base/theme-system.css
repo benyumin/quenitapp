@@ -9,9 +9,9 @@
   --bg-accent: #fefefe;
   
   /* Colores de texto */
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #4b5563;
   --text-accent: #ff6b35;
   
   /* Colores de acento */
@@ -36,6 +36,30 @@
   --gradient-secondary: linear-gradient(135deg, #4ecdc4, #45b7d1);
   --gradient-accent: linear-gradient(135deg, #ff6b35, #ffd700);
   --gradient-bg: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(78, 205, 196, 0.05));
+  --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  
+  /* Nuevas variables para el diseño moderno */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-full: 50px;
+  
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
 }
 
 /* Variables CSS para tema oscuro */
@@ -48,8 +72,8 @@
   
   /* Colores de texto */
   --text-primary: #ffffff;
-  --text-secondary: #e0e0e0;
-  --text-muted: #a0a0a0;
+  --text-secondary: #f3f4f6;
+  --text-muted: #d1d5db;
   --text-accent: #ffd700;
   
   /* Colores de acento */
@@ -74,6 +98,7 @@
   --gradient-secondary: linear-gradient(135deg, #4ecdc4, #45b7d1);
   --gradient-accent: linear-gradient(135deg, #ff6b35, #ffd700);
   --gradient-bg: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(78, 205, 196, 0.1));
+  --gradient-hero: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
 
 /* Aplicar colores a elementos base */
@@ -81,6 +106,15 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure dark mode class is properly applied */
+.dark-mode {
+  color-scheme: dark;
+}
+
+body:not(.dark-mode) {
+  color-scheme: light;
 }
 
 /* Aplicar colores a elementos específicos */
@@ -182,7 +216,24 @@ a:hover {
 
 /* Transiciones suaves para cambios de tema */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Enhanced dark mode transitions */
+.dark-mode * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Ensure proper contrast in all modes */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #ffffff;
+    --text-secondary: #f3f4f6;
+    --text-muted: #d1d5db;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #252525;
+  }
 }
 
 /* Aplicar colores específicos para el carrito */
